@@ -10,7 +10,9 @@ use App\Http\Controllers\Admin\VideoController as AdminVideoController;
 use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialController;
 use App\Http\Controllers\Admin\HeroController as AdminHeroController;
 use App\Http\Controllers\Admin\PartnerController as AdminPartnerController;
+use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
 use App\Http\Controllers\Api\PostController;
+use App\Http\Controllers\Api\ServiceController;
 use App\Http\Controllers\Api\SectionsController;
 use App\Http\Controllers\Api\VideoController;
 use App\Http\Controllers\AuthController;
@@ -47,6 +49,8 @@ Route::prefix('api')->group(function () {
     Route::get('creators', [CreatorPublicController::class, 'index']);
     Route::get('creators/options/filters', [CreatorOptionsController::class, 'filters']);
     Route::get('creators/{slug}', [CreatorPublicController::class, 'show']);
+    Route::get('services', [ServiceController::class, 'index']);
+    Route::get('services/{slug}', [ServiceController::class, 'show']);
 
     Route::middleware(['auth:web'])->group(function () {
         Route::get('me', fn () => response()->json(request()->user()->only('id', 'name', 'email', 'role')));
@@ -90,13 +94,15 @@ Route::prefix('api')->group(function () {
         Route::apiResource('steps', AdminStepController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get('contacts', [ContactMessageController::class, 'index']);
         Route::delete('contacts/{id}', [ContactMessageController::class, 'destroy'])->name('admin.contacts.destroy');
-        Route::apiResource('posts', AdminPostController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::post('posts/upload', [AdminPostController::class, 'uploadImage']);
+Route::apiResource('posts', AdminPostController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('videos', AdminVideoController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get('hero', [AdminHeroController::class, 'show']);
         Route::put('hero', [AdminHeroController::class, 'update']);
         Route::post('hero/upload', [AdminHeroController::class, 'upload']);
         Route::apiResource('partners', AdminPartnerController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::post('partners/upload', [AdminPartnerController::class, 'upload']);
+        Route::apiResource('services', AdminServiceController::class)->only(['index', 'store', 'update', 'destroy']);
     });
 });
 

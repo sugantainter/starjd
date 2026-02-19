@@ -53,13 +53,41 @@
                 </button>
 
                 <!-- Desktop nav (lg and up) -->
-                <div class="hidden items-center gap-3 lg:flex">
-                    <a href="#how-it-works" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">How It Works</a>
+                <div class="hidden items-center gap-4 lg:flex">
                     <a href="#featured" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">Featured</a>
-                    <a href="#testimonials" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">Testimonials</a>
                     <router-link to="/about" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">About</router-link>
                     <router-link to="/contact" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">Contact</router-link>
                     <router-link to="/blog" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">Blog</router-link>
+                    <div class="relative flex items-center overflow-visible" ref="navServicesRef">
+                        <button
+                            type="button"
+                            class="cursor-link inline-flex min-h-[2.25rem] items-center gap-1.5 rounded-md px-2 py-1.5 text-sm leading-normal text-[#6b7280] transition hover:text-[#e63946] focus:outline-none focus:ring-2 focus:ring-[#e63946]/20 focus:ring-offset-0"
+                            :class="{ 'text-[#e63946]': navServicesOpen }"
+                            @click="navServicesOpen = !navServicesOpen"
+                        >
+                            <span class="whitespace-nowrap">Services</span>
+                            <svg class="h-4 w-4 shrink-0 overflow-visible transition-transform duration-200" :class="{ 'rotate-180': navServicesOpen }" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10l4 4 4-4" /></svg>
+                        </button>
+                        <Transition
+                            enter-active-class="transition duration-100 ease-out"
+                            enter-from-class="opacity-0 scale-95"
+                            enter-to-class="opacity-100 scale-100"
+                            leave-active-class="transition duration-75 ease-in"
+                            leave-from-class="opacity-100 scale-100"
+                            leave-to-class="opacity-0 scale-95"
+                        >
+                            <div
+                                v-show="navServicesOpen"
+                                class="absolute left-0 top-full z-50 mt-1 min-w-[180px] rounded-xl border border-[#e2e8f0] bg-white py-1 shadow-lg"
+                            >
+                                <router-link to="/services" class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navServicesOpen = false">All Services</router-link>
+                                <template v-if="navServices.length">
+                                    <div class="my-1 border-t border-[#e2e8f0]"></div>
+                                    <router-link v-for="s in navServices" :key="s.id" :to="'/services/' + s.slug" class="block px-4 py-2 text-sm text-[#64748b] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navServicesOpen = false">{{ s.name }}</router-link>
+                                </template>
+                            </div>
+                        </Transition>
+                    </div>
                     <router-link to="/creators" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">Discover Creators</router-link>
 
                     <template v-if="navUser">
@@ -130,12 +158,14 @@
                 >
                     <div class="mx-auto max-w-6xl px-4 py-4">
                         <div class="flex flex-col gap-1">
-                            <a href="#how-it-works" class="cursor-link rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">How It Works</a>
                             <a href="#featured" class="cursor-link rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Featured</a>
-                            <a href="#testimonials" class="cursor-link rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Testimonials</a>
                             <router-link to="/about" class="cursor-link rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">About</router-link>
                             <router-link to="/contact" class="cursor-link rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Contact</router-link>
                             <router-link to="/blog" class="cursor-link rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Blog</router-link>
+                            <router-link to="/services" class="cursor-link rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Services</router-link>
+                            <template v-if="navServices.length">
+                                <router-link v-for="s in navServices" :key="s.id" :to="'/services/' + s.slug" class="cursor-link rounded-lg px-4 py-2 pl-8 text-sm text-[#64748b] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">{{ s.name }}</router-link>
+                            </template>
                             <router-link to="/creators" class="cursor-link rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Discover Creators</router-link>
                             <template v-if="navUser">
                                 <div class="my-2 border-t border-[#e5e7eb] pt-2">
@@ -1384,6 +1414,9 @@ import axios from "axios";
 const navUser = ref(null);
 const navUserMenuOpen = ref(false);
 const navUserMenuRef = ref(null);
+const navServices = ref([]);
+const navServicesOpen = ref(false);
+const navServicesRef = ref(null);
 const navMobileOpen = ref(false);
 const headerRef = ref(null);
 const activePlatform = ref("All");
@@ -1733,6 +1766,7 @@ function navLogout() {
 
 function onNavUserMenuClickOutside(e) {
     if (navUserMenuRef.value && !navUserMenuRef.value.contains(e.target)) navUserMenuOpen.value = false;
+    if (navServicesRef.value && !navServicesRef.value.contains(e.target)) navServicesOpen.value = false;
     if (navMobileOpen.value && headerRef.value && !headerRef.value.contains(e.target)) navMobileOpen.value = false;
 }
 
@@ -1767,6 +1801,7 @@ function onMouseLeave() {
 
 onMounted(() => {
     axios.get("/api/me", { withCredentials: true }).then((r) => { navUser.value = r.data; }).catch(() => { navUser.value = null; });
+    axios.get("/api/services").then((r) => { navServices.value = r.data ?? []; }).catch(() => { navServices.value = []; });
     document.addEventListener("click", onNavUserMenuClickOutside);
     axios.get("/api/creators", { params: { featured: 1, per_page: 8 } }).then((r) => {
         const data = r.data?.data ?? r.data ?? [];

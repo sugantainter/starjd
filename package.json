@@ -15,6 +15,13 @@
         "vite": "^7.0.7"
     },
     "dependencies": {
+        "@tiptap/core": "^2.10.0",
+        "@tiptap/extension-image": "^2.10.0",
+        "@tiptap/extension-link": "^2.10.0",
+        "@tiptap/extension-placeholder": "^2.10.0",
+        "@tiptap/pm": "^2.10.0",
+        "@tiptap/starter-kit": "^2.10.0",
+        "@tiptap/vue-3": "^2.10.0",
         "@vitejs/plugin-vue": "^6.0.4",
         "vue": "^3.5.28",
         "vue-router": "^4.6.4"

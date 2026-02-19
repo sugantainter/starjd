@@ -32,6 +32,7 @@
           <router-link to="/#how-it-works" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">How It Works</router-link>
           <router-link to="/#featured" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">Featured</router-link>
           <router-link to="/blog" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">Blog</router-link>
+          <router-link to="/services" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">Services</router-link>
           <router-link to="/videos" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">Videos</router-link>
           <router-link to="/creators" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">Discover Creators</router-link>
 
@@ -109,6 +110,7 @@
                 <li><router-link to="/#featured" class="cursor-link transition hover:text-[#e63946]">Featured Creators</router-link></li>
                 <li><router-link to="/#faq" class="cursor-link transition hover:text-[#e63946]">FAQ</router-link></li>
                 <li><router-link to="/blog" class="cursor-link transition hover:text-[#e63946]">Blog</router-link></li>
+                <li><router-link to="/services" class="cursor-link transition hover:text-[#e63946]">Services</router-link></li>
                 <li><router-link to="/about" class="cursor-link transition hover:text-[#e63946]">About</router-link></li>
                 <li><router-link to="/contact" class="cursor-link transition hover:text-[#e63946]">Contact</router-link></li>
               </ul>

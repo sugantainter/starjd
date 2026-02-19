@@ -33,9 +33,12 @@ class PostController extends Controller
             'title' => $post->title,
             'slug' => $post->slug,
             'excerpt' => $post->excerpt,
+            'meta_title' => $post->meta_title,
+            'meta_description' => $post->meta_description,
             'body' => $post->body,
             'image' => $post->image,
             'category' => $post->category_label,
+            'category_tags' => $post->category_tags ?? [],
             'date' => $post->published_at?->format('M j, Y'),
             'author' => $post->author?->name,
         ]);

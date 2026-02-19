@@ -14,9 +14,12 @@ class Post extends Model
         'title',
         'slug',
         'excerpt',
+        'meta_title',
+        'meta_description',
         'body',
         'image',
         'category_label',
+        'category_tags',
         'user_id',
         'published_at',
         'status',
@@ -27,6 +30,7 @@ class Post extends Model
     {
         return [
             'published_at' => 'datetime',
+            'category_tags' => 'array',
         ];
     }
 

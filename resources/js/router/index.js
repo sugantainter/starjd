@@ -13,6 +13,8 @@ const routes = [
   { path: '/blog', component: AppLayout, children: [ { path: '', name: 'blog', component: () => import('../views/Blog.vue') } ] },
   { path: '/blog/:slug', component: AppLayout, children: [ { path: '', name: 'blog-post', component: () => import('../views/BlogPost.vue') } ] },
   { path: '/videos', component: AppLayout, children: [ { path: '', name: 'videos', component: () => import('../views/Videos.vue') } ] },
+  { path: '/services', component: AppLayout, children: [ { path: '', name: 'services', component: () => import('../views/Services.vue') } ] },
+  { path: '/services/:slug', component: AppLayout, children: [ { path: '', name: 'service-page', component: () => import('../views/ServicePage.vue') } ] },
   { path: '/creators', component: AppLayout, children: [ { path: '', name: 'creators', component: () => import('../views/Creators.vue') } ] },
   { path: '/creators/:slug', component: AppLayout, children: [ { path: '', name: 'creator-public', component: () => import('../views/CreatorPublicProfile.vue') } ] },
   { path: '/login', component: AppLayout, children: [ { path: '', name: 'login', component: () => import('../views/Login.vue') } ] },
@@ -57,6 +59,7 @@ const routes = [
       { path: 'videos', name: 'admin-videos', component: () => import('../views/admin/Videos.vue') },
       { path: 'hero', name: 'admin-hero', component: () => import('../views/admin/Hero.vue') },
       { path: 'partners', name: 'admin-partners', component: () => import('../views/admin/Partners.vue') },
+      { path: 'services', name: 'admin-services', component: () => import('../views/admin/Services.vue') },
     ],
   },
 ];
