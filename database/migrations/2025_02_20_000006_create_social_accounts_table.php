@@ -1,0 +1,29 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('social_accounts', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('platform'); // instagram, facebook, youtube
+            $table->string('username')->nullable();
+            $table->string('profile_url')->nullable();
+            $table->string('access_token')->nullable();
+            $table->unsignedBigInteger('followers_count')->nullable();
+            $table->boolean('is_connected')->default(false);
+            $table->timestamps();
+            $table->unique(['user_id', 'platform']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('social_accounts');
+    }
+};
