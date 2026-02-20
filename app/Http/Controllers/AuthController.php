@@ -17,14 +17,14 @@ class AuthController extends Controller
         $request->validate([
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
-            'role' => ['required', 'in:creator,brand,admin'],
+            'role' => ['nullable', 'in:creator,brand'],
         ]);
 
         $user = User::where('email', $request->email)->first();
         if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages(['email' => ['The provided credentials are incorrect.']]);
         }
-        if ($user->role !== $request->role) {
+        if ($request->filled('role') && $user->role !== $request->role) {
             throw ValidationException::withMessages(['email' => ['This account is registered as a ' . $user->role . '. Please sign in with the correct account type.']]);
         }
 
