@@ -54,7 +54,6 @@
 
                 <!-- Desktop nav (lg and up) -->
                 <div class="hidden items-center gap-4 lg:flex">
-                    <a href="#featured" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">Featured</a>
                     <router-link to="/about" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">About</router-link>
                     <router-link to="/contact" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">Contact</router-link>
                     <router-link to="/blog" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">Blog</router-link>
@@ -158,7 +157,6 @@
                 >
                     <div class="mx-auto max-w-6xl px-4 py-4">
                         <div class="flex flex-col gap-1">
-                            <a href="#featured" class="cursor-link rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Featured</a>
                             <router-link to="/about" class="cursor-link rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">About</router-link>
                             <router-link to="/contact" class="cursor-link rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Contact</router-link>
                             <router-link to="/blog" class="cursor-link rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Blog</router-link>
