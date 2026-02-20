@@ -14,7 +14,7 @@ class ServiceController extends Controller
         $services = Service::active()
             ->orderBy('sort_order')
             ->orderBy('name')
-            ->get(['id', 'name', 'slug', 'short_description']);
+            ->get(['id', 'name', 'slug', 'short_description', 'image', 'image_fit']);
 
         return response()->json($services);
     }
@@ -29,6 +29,10 @@ class ServiceController extends Controller
             'name' => $service->name,
             'slug' => $service->slug,
             'short_description' => $service->short_description,
+            'image' => $service->image,
+            'banner_image' => $service->banner_image,
+            'image_fit' => $service->image_fit,
+            'banner_position' => $service->banner_position,
             'body' => $service->body,
             'meta_title' => $service->meta_title,
             'meta_description' => $service->meta_description,

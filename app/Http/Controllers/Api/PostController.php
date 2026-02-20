@@ -40,6 +40,7 @@ class PostController extends Controller
             'category' => $post->category_label,
             'category_tags' => $post->category_tags ?? [],
             'date' => $post->published_at?->format('M j, Y'),
+            'updated_at' => $post->updated_at?->format('F j, Y'),
             'author' => $post->author?->name,
         ]);
     }

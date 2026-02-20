@@ -80,10 +80,19 @@ class PostController extends Controller
     {
         $request->validate([
             'image' => ['required', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:' . self::POST_IMAGE_MAX_KB],
+        ], [
+            'image.required' => 'Please select an image file.',
+            'image.image' => 'The file must be an image.',
+            'image.mimes' => 'Allowed formats: JPEG, PNG, JPG, WebP, GIF.',
+            'image.max' => 'The image must not be larger than 2 MB.',
         ]);
 
         $file = $request->file('image');
-        $path = $file->store('posts/' . date('Y-m-d'), 'public');
+        try {
+            $path = $file->store('posts/' . date('Y-m-d'), 'public');
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Storage error. Ensure storage is linked (php artisan storage:link).'], 500);
+        }
         $url = asset('storage/' . $path);
 
         return response()->json(['url' => $url, 'path' => $path]);

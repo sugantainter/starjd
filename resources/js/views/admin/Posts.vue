@@ -223,11 +223,18 @@ async function onFeaturedImageSelect(ev) {
   fd.append('image', file);
   try {
     const { data } = await axios.post('/api/admin/posts/upload', fd, {
-      headers: { 'Content-Type': 'multipart/form-data', 'X-Requested-With': 'XMLHttpRequest' },
+      headers: { Accept: 'application/json' },
+      withCredentials: true,
     });
     form.image = data.url || '';
   } catch (e) {
-    alert(e.response?.data?.message || 'Image upload failed');
+    const status = e.response?.status;
+    let msg = 'Image upload failed.';
+    if (status === 413) msg = 'File is too large. Maximum size is 2 MB. Please choose a smaller image.';
+    else if (status === 401) msg = 'Please log in again.';
+    else if (e.response?.data?.errors?.image?.[0]) msg = e.response.data.errors.image[0];
+    else if (e.response?.data?.message) msg = e.response.data.message;
+    alert(msg);
   }
   ev.target.value = '';
 }

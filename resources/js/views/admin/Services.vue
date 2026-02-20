@@ -49,6 +49,48 @@
             <input v-model="form.short_description" type="text" class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-[#1a1a1a]" placeholder="Brief summary for listings" maxlength="500" />
           </div>
 
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Card image</label>
+              <p class="mb-2 text-xs text-[#64748b]">Shown on the services listing page.</p>
+              <div class="flex gap-2">
+                <input ref="cardImageInput" type="file" accept="image/*" class="hidden" @change="e => onImageSelect(e, 'image')" />
+                <button type="button" class="rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2 text-sm text-[#64748b] hover:bg-[#f1f5f9]" @click="cardImageInput?.click()">Upload</button>
+                <button v-if="form.image" type="button" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 hover:bg-red-100" @click="form.image = ''">Remove</button>
+              </div>
+              <div v-if="form.image" class="mt-2 flex items-center gap-2">
+                <img :src="form.image" alt="Card" class="max-h-32 w-full max-w-[200px] rounded-lg border border-[#e2e8f0] object-cover" />
+                <div>
+                  <label class="mb-0.5 block text-xs font-medium text-[#64748b]">Display</label>
+                  <select v-model="form.image_fit" class="rounded border border-[#e2e8f0] px-2 py-1 text-sm text-[#1a1a1a]">
+                    <option value="cover">Cover (fill)</option>
+                    <option value="contain">Contain (fit)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div>
+              <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Banner / wallpaper image</label>
+              <p class="mb-2 text-xs text-[#64748b]">Hero image on the service detail page.</p>
+              <div class="flex gap-2">
+                <input ref="bannerImageInput" type="file" accept="image/*" class="hidden" @change="e => onImageSelect(e, 'banner_image')" />
+                <button type="button" class="rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2 text-sm text-[#64748b] hover:bg-[#f1f5f9]" @click="bannerImageInput?.click()">Upload</button>
+                <button v-if="form.banner_image" type="button" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 hover:bg-red-100" @click="form.banner_image = ''">Remove</button>
+              </div>
+              <div v-if="form.banner_image" class="mt-2 flex items-center gap-2">
+                <img :src="form.banner_image" alt="Banner" class="max-h-32 w-full max-w-[200px] rounded-lg border border-[#e2e8f0] object-cover" />
+                <div>
+                  <label class="mb-0.5 block text-xs font-medium text-[#64748b]">Position</label>
+                  <select v-model="form.banner_position" class="rounded border border-[#e2e8f0] px-2 py-1 text-sm text-[#1a1a1a]">
+                    <option value="center">Center</option>
+                    <option value="top">Top</option>
+                    <option value="bottom">Bottom</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="rounded-lg border border-[#e2e8f0] bg-[#f8fafc] p-3">
             <h3 class="mb-2 text-sm font-semibold text-[#1a1a1a]">SEO</h3>
             <div class="space-y-2">
@@ -102,17 +144,46 @@ const items = ref([]);
 const loading = ref(true);
 const showModal = ref(false);
 const editing = ref(null);
+const cardImageInput = ref(null);
+const bannerImageInput = ref(null);
 
 const form = reactive({
   name: '',
   slug: '',
   short_description: '',
+  image: '',
+  banner_image: '',
+  image_fit: 'cover',
+  banner_position: 'center',
   body: '',
   meta_title: '',
   meta_description: '',
   sort_order: 0,
   is_active: true,
 });
+
+async function onImageSelect(ev, field) {
+  const file = ev.target.files?.[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('image', file);
+  try {
+    const { data } = await axios.post('/api/admin/posts/upload', fd, {
+      headers: { Accept: 'application/json' },
+      withCredentials: true,
+    });
+    form[field] = data.url || '';
+  } catch (e) {
+    const status = e.response?.status;
+    let msg = 'Upload failed.';
+    if (status === 413) msg = 'File is too large. Maximum size is 2 MB. Please choose a smaller image.';
+    else if (status === 401) msg = 'Please log in again.';
+    else if (e.response?.data?.errors?.image?.[0]) msg = e.response.data.errors.image[0];
+    else if (e.response?.data?.message) msg = e.response.data.message;
+    alert(msg);
+  }
+  ev.target.value = '';
+}
 
 async function load() {
   loading.value = true;
@@ -130,6 +201,10 @@ function openForm(item = null) {
     form.name = item.name || '';
     form.slug = item.slug || '';
     form.short_description = item.short_description || '';
+    form.image = item.image || '';
+    form.banner_image = item.banner_image || '';
+    form.image_fit = item.image_fit || 'cover';
+    form.banner_position = item.banner_position || 'center';
     form.body = item.body || '';
     form.meta_title = item.meta_title || '';
     form.meta_description = item.meta_description || '';
@@ -139,6 +214,10 @@ function openForm(item = null) {
     form.name = '';
     form.slug = '';
     form.short_description = '';
+    form.image = '';
+    form.banner_image = '';
+    form.image_fit = 'cover';
+    form.banner_position = 'center';
     form.body = '';
     form.meta_title = '';
     form.meta_description = '';
@@ -154,6 +233,10 @@ async function save() {
       name: form.name,
       slug: form.slug || undefined,
       short_description: form.short_description || undefined,
+      image: form.image || undefined,
+      banner_image: form.banner_image || undefined,
+      image_fit: form.image_fit || undefined,
+      banner_position: form.banner_position || undefined,
       body: form.body || undefined,
       meta_title: form.meta_title || undefined,
       meta_description: form.meta_description || undefined,

@@ -1,12 +1,13 @@
 <template>
   <div class="rich-text-editor rounded-lg border border-[#e2e8f0] bg-white">
     <div v-if="editor" class="flex flex-wrap items-center gap-1 border-b border-[#e2e8f0] bg-[#f8fafc] px-2 py-1.5">
+      <!-- Text formatting -->
       <button
         type="button"
         class="rounded p-1.5 text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#1a1a1a]"
         :class="{ 'bg-[#e2e8f0] text-[#1a1a1a]': editor.isActive('bold') }"
         @click="editor.chain().focus().toggleBold().run()"
-        title="Bold"
+        title="Bold (Ctrl+B)"
       >
         <span class="font-bold text-sm">B</span>
       </button>
@@ -15,20 +16,118 @@
         class="rounded p-1.5 text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#1a1a1a]"
         :class="{ 'bg-[#e2e8f0] text-[#1a1a1a]': editor.isActive('italic') }"
         @click="editor.chain().focus().toggleItalic().run()"
-        title="Italic"
+        title="Italic (Ctrl+I)"
       >
         <span class="italic text-sm">I</span>
       </button>
       <button
         type="button"
         class="rounded p-1.5 text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#1a1a1a]"
+        :class="{ 'bg-[#e2e8f0] text-[#1a1a1a]': editor.isActive('underline') }"
+        @click="editor.chain().focus().toggleUnderline().run()"
+        title="Underline (Ctrl+U)"
+      >
+        <span class="text-sm underline">U</span>
+      </button>
+      <button
+        type="button"
+        class="rounded p-1.5 text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#1a1a1a]"
+        :class="{ 'bg-[#e2e8f0] text-[#1a1a1a]': editor.isActive('strike') }"
+        @click="editor.chain().focus().toggleStrike().run()"
+        title="Strikethrough"
+      >
+        <span class="text-sm line-through">S</span>
+      </button>
+      <span class="mx-0.5 h-4 w-px bg-[#e2e8f0]"></span>
+      <!-- Headings -->
+      <button
+        type="button"
+        class="rounded p-1.5 text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#1a1a1a]"
+        :class="{ 'bg-[#e2e8f0] text-[#1a1a1a]': editor.isActive('heading', { level: 2 }) }"
+        @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
+        title="Heading 2"
+      >
+        H2
+      </button>
+      <button
+        type="button"
+        class="rounded p-1.5 text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#1a1a1a]"
+        :class="{ 'bg-[#e2e8f0] text-[#1a1a1a]': editor.isActive('heading', { level: 3 }) }"
+        @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
+        title="Heading 3"
+      >
+        H3
+      </button>
+      <span class="mx-0.5 h-4 w-px bg-[#e2e8f0]"></span>
+      <!-- Lists -->
+      <button
+        type="button"
+        class="rounded p-1.5 text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#1a1a1a]"
+        :class="{ 'bg-[#e2e8f0] text-[#1a1a1a]': editor.isActive('bulletList') }"
+        @click="editor.chain().focus().toggleBulletList().run()"
+        title="Bullet list"
+      >
+        <span class="text-sm">• List</span>
+      </button>
+      <button
+        type="button"
+        class="rounded p-1.5 text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#1a1a1a]"
+        :class="{ 'bg-[#e2e8f0] text-[#1a1a1a]': editor.isActive('orderedList') }"
+        @click="editor.chain().focus().toggleOrderedList().run()"
+        title="Numbered list"
+      >
+        <span class="text-sm">1. List</span>
+      </button>
+      <span class="mx-0.5 h-4 w-px bg-[#e2e8f0]"></span>
+      <!-- Link -->
+      <button
+        type="button"
+        class="rounded p-1.5 text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#1a1a1a]"
         :class="{ 'bg-[#e2e8f0] text-[#1a1a1a]': editor.isActive('link') }"
         @click="setLink"
-        title="Link"
+        title="Insert link"
       >
         <span class="text-sm">Link</span>
       </button>
       <span class="mx-0.5 h-4 w-px bg-[#e2e8f0]"></span>
+      <!-- Block elements -->
+      <button
+        type="button"
+        class="rounded p-1.5 text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#1a1a1a]"
+        :class="{ 'bg-[#e2e8f0] text-[#1a1a1a]': editor.isActive('blockquote') }"
+        @click="editor.chain().focus().toggleBlockquote().run()"
+        title="Quote"
+      >
+        <span class="text-sm">" Quote</span>
+      </button>
+      <button
+        type="button"
+        class="rounded p-1.5 text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#1a1a1a]"
+        @click="editor.chain().focus().setHorizontalRule().run()"
+        title="Horizontal line"
+      >
+        <span class="text-sm">—</span>
+      </button>
+      <button
+        type="button"
+        class="rounded p-1.5 text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#1a1a1a]"
+        @click="editor.chain().focus().setHardBreak().run()"
+        title="Line break (Shift+Enter)"
+      >
+        <span class="text-sm">↵</span>
+      </button>
+      <span class="mx-0.5 h-4 w-px bg-[#e2e8f0]"></span>
+      <!-- Table -->
+      <button
+        type="button"
+        class="rounded p-1.5 text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#1a1a1a]"
+        @click="insertTable"
+        title="Insert table"
+      >
+        <span class="text-sm">Table</span>
+      </button>
+      <span class="mx-0.5 h-4 w-px bg-[#e2e8f0]"></span>
+      <!-- Media -->
       <button
         type="button"
         class="rounded p-1.5 text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#1a1a1a]"
@@ -63,6 +162,11 @@ import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
+import Underline from '@tiptap/extension-underline';
+import Table from '@tiptap/extension-table';
+import TableRow from '@tiptap/extension-table-row';
+import TableHeader from '@tiptap/extension-table-header';
+import TableCell from '@tiptap/extension-table-cell';
 import { Node } from '@tiptap/core';
 import { ref, watch, onBeforeUnmount } from 'vue';
 import axios from 'axios';
@@ -130,10 +234,17 @@ const imageInputRef = ref(null);
 const editor = useEditor({
   content: props.modelValue || '',
   extensions: [
-    StarterKit,
+    StarterKit.configure({
+      heading: { levels: [2, 3] },
+    }),
+    Underline,
     Image,
     Link.configure({ openOnClick: false, HTMLAttributes: { target: '_blank', rel: 'noopener' } }),
     Placeholder.configure({ placeholder: props.placeholder }),
+    Table,
+    TableRow,
+    TableHeader,
+    TableCell,
     YouTube,
   ],
   editorProps: {
@@ -175,6 +286,11 @@ function triggerImageUpload() {
   imageInputRef.value?.click();
 }
 
+function insertTable() {
+  if (!editor.value) return;
+  editor.value.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+}
+
 function getYouTubeEmbedUrl(url) {
   if (!url || !url.trim()) return null;
   const trimmed = url.trim();
@@ -191,12 +307,19 @@ async function onImageFileSelect(ev) {
   form.append('image', file);
   try {
     const { data } = await axios.post(props.uploadImageUrl, form, {
-      headers: { 'Content-Type': 'multipart/form-data', 'X-Requested-With': 'XMLHttpRequest' },
+      headers: { Accept: 'application/json' },
+      withCredentials: true,
     });
     const url = data.url;
     if (url) editor.value.chain().focus().setImage({ src: url }).run();
   } catch (e) {
-    alert(e.response?.data?.message || 'Image upload failed');
+    const status = e.response?.status;
+    let msg = 'Image upload failed.';
+    if (status === 413) msg = 'File is too large. Maximum size is 2 MB. Please choose a smaller image.';
+    else if (status === 401) msg = 'Please log in again.';
+    else if (e.response?.data?.errors?.image?.[0]) msg = e.response.data.errors.image[0];
+    else if (e.response?.data?.message) msg = e.response.data.message;
+    alert(msg);
   }
   ev.target.value = '';
 }
@@ -234,5 +357,25 @@ function insertYouTube() {
 }
 .rich-text-editor .youtube-embed iframe {
   max-width: 100%;
+}
+/* Tables */
+.rich-text-editor .ProseMirror table {
+  border-collapse: collapse;
+  margin: 1rem 0;
+  width: 100%;
+  overflow: hidden;
+}
+.rich-text-editor .ProseMirror th,
+.rich-text-editor .ProseMirror td {
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+.rich-text-editor .ProseMirror th {
+  background-color: #f8fafc;
+  font-weight: 600;
+}
+.rich-text-editor .ProseMirror .selectedCell {
+  background-color: rgba(230, 57, 70, 0.1);
 }
 </style>
