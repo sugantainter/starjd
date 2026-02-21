@@ -55,6 +55,7 @@ npm run dev
 
 ```bash
 npm run build
+php artisan storage:link   # Required for profile photos and uploads (creates public/storage → storage/app/public)
 php artisan serve
 # Or point your web server (Apache/Nginx) to the `public` directory.
 ```

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class CreatorProfileController extends Controller
 {
@@ -21,7 +22,7 @@ class CreatorProfileController extends Controller
                 'slug' => Str::slug($request->user()->name) . '-' . $request->user()->id,
             ]);
         }
-        return response()->json($profile);
+        return response()->json($this->profileWithAvatarUrl($profile));
     }
 
     public function update(Request $request): JsonResponse
@@ -41,7 +42,14 @@ class CreatorProfileController extends Controller
             $rules['avatar'] = ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:' . self::AVATAR_MAX_SIZE_KB];
         }
 
-        $request->validate($rules);
+        $messages = [
+            'avatar.required' => 'Please select a profile photo to upload.',
+            'avatar.image' => 'The file must be an image (JPEG, PNG, JPG, or WebP).',
+            'avatar.mimes' => 'The profile photo must be a JPEG, PNG, JPG, or WebP file.',
+            'avatar.max' => 'The profile photo must not be larger than 2 MB.',
+        ];
+
+        $request->validate($rules, $messages);
 
         $profile = $request->user()->creatorProfile;
         if (! $profile) {
@@ -57,14 +65,14 @@ class CreatorProfileController extends Controller
             if ($profile->avatar) {
                 Storage::disk('public')->delete($profile->avatar);
             }
-            $file = $request->file('avatar');
-            $ext = $file->getClientOriginalExtension() ?: $file->guessExtension();
-            $name = time() . '_' . Str::random(8) . '.' . ($ext ?: 'jpg');
-            $path = $file->storeAs(
+            // Same storage pattern as CreatorImagePostController (image posts) so avatar works the same way
+            $path = $request->file('avatar')->store(
                 'profiles/avatars/' . $request->user()->id,
-                $name,
                 'public'
             );
+            if (! $path || ! Storage::disk('public')->exists($path)) {
+                throw new HttpException(500, 'Profile photo could not be saved. Check that storage/app/public is writable and run: php artisan storage:link');
+            }
             $data['avatar'] = $path;
         }
 
@@ -75,6 +83,21 @@ class CreatorProfileController extends Controller
             $profile->update(['slug' => Str::slug($request->input('slug')) ?: $profile->slug]);
         }
 
-        return response()->json($profile->fresh());
+        return response()->json($this->profileWithAvatarUrl($profile->fresh()));
+    }
+
+    /**
+     * Build profile with avatar_url using same logic as CreatorImagePost (image_url) so it loads like image posts.
+     */
+    private function profileWithAvatarUrl($profile): array
+    {
+        $data = $profile->toArray();
+        if (! empty($profile->avatar) && Storage::disk('public')->exists($profile->avatar)) {
+            $data['avatar_url'] = Storage::disk('public')->url($profile->avatar)
+                . (str_contains($profile->avatar, '?') ? '&' : '?') . 't=' . ($profile->updated_at?->timestamp ?? time());
+        } else {
+            $data['avatar_url'] = null;
+        }
+        return $data;
     }
 }

@@ -3,26 +3,41 @@
     <h1 class="text-2xl font-bold text-[#1a1a1a]">Profile</h1>
     <p class="mt-1 text-[#64748b]">Manage your public creator profile.</p>
     <form v-if="profile" @submit.prevent="save" class="mt-6 space-y-4 rounded-xl border border-[#e2e8f0] bg-white p-6">
+      <div v-if="successMessage" class="rounded-lg bg-[#d1fae5] px-4 py-3 text-sm text-[#065f46]">{{ successMessage }}</div>
       <div v-if="error" class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">{{ error }}</div>
 
       <div class="flex flex-col sm:flex-row items-start gap-6">
         <div class="shrink-0">
           <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Profile photo</label>
-          <div class="relative mt-1">
-            <div class="h-28 w-28 rounded-full overflow-hidden border-2 border-[#e2e8f0] bg-[#f1f5f9] flex items-center justify-center">
-              <img v-if="avatarPreview" :src="avatarPreview" alt="Avatar" class="h-full w-full object-cover" />
+          <label class="relative mt-1 inline-block cursor-pointer">
+            <div class="h-28 w-28 rounded-full overflow-hidden border-2 border-[#e2e8f0] bg-[#f1f5f9] flex items-center justify-center ring-2 ring-transparent transition hover:border-[#10b981] hover:ring-[#10b981]/20">
+              <img
+                v-if="avatarPreview && !avatarLoadError"
+                :key="avatarPreview"
+                :src="avatarPreview"
+                alt="Your profile"
+                class="h-full w-full object-cover"
+                @error="onAvatarImageError"
+                @load="avatarLoadError = false"
+              />
               <span v-else class="text-4xl font-semibold text-[#94a3b8]">{{ (profile?.user?.name || '?').charAt(0) }}</span>
             </div>
+            <div v-if="avatarLoadError" class="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              <strong>Photo could not be loaded.</strong> The file was saved but the image is not accessible. On the server, run: <code class="bg-amber-100 px-1 rounded">php artisan storage:link</code>
+            </div>
+            <span class="mt-2 block text-center text-xs font-medium text-[#10b981]">Click to upload or change</span>
             <input
               ref="avatarInput"
               type="file"
               accept="image/jpeg,image/png,image/jpg,image/webp"
-              class="absolute inset-0 h-28 w-28 cursor-pointer opacity-0"
+              class="absolute inset-0 w-full h-full cursor-pointer opacity-0"
+              aria-label="Upload profile photo"
               @change="onAvatarChange"
             />
-          </div>
-          <p class="mt-2 text-xs text-[#64748b]">JPEG, PNG or WebP. Max 2 MB.</p>
-          <button v-if="avatarPreview && avatarFile" type="button" class="mt-2 text-sm text-[#64748b] hover:text-[#10b981]" @click="clearAvatar">Remove new photo</button>
+          </label>
+          <p class="mt-1 text-xs text-[#64748b]">JPEG, PNG or WebP. Max 2 MB.</p>
+          <p v-if="avatarFile" class="mt-1 text-xs text-[#10b981] font-medium">Photo selected. Click "Save profile" below to update.</p>
+          <button v-if="avatarPreview && avatarFile" type="button" class="mt-2 text-sm text-[#64748b] hover:text-red-600" @click="clearAvatar">Remove selected photo</button>
         </div>
       </div>
 
@@ -71,7 +86,9 @@
         <input v-model="form.is_public" type="checkbox" id="is_public" class="rounded border-[#e2e8f0] text-[#10b981] focus:ring-[#10b981]" />
         <label for="is_public" class="text-sm text-[#1a1a1a]">Show my profile on Discover</label>
       </div>
-      <button type="submit" :disabled="loading" class="cursor-link rounded-xl bg-[#10b981] px-6 py-3 font-semibold text-white hover:bg-[#059669] disabled:opacity-50">Save profile</button>
+      <button type="submit" :disabled="loading" class="cursor-link rounded-xl bg-[#10b981] px-6 py-3 font-semibold text-white hover:bg-[#059669] disabled:opacity-50 disabled:cursor-not-allowed">
+        {{ loading ? 'Saving...' : 'Save profile' }}
+      </button>
     </form>
 
     <section class="mt-10">
@@ -114,9 +131,11 @@ const form = reactive({ slug: '', tagline: '', bio: '', location: '', category: 
 const filterOptions = reactive({ categories: [], genders: {}, languages: [] });
 const avatarFile = ref(null);
 const avatarPreview = ref('');
+const avatarLoadError = ref(false);
 const avatarInput = ref(null);
 const loading = ref(false);
 const error = ref('');
+const successMessage = ref('');
 const imagePosts = ref([]);
 const postError = ref('');
 const showPostModal = ref(false);
@@ -131,6 +150,7 @@ onMounted(async () => {
     axios.get('/api/creator/image-posts', { withCredentials: true }),
   ]);
   profile.value = profileRes.data;
+  avatarLoadError.value = false;
   avatarPreview.value = profileRes.data.avatar_url || '';
   form.slug = profileRes.data.slug ?? '';
   form.tagline = profileRes.data.tagline ?? '';
@@ -147,18 +167,27 @@ onMounted(async () => {
   imagePosts.value = postsRes.data ?? [];
 });
 
+function onAvatarImageError() {
+  avatarLoadError.value = true;
+  avatarPreview.value = '';
+}
+
 function onAvatarChange(e) {
   const file = e.target.files?.[0];
   if (!file) return;
+  error.value = '';
+  successMessage.value = '';
+  avatarLoadError.value = false;
   if (!file.type.startsWith('image/') || !['image/jpeg', 'image/png', 'image/jpg', 'image/webp'].includes(file.type)) {
-    error.value = 'Please choose a JPEG, PNG or WebP image.';
+    error.value = 'Invalid file type. Please choose a JPEG, PNG, or WebP image.';
+    if (avatarInput.value) avatarInput.value.value = '';
     return;
   }
   if (file.size > 2 * 1024 * 1024) {
-    error.value = 'Image must be under 2 MB.';
+    error.value = 'File is too large. Please choose an image under 2 MB.';
+    if (avatarInput.value) avatarInput.value.value = '';
     return;
   }
-  error.value = '';
   avatarFile.value = file;
   const reader = new FileReader();
   reader.onload = () => { avatarPreview.value = reader.result; };
@@ -167,13 +196,27 @@ function onAvatarChange(e) {
 
 function clearAvatar() {
   avatarFile.value = null;
+  avatarLoadError.value = false;
   avatarPreview.value = profile.value?.avatar_url || '';
   if (avatarInput.value) avatarInput.value.value = '';
+}
+
+function getApiErrorMessage(e) {
+  const data = e.response?.data;
+  if (!data) return 'Something went wrong. Please try again.';
+  if (data.errors?.avatar?.length) return data.errors.avatar[0];
+  if (data.errors && typeof data.errors === 'object') {
+    const first = Object.values(data.errors).flat();
+    if (first.length) return first[0];
+  }
+  if (data.message) return data.message;
+  return 'Something went wrong. Please try again.';
 }
 
 async function save() {
   loading.value = true;
   error.value = '';
+  successMessage.value = '';
   try {
     if (avatarFile.value) {
       const fd = new FormData();
@@ -192,18 +235,24 @@ async function save() {
         headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
       });
       profile.value = r.data;
-      avatarPreview.value = r.data.avatar_url || '';
+      avatarLoadError.value = false;
+      // Keep showing the photo they just selected (data URL) so it's visible immediately after save.
+      // If we switched to the server URL here and the image failed to load, they'd see a placeholder.
+      // avatarPreview already has the data URL from the selected file; leave it so the photo shows.
       avatarFile.value = null;
       if (avatarInput.value) avatarInput.value.value = '';
+      successMessage.value = 'Profile and photo saved successfully.';
     } else {
       await axios.put('/api/creator/profile', form, { withCredentials: true });
       const r = await axios.get('/api/creator/profile', { withCredentials: true });
       profile.value = r.data;
+      avatarLoadError.value = false;
       avatarPreview.value = r.data.avatar_url || '';
+      successMessage.value = 'Profile saved successfully.';
     }
+    setTimeout(() => { successMessage.value = ''; }, 5000);
   } catch (e) {
-    const msg = e.response?.data?.errors?.avatar?.[0] || e.response?.data?.message || 'Failed to save.';
-    error.value = typeof msg === 'string' ? msg : 'Failed to save.';
+    error.value = getApiErrorMessage(e);
   } finally {
     loading.value = false;
   }
