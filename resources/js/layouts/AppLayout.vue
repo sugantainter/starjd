@@ -1,28 +1,9 @@
 <template>
-  <div
-    class="min-h-screen bg-[#fafaf9] text-[#1a1a1a]"
-    :class="{ 'cursor-none': cursorVisible }"
-  >
-    <!-- Custom cursor (desktop only) -->
-    <div
-      v-show="cursorVisible"
-      class="custom-cursor pointer-events-none fixed left-0 top-0 z-[9999]"
-    >
-      <div
-        class="cursor-dot absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#e63946]"
-        :style="{ left: `${mouse.x}px`, top: `${mouse.y}px` }"
-      />
-      <div
-        class="cursor-ring absolute h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#e63946]/60 transition-all duration-150"
-        :class="{ 'cursor-ring-hover': cursorHover }"
-        :style="{ left: `${ring.x}px`, top: `${ring.y}px` }"
-      />
-    </div>
-
+  <div class="min-h-screen bg-[#fafaf9] text-[#1a1a1a]">
     <header ref="headerRef" class="sticky top-0 z-50 border-b border-[#e5e7eb] bg-white/90 backdrop-blur-md">
       <nav class="relative mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:py-4 md:px-6">
         <router-link to="/" class="flex items-center" @click="navMobileOpen = false">
-            <img src="/logo.jpeg" alt="StarJD" class="h-8 w-auto object-contain sm:h-9" onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('hidden');" />
+            <img src="/logo.png" alt="StarJD" class="h-11 w-auto object-contain sm:h-12" onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('hidden');" />
             <span class="hidden text-xl font-bold tracking-tight text-[#1a1a1a]">StarJD</span>
         </router-link>
 
@@ -44,13 +25,13 @@
 
         <!-- Desktop nav -->
         <div class="hidden items-center gap-4 md:flex">
-          <router-link to="/" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">Home</router-link>
-          <router-link to="/about" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">About</router-link>
-          <router-link to="/contact" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">Contact</router-link>
-          <router-link to="/blog" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">Blog</router-link>
-          <router-link to="/services" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">Services</router-link>
-          <router-link to="/videos" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">Videos</router-link>
-          <router-link to="/creators" class="cursor-link text-sm text-[#6b7280] transition hover:text-[#e63946]">Discover Creators</router-link>
+          <router-link to="/" class="text-sm text-[#6b7280] transition hover:text-[#e63946]">Home</router-link>
+          <router-link to="/about" class="text-sm text-[#6b7280] transition hover:text-[#e63946]">About</router-link>
+          <router-link to="/contact" class="text-sm text-[#6b7280] transition hover:text-[#e63946]">Contact</router-link>
+          <router-link to="/blog" class="text-sm text-[#6b7280] transition hover:text-[#e63946]">Blog</router-link>
+          <router-link to="/services" class="text-sm text-[#6b7280] transition hover:text-[#e63946]">Services</router-link>
+          <router-link to="/videos" class="text-sm text-[#6b7280] transition hover:text-[#e63946]">Videos</router-link>
+          <router-link to="/creators" class="text-sm text-[#6b7280] transition hover:text-[#e63946]">Discover Creators</router-link>
 
           <template v-if="user">
             <div class="relative" ref="userMenuRef">
@@ -98,9 +79,9 @@
             </div>
           </template>
           <template v-else>
-            <router-link to="/login" class="cursor-link rounded-lg border border-[#e5e7eb] px-4 py-2 text-sm font-medium transition hover:border-[#e63946] hover:text-[#e63946]">Login</router-link>
-            <router-link to="/creator-landing" class="cursor-link join-creator rounded-lg border border-[#e5e7eb] px-4 py-2 text-sm font-medium transition hover:border-[#10b981] hover:bg-[#10b981]/5 hover:text-[#10b981]">Join as Creator</router-link>
-            <router-link to="/brand-landing" class="cursor-link join-brand rounded-lg bg-[#e63946] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#c1121f]">Join as Brand</router-link>
+            <router-link to="/login" class="rounded-lg border border-[#e5e7eb] px-4 py-2 text-sm font-medium transition hover:border-[#e63946] hover:text-[#e63946]">Login</router-link>
+            <router-link to="/creator-landing" class="join-creator rounded-lg border border-[#e5e7eb] px-4 py-2 text-sm font-medium transition hover:border-[#10b981] hover:bg-[#10b981]/5 hover:text-[#10b981]">Join as Creator</router-link>
+            <router-link to="/brand-landing" class="join-brand rounded-lg bg-[#e63946] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#c1121f]">Join as Brand</router-link>
           </template>
         </div>
       </nav>
@@ -120,36 +101,36 @@
         >
           <div class="mx-auto max-w-6xl px-4 py-4">
             <div class="flex flex-col gap-1">
-              <router-link to="/" class="cursor-link rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Home</router-link>
-              <router-link to="/about" class="cursor-link rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">About</router-link>
-              <router-link to="/contact" class="cursor-link rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Contact</router-link>
-              <router-link to="/blog" class="cursor-link rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Blog</router-link>
-              <router-link to="/services" class="cursor-link rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Services</router-link>
-              <router-link to="/videos" class="cursor-link rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Videos</router-link>
-              <router-link to="/creators" class="cursor-link rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Discover Creators</router-link>
+              <router-link to="/" class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Home</router-link>
+              <router-link to="/about" class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">About</router-link>
+              <router-link to="/contact" class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Contact</router-link>
+              <router-link to="/blog" class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Blog</router-link>
+              <router-link to="/services" class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Services</router-link>
+              <router-link to="/videos" class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Videos</router-link>
+              <router-link to="/creators" class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Discover Creators</router-link>
               <template v-if="user">
                 <div class="my-2 border-t border-[#e5e7eb] pt-2">
                   <p class="px-4 py-1 text-xs font-medium uppercase text-[#64748b]">{{ user.role }}</p>
                   <p class="truncate px-4 py-1 text-sm font-medium text-[#1a1a1a]">{{ user.name }}</p>
                 </div>
                 <template v-if="user.role === 'creator'">
-                  <router-link to="/creator/dashboard" class="cursor-link rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#10b981]/5 hover:text-[#10b981]" @click="navMobileOpen = false">Creator Dashboard</router-link>
-                  <router-link to="/creator/profile" class="cursor-link rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#10b981]/5 hover:text-[#10b981]" @click="navMobileOpen = false">My Profile</router-link>
+                  <router-link to="/creator/dashboard" class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#10b981]/5 hover:text-[#10b981]" @click="navMobileOpen = false">Creator Dashboard</router-link>
+                  <router-link to="/creator/profile" class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#10b981]/5 hover:text-[#10b981]" @click="navMobileOpen = false">My Profile</router-link>
                 </template>
                 <template v-else-if="user.role === 'brand'">
-                  <router-link to="/brand/dashboard" class="cursor-link rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Brand Dashboard</router-link>
-                  <router-link to="/brand/creators" class="cursor-link rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Discover Creators</router-link>
+                  <router-link to="/brand/dashboard" class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Brand Dashboard</router-link>
+                  <router-link to="/brand/creators" class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Discover Creators</router-link>
                 </template>
                 <template v-else-if="user.role === 'admin'">
-                  <router-link to="/admin" class="cursor-link rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#1e293b]/5 hover:text-[#1e293b]" @click="navMobileOpen = false">Admin Panel</router-link>
+                  <router-link to="/admin" class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#1e293b]/5 hover:text-[#1e293b]" @click="navMobileOpen = false">Admin Panel</router-link>
                 </template>
-                <button type="button" class="cursor-link rounded-lg px-4 py-3 text-left text-sm text-red-600 transition hover:bg-red-50" @click="logout(); navMobileOpen = false">Logout</button>
+                <button type="button" class="rounded-lg px-4 py-3 text-left text-sm text-red-600 transition hover:bg-red-50" @click="logout(); navMobileOpen = false">Logout</button>
               </template>
               <template v-else>
                 <div class="mt-2 flex flex-col gap-2 border-t border-[#e5e7eb] pt-3">
-                  <router-link to="/login" class="cursor-link rounded-lg border border-[#e5e7eb] px-4 py-3 text-center text-sm font-medium transition hover:border-[#e63946] hover:text-[#e63946]" @click="navMobileOpen = false">Login</router-link>
-                  <router-link to="/creator-landing" class="cursor-link rounded-lg border border-[#10b981] px-4 py-3 text-center text-sm font-medium text-[#10b981] transition hover:bg-[#10b981]/5" @click="navMobileOpen = false">Join as Creator</router-link>
-                  <router-link to="/brand-landing" class="cursor-link rounded-lg bg-[#e63946] px-4 py-3 text-center text-sm font-medium text-white transition hover:bg-[#c1121f]" @click="navMobileOpen = false">Join as Brand</router-link>
+                  <router-link to="/login" class="rounded-lg border border-[#e5e7eb] px-4 py-3 text-center text-sm font-medium transition hover:border-[#e63946] hover:text-[#e63946]" @click="navMobileOpen = false">Login</router-link>
+                  <router-link to="/creator-landing" class="rounded-lg border border-[#10b981] px-4 py-3 text-center text-sm font-medium text-[#10b981] transition hover:bg-[#10b981]/5" @click="navMobileOpen = false">Join as Creator</router-link>
+                  <router-link to="/brand-landing" class="rounded-lg bg-[#e63946] px-4 py-3 text-center text-sm font-medium text-white transition hover:bg-[#c1121f]" @click="navMobileOpen = false">Join as Brand</router-link>
                 </div>
               </template>
             </div>
@@ -166,7 +147,7 @@
       <div class="mx-auto max-w-6xl">
         <div class="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
           <div>
-            <img src="/logo.jpeg" alt="StarJD" class="h-8 w-auto object-contain" onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('hidden');" />
+            <img src="/logo.png" alt="StarJD" class="h-11 w-auto object-contain" onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('hidden');" />
             <span class="hidden text-xl font-bold text-[#1a1a1a]">StarJD</span>
             <p class="mt-2 max-w-xs text-sm text-[#6b7280]">Connect with creators. Build your brand.</p>
           </div>
@@ -174,25 +155,25 @@
             <div>
               <h4 class="font-semibold text-[#1a1a1a]">Resources</h4>
               <ul class="mt-2 space-y-2 text-sm text-[#6b7280]">
-                <li><router-link to="/#faq" class="cursor-link transition hover:text-[#e63946]">FAQ</router-link></li>
-                <li><router-link to="/blog" class="cursor-link transition hover:text-[#e63946]">Blog</router-link></li>
-                <li><router-link to="/services" class="cursor-link transition hover:text-[#e63946]">Services</router-link></li>
-                <li><router-link to="/about" class="cursor-link transition hover:text-[#e63946]">About</router-link></li>
-                <li><router-link to="/contact" class="cursor-link transition hover:text-[#e63946]">Contact</router-link></li>
+                <li><router-link to="/#faq" class="transition hover:text-[#e63946]">FAQ</router-link></li>
+                <li><router-link to="/blog" class="transition hover:text-[#e63946]">Blog</router-link></li>
+                <li><router-link to="/services" class="transition hover:text-[#e63946]">Services</router-link></li>
+                <li><router-link to="/about" class="transition hover:text-[#e63946]">About</router-link></li>
+                <li><router-link to="/contact" class="transition hover:text-[#e63946]">Contact</router-link></li>
               </ul>
             </div>
             <div>
               <h4 class="font-semibold text-[#1a1a1a]">Join</h4>
               <ul class="mt-2 space-y-2 text-sm text-[#6b7280]">
-                <li><router-link to="/creator-landing" class="cursor-link transition hover:text-[#10b981]">Join as Creator</router-link></li>
-                <li><router-link to="/brand-landing" class="cursor-link transition hover:text-[#e63946]">Join as Brand</router-link></li>
+                <li><router-link to="/creator-landing" class="transition hover:text-[#10b981]">Join as Creator</router-link></li>
+                <li><router-link to="/brand-landing" class="transition hover:text-[#e63946]">Join as Brand</router-link></li>
               </ul>
             </div>
             <div>
               <h4 class="font-semibold text-[#1a1a1a]">Legal</h4>
               <ul class="mt-2 space-y-2 text-sm text-[#6b7280]">
-                <li><router-link to="/privacy" class="cursor-link transition hover:text-[#e63946]">Privacy</router-link></li>
-                <li><router-link to="/terms" class="cursor-link transition hover:text-[#e63946]">Terms</router-link></li>
+                <li><router-link to="/privacy" class="transition hover:text-[#e63946]">Privacy</router-link></li>
+                <li><router-link to="/terms" class="transition hover:text-[#e63946]">Terms</router-link></li>
               </ul>
             </div>
           </div>
@@ -212,29 +193,6 @@ const userMenuOpen = ref(false);
 const userMenuRef = ref(null);
 const navMobileOpen = ref(false);
 const headerRef = ref(null);
-const cursorVisible = ref(false);
-const cursorHover = ref(false);
-const mouse = ref({ x: 0, y: 0 });
-const ring = ref({ x: 0, y: 0 });
-let raf = null;
-
-function onMouseMove(e) {
-  mouse.value = { x: e.clientX, y: e.clientY };
-  if (!cursorVisible.value) cursorVisible.value = true;
-  if (!raf) raf = requestAnimationFrame(updateRing);
-}
-
-function updateRing() {
-  raf = null;
-  const dx = mouse.value.x - ring.value.x;
-  const dy = mouse.value.y - ring.value.y;
-  ring.value = { x: ring.value.x + dx * 0.15, y: ring.value.y + dy * 0.15 };
-  if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) raf = requestAnimationFrame(updateRing);
-}
-
-function onMouseEnter() { cursorHover.value = true; }
-function onMouseLeave() { cursorHover.value = false; }
-
 function logout() {
   axios.post('/api/logout', {}, { withCredentials: true }).catch(() => {}).finally(() => {
     user.value = null;
@@ -250,24 +208,9 @@ function onClickOutside(e) {
 onMounted(() => {
   axios.get('/api/me', { withCredentials: true }).then((r) => { user.value = r.data; }).catch(() => { user.value = null; });
   document.addEventListener('click', onClickOutside);
-  if (typeof window === 'undefined') return;
-  if (window.matchMedia('(pointer: fine)').matches) {
-    window.addEventListener('mousemove', onMouseMove);
-    document.querySelectorAll('.cursor-link, a, button').forEach((el) => {
-      el.addEventListener('mouseenter', onMouseEnter);
-      el.addEventListener('mouseleave', onMouseLeave);
-    });
-  }
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', onClickOutside);
-  if (typeof window === 'undefined') return;
-  window.removeEventListener('mousemove', onMouseMove);
-  document.querySelectorAll('.cursor-link, a, button').forEach((el) => {
-    el.removeEventListener('mouseenter', onMouseEnter);
-    el.removeEventListener('mouseleave', onMouseLeave);
-  });
-  if (raf) cancelAnimationFrame(raf);
 });
 </script>

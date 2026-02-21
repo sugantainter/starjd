@@ -3,7 +3,7 @@
     <aside class="w-56 shrink-0 border-r border-[#e2e8f0] bg-white">
       <div class="sticky top-0 flex flex-col p-4">
         <router-link to="/admin" class="mb-6 flex items-center gap-2">
-          <img src="/logo.jpeg" alt="StarJD" class="h-8 w-auto object-contain" onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('hidden');" />
+          <img src="/logo.png" alt="StarJD" class="h-11 w-auto object-contain" onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('hidden');" />
           <span class="hidden text-lg font-bold text-[#1a1a1a]">StarJD</span>
           <span class="text-sm font-medium text-[#64748b]">Admin</span>
         </router-link>
