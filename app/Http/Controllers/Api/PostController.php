@@ -28,6 +28,14 @@ class PostController extends Controller
     {
         $post = Post::published()->where('slug', $slug)->firstOrFail();
 
+        $sessionKey = 'post_viewed_' . $post->id;
+        if (! session()->has($sessionKey)) {
+            $post->increment('view_count');
+            session()->put($sessionKey, true);
+        }
+
+        $post->refresh();
+
         return response()->json([
             'id' => $post->id,
             'title' => $post->title,
@@ -42,6 +50,7 @@ class PostController extends Controller
             'date' => $post->published_at?->format('M j, Y'),
             'updated_at' => $post->updated_at?->format('F j, Y'),
             'author' => $post->author?->name,
+            'view_count' => (int) $post->view_count,
         ]);
     }
 }
