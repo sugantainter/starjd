@@ -49,6 +49,8 @@ class CreatorProfile extends Model
             return null;
         }
 
-        return \Illuminate\Support\Facades\Storage::disk('public')->url($this->avatar);
+        $url = \Illuminate\Support\Facades\Storage::disk('public')->url($this->avatar);
+        $ts = $this->updated_at?->timestamp ?? time();
+        return $url . (str_contains($url, '?') ? '&' : '?') . 't=' . $ts;
     }
 }
