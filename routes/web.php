@@ -121,5 +121,8 @@ Route::get('/auth/facebook/callback', [SocialAuthController::class, 'facebookCal
 |--------------------------------------------------------------------------
 | Web Routes (SPA fallback)
 |--------------------------------------------------------------------------
+| All front-end routes are handled by the Vue SPA, including: /, /about,
+| /contact, /privacy, /terms, /blog, /services, /creators, /login, /register,
+| /creator/*, /brand/*, /admin/*, etc.
 */
 Route::get('/{any?}', [HomeController::class, 'index'])->where('any', '.*')->name('home');
