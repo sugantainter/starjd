@@ -32,6 +32,22 @@ use App\Http\Controllers\Brand\BrandController as BrandDashboardController;
 use App\Http\Controllers\Brand\BrandProfileController;
 use App\Http\Controllers\SocialAuthController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
+
+/*
+|--------------------------------------------------------------------------
+| Storage files (when public/storage symlink is missing or broken, e.g. on Windows)
+|--------------------------------------------------------------------------
+*/
+Route::get('/storage/{path}', function (string $path) {
+    $path = str_replace(['..', '\\'], '', $path);
+    if ($path === '' || ! Storage::disk('public')->exists($path)) {
+        abort(404);
+    }
+    $fullPath = Storage::disk('public')->path($path);
+    $mime = Storage::disk('public')->mimeType($path) ?: 'application/octet-stream';
+    return response()->file($fullPath, ['Content-Type' => $mime]);
+})->where('path', '.*')->name('storage.serve');
 
 /*
 |--------------------------------------------------------------------------
