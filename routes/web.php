@@ -30,6 +30,7 @@ use App\Http\Controllers\Creator\CreatorFeaturedController;
 use App\Http\Controllers\CreatorOptionsController;
 use App\Http\Controllers\Brand\BrandController as BrandDashboardController;
 use App\Http\Controllers\Brand\BrandProfileController;
+use App\Http\Controllers\SocialAuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -105,6 +106,16 @@ Route::apiResource('posts', AdminPostController::class)->only(['index', 'store',
         Route::apiResource('services', AdminServiceController::class)->only(['index', 'store', 'update', 'destroy']);
     });
 });
+
+/*
+|--------------------------------------------------------------------------
+| Social / OAuth login & registration (must be before SPA catch-all)
+|--------------------------------------------------------------------------
+*/
+Route::get('/auth/google/redirect', [SocialAuthController::class, 'googleRedirect'])->name('auth.google.redirect');
+Route::get('/auth/google/callback', [SocialAuthController::class, 'googleCallback'])->name('auth.google.callback');
+Route::get('/auth/facebook/redirect', [SocialAuthController::class, 'facebookRedirect'])->name('auth.facebook.redirect');
+Route::get('/auth/facebook/callback', [SocialAuthController::class, 'facebookCallback'])->name('auth.facebook.callback');
 
 /*
 |--------------------------------------------------------------------------
