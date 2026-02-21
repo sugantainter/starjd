@@ -143,50 +143,14 @@
       <router-view />
     </main>
 
-    <footer class="border-t border-[#e5e7eb] bg-white px-4 py-12">
-      <div class="mx-auto max-w-6xl">
-        <div class="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
-          <div>
-            <img src="/logo.png" alt="StarJD" class="h-11 w-auto object-contain" onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('hidden');" />
-            <span class="hidden text-xl font-bold text-[#1a1a1a]">StarJD</span>
-            <p class="mt-2 max-w-xs text-sm text-[#6b7280]">Connect with creators. Build your brand.</p>
-          </div>
-          <div class="flex flex-wrap gap-8">
-            <div>
-              <h4 class="font-semibold text-[#1a1a1a]">Resources</h4>
-              <ul class="mt-2 space-y-2 text-sm text-[#6b7280]">
-                <li><router-link to="/#faq" class="transition hover:text-[#e63946]">FAQ</router-link></li>
-                <li><router-link to="/blog" class="transition hover:text-[#e63946]">Blog</router-link></li>
-                <li><router-link to="/services" class="transition hover:text-[#e63946]">Services</router-link></li>
-                <li><router-link to="/about" class="transition hover:text-[#e63946]">About</router-link></li>
-                <li><router-link to="/contact" class="transition hover:text-[#e63946]">Contact</router-link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 class="font-semibold text-[#1a1a1a]">Join</h4>
-              <ul class="mt-2 space-y-2 text-sm text-[#6b7280]">
-                <li><router-link to="/creator-landing" class="transition hover:text-[#10b981]">Join as Creator</router-link></li>
-                <li><router-link to="/brand-landing" class="transition hover:text-[#e63946]">Join as Brand</router-link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 class="font-semibold text-[#1a1a1a]">Legal</h4>
-              <ul class="mt-2 space-y-2 text-sm text-[#6b7280]">
-                <li><router-link to="/privacy" class="transition hover:text-[#e63946]">Privacy</router-link></li>
-                <li><router-link to="/terms" class="transition hover:text-[#e63946]">Terms</router-link></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        <div class="mt-10 border-t border-[#e5e7eb] pt-8 text-center text-sm text-[#6b7280]">© {{ new Date().getFullYear() }} StarJD.</div>
-      </div>
-    </footer>
+    <Footer />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
+import Footer from '@/components/Footer.vue';
 
 const user = ref(null);
 const userMenuOpen = ref(false);

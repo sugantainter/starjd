@@ -5,9 +5,29 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
+    /** Distinct blog categories (label + slug) for footer/links. */
+    public function categories(): JsonResponse
+    {
+        $categories = Post::published()
+            ->whereNotNull('category_label')
+            ->where('category_label', '!=', '')
+            ->select('category_label')
+            ->distinct()
+            ->orderBy('category_label')
+            ->get()
+            ->map(fn ($row) => [
+                'label' => $row->category_label,
+                'slug' => Str::slug($row->category_label),
+            ])
+            ->values();
+
+        return response()->json(['categories' => $categories]);
+    }
+
     public function index(): JsonResponse
     {
         $posts = Post::published()->orderByDesc('published_at')->get()->map(fn (Post $p) => [

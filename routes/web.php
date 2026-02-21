@@ -45,6 +45,7 @@ Route::prefix('api')->group(function () {
     Route::post('contact', [ContactController::class, 'store']);
     Route::get('sections', [SectionsController::class, 'index']);
     Route::get('posts', [PostController::class, 'index']);
+    Route::get('posts/categories', [PostController::class, 'categories']);
     Route::get('posts/{slug}', [PostController::class, 'show']);
     Route::get('videos', [VideoController::class, 'index']);
     Route::get('creators', [CreatorPublicController::class, 'index']);

@@ -5,6 +5,7 @@
       <div class="mx-auto max-w-6xl">
         <h1 class="text-3xl font-bold tracking-tight text-[#1a1a1a] md:text-4xl">Blog</h1>
         <p class="mt-2 text-lg text-[#6b7280]">Articles, tips, and resources for creators and brands.</p>
+        <p v-if="route.query.category" class="mt-2 text-sm text-[#e63946]">Category: {{ categoryLabel }}</p>
       </div>
     </section>
 
@@ -14,10 +15,10 @@
         <div v-if="loading" class="flex justify-center py-20">
           <div class="h-10 w-10 animate-spin rounded-full border-2 border-[#e63946] border-t-transparent"></div>
         </div>
-        <div v-else-if="!posts.length" class="rounded-2xl border border-[#e5e7eb] bg-white p-16 text-center text-[#6b7280] shadow-sm">No posts yet.</div>
+        <div v-else-if="!filteredPosts.length" class="rounded-2xl border border-[#e5e7eb] bg-white p-16 text-center text-[#6b7280] shadow-sm">No posts yet.</div>
         <div v-else class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           <article
-            v-for="post in posts"
+            v-for="post in filteredPosts"
             :key="post.id"
             class="group flex flex-col overflow-hidden rounded-2xl border border-[#e5e7eb] bg-white shadow-sm transition hover:border-[#e63946]/30 hover:shadow-lg"
           >
@@ -49,11 +50,36 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import axios from 'axios';
 
+const route = useRoute();
 const posts = ref([]);
 const loading = ref(true);
+
+function slugify(text) {
+  if (!text) return '';
+  return String(text)
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '');
+}
+
+const filteredPosts = computed(() => {
+  const list = posts.value;
+  const cat = route.query.category;
+  if (!cat) return list;
+  return list.filter((p) => slugify(p.category) === cat);
+});
+
+const categoryLabel = computed(() => {
+  const cat = route.query.category;
+  if (!cat) return '';
+  if (filteredPosts.value.length) return filteredPosts.value[0]?.category || cat;
+  return cat.replace(/-/g, ' ');
+});
 
 onMounted(async () => {
   try {

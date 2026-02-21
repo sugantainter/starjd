@@ -1831,106 +1831,13 @@
         </section>
 
         <!-- Footer -->
-        <footer class="border-t border-[#e5e7eb] bg-white px-4 py-12">
-            <div class="mx-auto max-w-6xl">
-                <div
-                    class="flex flex-col gap-10 md:flex-row md:items-start md:justify-between"
-                >
-                    <div>
-                        <img
-                            src="/logo.png"
-                            alt="StarJD"
-                            class="h-13 w-auto object-contain"
-                            onerror="
-                                this.style.display = 'none';
-                                this.nextElementSibling?.classList.remove(
-                                    'hidden',
-                                );
-                            "
-                        />
-                        <span class="hidden text-xl font-bold text-[#1a1a1a]"
-                            >StarJD</span
-                        >
-                        <p class="mt-2 max-w-xs text-sm text-[#6b7280]">
-                            Connect with creators. Build your brand.
-                        </p>
-                    </div>
-                    <div class="flex flex-wrap gap-8">
-                        <div>
-                            <h4 class="font-semibold text-[#1a1a1a]">
-                                Resources
-                            </h4>
-                            <ul class="mt-2 space-y-2 text-sm text-[#6b7280]">
-                                <li>
-                                    <a
-                                        href="#how-it-works"
-                                        class="cursor-link transition hover:text-[#e63946]"
-                                        >How It Works</a
-                                    >
-                                </li>
-                                <li>
-                                    <a
-                                        href="#featured"
-                                        class="cursor-link transition hover:text-[#e63946]"
-                                        >Featured Creators</a
-                                    >
-                                </li>
-                                <li>
-                                    <a
-                                        href="#articles"
-                                        class="cursor-link transition hover:text-[#e63946]"
-                                        >Articles</a
-                                    >
-                                </li>
-                                <li>
-                                    <a
-                                        href="#faq"
-                                        class="cursor-link transition hover:text-[#e63946]"
-                                        >FAQ</a
-                                    >
-                                </li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 class="font-semibold text-[#1a1a1a]">Legal</h4>
-                            <ul class="mt-2 space-y-2 text-sm text-[#6b7280]">
-                                <li>
-                                    <router-link
-                                        to="/privacy"
-                                        class="cursor-link transition hover:text-[#e63946]"
-                                        >Privacy</router-link
-                                    >
-                                </li>
-                                <li>
-                                    <router-link
-                                        to="/terms"
-                                        class="cursor-link transition hover:text-[#e63946]"
-                                        >Terms</router-link
-                                    >
-                                </li>
-                                <li>
-                                    <router-link
-                                        to="/contact"
-                                        class="cursor-link transition hover:text-[#e63946]"
-                                        >Contact</router-link
-                                    >
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div
-                    class="mt-10 border-t border-[#e5e7eb] pt-8 text-center text-sm text-[#6b7280]"
-                >
-                    © {{ new Date().getFullYear() }} StarJD.
-                </div>
-            </div>
-        </footer>
+        <Footer />
     </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
+import Footer from "@/components/Footer.vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 
