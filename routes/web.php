@@ -85,6 +85,7 @@ Route::prefix('api')->group(function () {
         Route::get('dashboard', [CreatorDashboardController::class, 'dashboard']);
         Route::get('profile', [CreatorProfileController::class, 'show']);
         Route::put('profile', [CreatorProfileController::class, 'update']);
+        Route::post('profile', [CreatorProfileController::class, 'update']); // POST required when uploading avatar (PHP does not populate $_FILES for PUT)
         Route::apiResource('packages', CreatorPackageController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get('social-accounts', [CreatorSocialAccountController::class, 'index']);
         Route::post('social-accounts/sync', [CreatorSocialAccountController::class, 'sync']);

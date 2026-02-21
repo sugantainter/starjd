@@ -22,6 +22,7 @@ class CreatorProfileController extends Controller
                 'slug' => Str::slug($request->user()->name) . '-' . $request->user()->id,
             ]);
         }
+        $profile->load('user:id,name');
         return response()->json($this->profileWithAvatarUrl($profile));
     }
 
@@ -65,11 +66,9 @@ class CreatorProfileController extends Controller
             if ($profile->avatar) {
                 Storage::disk('public')->delete($profile->avatar);
             }
-            // Same storage pattern as CreatorImagePostController (image posts) so avatar works the same way
-            $path = $request->file('avatar')->store(
-                'profiles/avatars/' . $request->user()->id,
-                'public'
-            );
+            $dir = 'profiles/avatars/' . $request->user()->id;
+            Storage::disk('public')->makeDirectory($dir);
+            $path = $request->file('avatar')->store($dir, 'public');
             if (! $path || ! Storage::disk('public')->exists($path)) {
                 throw new HttpException(500, 'Profile photo could not be saved. Check that storage/app/public is writable and run: php artisan storage:link');
             }
@@ -83,18 +82,22 @@ class CreatorProfileController extends Controller
             $profile->update(['slug' => Str::slug($request->input('slug')) ?: $profile->slug]);
         }
 
-        return response()->json($this->profileWithAvatarUrl($profile->fresh()));
+        $updated = $profile->fresh();
+        $updated->load('user:id,name');
+        return response()->json($this->profileWithAvatarUrl($updated));
     }
 
     /**
-     * Build profile with avatar_url using same logic as CreatorImagePost (image_url) so it loads like image posts.
+     * Build profile with avatar_url. Use current request host so the image URL always matches the site (like image posts).
      */
     private function profileWithAvatarUrl($profile): array
     {
         $data = $profile->toArray();
-        if (! empty($profile->avatar) && Storage::disk('public')->exists($profile->avatar)) {
-            $data['avatar_url'] = Storage::disk('public')->url($profile->avatar)
-                . (str_contains($profile->avatar, '?') ? '&' : '?') . 't=' . ($profile->updated_at?->timestamp ?? time());
+        if (! empty($profile->avatar)) {
+            $base = request()->getSchemeAndHttpHost();
+            $path = '/storage/' . ltrim($profile->avatar, '/');
+            $ts = $profile->updated_at?->timestamp ?? time();
+            $data['avatar_url'] = $base . $path . (str_contains($path, '?') ? '&' : '?') . 't=' . $ts;
         } else {
             $data['avatar_url'] = null;
         }

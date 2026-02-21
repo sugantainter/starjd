@@ -230,7 +230,7 @@ async function save() {
       if (form.min_rate != null) fd.append('min_rate', form.min_rate);
       fd.append('is_public', form.is_public ? '1' : '0');
       fd.append('avatar', avatarFile.value);
-      const r = await axios.put('/api/creator/profile', fd, {
+      const r = await axios.post('/api/creator/profile', fd, {
         withCredentials: true,
         headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
       });
