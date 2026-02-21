@@ -57,12 +57,8 @@ class CreatorProfileController extends Controller
             if ($profile->avatar) {
                 Storage::disk('public')->delete($profile->avatar);
             }
-            $file = $request->file('avatar');
-            $ext = $file->getClientOriginalExtension() ?: $file->guessExtension();
-            $name = time() . '_' . Str::random(8) . '.' . ($ext ?: 'jpg');
-            $path = $file->storeAs(
+            $path = $request->file('avatar')->store(
                 'profiles/avatars/' . $request->user()->id,
-                $name,
                 'public'
             );
             $data['avatar'] = $path;
