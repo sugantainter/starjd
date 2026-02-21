@@ -191,8 +191,8 @@
             <div>
               <h4 class="font-semibold text-[#1a1a1a]">Legal</h4>
               <ul class="mt-2 space-y-2 text-sm text-[#6b7280]">
-                <li><a href="#" class="cursor-link transition hover:text-[#e63946]">Privacy</a></li>
-                <li><a href="#" class="cursor-link transition hover:text-[#e63946]">Terms</a></li>
+                <li><router-link to="/privacy" class="cursor-link transition hover:text-[#e63946]">Privacy</router-link></li>
+                <li><router-link to="/terms" class="cursor-link transition hover:text-[#e63946]">Terms</router-link></li>
               </ul>
             </div>
           </div>

@@ -110,5 +110,8 @@ Route::apiResource('posts', AdminPostController::class)->only(['index', 'store',
 |--------------------------------------------------------------------------
 | Web Routes (SPA fallback)
 |--------------------------------------------------------------------------
+| All front-end routes are handled by the Vue SPA, including: /, /about,
+| /contact, /privacy, /terms, /blog, /services, /creators, /login, /register,
+| /creator/*, /brand/*, /admin/*, etc.
 */
 Route::get('/{any?}', [HomeController::class, 'index'])->where('any', '.*')->name('home');
