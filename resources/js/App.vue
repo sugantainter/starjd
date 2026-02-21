@@ -937,7 +937,7 @@
                     >
                         <div class="relative aspect-[3/4] overflow-hidden">
                             <img
-                                :src="cat.image"
+                                :src="cat.image_url || cat.image"
                                 :alt="cat.name"
                                 class="h-full w-full object-cover transition duration-500 group-hover:scale-110"
                             />

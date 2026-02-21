@@ -52,7 +52,7 @@ class CreatorPublicController extends Controller
         $profiles = $query->paginate($perPage);
         $profiles->getCollection()->transform(function (CreatorProfile $p) {
             $p->user->makeHidden(['email']);
-            $p->load(['user.packages' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')]);
+            $p->load(['user.packages' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')->with(['packageCategory', 'items'])]);
             return $p;
         });
         return response()->json($profiles);
@@ -62,7 +62,7 @@ class CreatorPublicController extends Controller
     {
         $profile = CreatorProfile::with([
             'user',
-            'user.packages' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
+            'user.packages' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')->with(['packageCategory', 'items']),
             'user.creatorImagePosts' => fn ($q) => $q->orderBy('sort_order')->orderBy('created_at', 'desc'),
         ])
             ->where('slug', $slug)
