@@ -7,12 +7,16 @@
     <div v-if="loading" class="text-[#64748b]">Loading…</div>
     <div v-else class="overflow-hidden rounded-xl border border-[#e2e8f0] bg-white shadow-sm">
       <table class="min-w-full divide-y divide-[#e2e8f0]">
-        <thead class="bg-[#f8fafc]"><tr><th class="px-4 py-3 text-left text-xs font-medium uppercase text-[#64748b]">Name</th><th class="px-4 py-3 text-left text-xs font-medium uppercase text-[#64748b]">Slug</th><th class="px-4 py-3 text-left text-xs font-medium uppercase text-[#64748b]">Count</th><th class="px-4 py-3 text-right text-xs font-medium uppercase text-[#64748b]">Actions</th></tr></thead>
+        <thead class="bg-[#f8fafc]"><tr><th class="px-4 py-3 text-left text-xs font-medium uppercase text-[#64748b]">Name</th><th class="px-4 py-3 text-left text-xs font-medium uppercase text-[#64748b]">Slug</th><th class="px-4 py-3 text-left text-xs font-medium uppercase text-[#64748b]">Count</th><th class="px-4 py-3 text-left text-xs font-medium uppercase text-[#64748b]">Image</th><th class="px-4 py-3 text-right text-xs font-medium uppercase text-[#64748b]">Actions</th></tr></thead>
         <tbody class="divide-y divide-[#e2e8f0]">
           <tr v-for="item in items" :key="item.id" class="hover:bg-[#f8fafc]">
             <td class="px-4 py-3 text-sm text-[#1a1a1a]">{{ item.name }}</td>
             <td class="px-4 py-3 text-sm text-[#64748b]">{{ item.slug }}</td>
             <td class="px-4 py-3 text-sm text-[#64748b]">{{ item.count_display }}</td>
+            <td class="px-4 py-3">
+              <img v-if="item.image_url" :src="item.image_url" :alt="item.name" class="h-10 w-10 rounded-lg object-cover border border-[#e2e8f0]" />
+              <span v-else class="text-xs text-[#94a3b8]">—</span>
+            </td>
             <td class="px-4 py-3 text-right"><button type="button" class="text-[#e63946] hover:underline" @click="openForm(item)">Edit</button><button type="button" class="ml-3 text-red-600 hover:underline" @click="remove(item)">Delete</button></td>
           </tr>
         </tbody>
@@ -25,7 +29,18 @@
           <div><label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Name</label><input v-model="form.name" type="text" required class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-[#1a1a1a]" /></div>
           <div><label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Slug</label><input v-model="form.slug" type="text" class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-[#1a1a1a]" /></div>
           <div><label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Count display</label><input v-model="form.count_display" type="text" class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-[#1a1a1a]" placeholder="e.g. 1.2k" /></div>
-          <div><label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Image URL</label><input v-model="form.image" type="text" class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-[#1a1a1a]" /></div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Image</label>
+            <input ref="imageInput" type="file" accept="image/jpeg,image/png,image/jpg,image/webp" class="hidden" @change="onImageSelect" />
+            <div class="flex flex-wrap items-center gap-3">
+              <button type="button" class="rounded-lg border border-[#e2e8f0] px-3 py-2 text-sm text-[#64748b] hover:bg-[#f1f5f9]" @click="imageInput?.click()">{{ imagePreview ? 'Change image' : 'Upload image' }}</button>
+              <button v-if="imagePreview" type="button" class="text-sm text-red-600 hover:underline" @click="clearImage">Remove</button>
+            </div>
+            <p class="mt-1 text-xs text-[#64748b]">JPEG, PNG or WebP. Max 2 MB.</p>
+            <div v-if="imagePreview" class="mt-2">
+              <img :src="imagePreview" :alt="form.name" class="max-h-40 rounded-lg border border-[#e2e8f0] object-cover" />
+            </div>
+          </div>
           <div class="flex gap-2 pt-2"><button type="submit" class="rounded-lg bg-[#e63946] px-4 py-2 text-sm font-medium text-white hover:bg-[#c1121f]">Save</button><button type="button" class="rounded-lg border border-[#e2e8f0] px-4 py-2 text-sm text-[#64748b] hover:bg-[#f1f5f9]" @click="showModal = false">Cancel</button></div>
         </form>
       </div>
@@ -41,7 +56,11 @@ const items = ref([]);
 const loading = ref(true);
 const showModal = ref(false);
 const editing = ref(null);
+const imageInput = ref(null);
+const imageFile = ref(null);
 const form = reactive({ name: '', slug: '', count_display: '', image: '' });
+
+const imagePreview = ref('');
 
 async function load() {
   loading.value = true;
@@ -54,27 +73,47 @@ async function load() {
 }
 function openForm(item = null) {
   editing.value = item;
+  imageFile.value = null;
   if (item) {
     form.name = item.name;
     form.slug = item.slug;
     form.count_display = item.count_display || '';
     form.image = item.image || '';
+    imagePreview.value = item.image_url || '';
   } else {
     form.name = form.slug = form.count_display = form.image = '';
+    imagePreview.value = '';
   }
   showModal.value = true;
 }
+function onImageSelect(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  imageFile.value = file;
+  imagePreview.value = URL.createObjectURL(file);
+}
+function clearImage() {
+  imageFile.value = null;
+  imagePreview.value = editing.value?.image_url || '';
+  if (imageInput.value) imageInput.value.value = '';
+}
 async function save() {
   try {
+    const payload = new FormData();
+    payload.append('name', form.name);
+    payload.append('slug', form.slug);
+    payload.append('count_display', form.count_display);
+    if (imageFile.value) payload.append('image', imageFile.value);
+
     if (editing.value) {
-      await axios.put(`/api/admin/categories/${editing.value.id}`, form);
+      await axios.put(`/api/admin/categories/${editing.value.id}`, payload);
     } else {
-      await axios.post('/api/admin/categories', form);
+      await axios.post('/api/admin/categories', payload);
     }
     showModal.value = false;
     load();
   } catch (e) {
-    alert(e.response?.data?.message || 'Error saving');
+    alert(e.response?.data?.message || e.response?.data?.errors?.image?.[0] || 'Error saving');
   }
 }
 async function remove(item) {

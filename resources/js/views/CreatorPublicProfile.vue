@@ -12,8 +12,25 @@
           <p v-if="profile.location" class="mt-1 text-sm text-[#64748b]">{{ profile.location }}</p>
           <p v-if="profile.category" class="mt-1 text-sm text-[#64748b]">{{ profile.category }}</p>
           <p v-if="profile.bio" class="mt-4 text-[#1a1a1a]">{{ profile.bio }}</p>
-          <div v-if="profile.user?.social_accounts?.length" class="mt-4 flex gap-4">
-            <a v-for="s in profile.user.social_accounts" :key="s.platform" v-show="s.profile_url || s.username" :href="s.profile_url || '#'" target="_blank" rel="noopener" class="text-sm text-[#e63946] hover:underline">{{ s.platform }} {{ s.followers_count ? '(' + s.followers_count + ')' : '' }}</a>
+          <div v-if="connectedSocialAccounts.length" class="mt-5">
+            <p class="mb-3 text-sm font-medium text-[#64748b]">Connect & reach</p>
+            <div class="flex flex-wrap gap-3">
+              <a
+                v-for="s in connectedSocialAccounts"
+                :key="s.platform"
+                :href="s.profile_url || '#'"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-3 rounded-xl border border-[#e2e8f0] bg-white px-4 py-3 text-left shadow-sm transition hover:border-[#e63946]/40 hover:shadow-md"
+              >
+                <SocialPlatformIcon :platform="s.platform" :size="36" />
+                <div>
+                  <span class="block font-medium text-[#1a1a1a]">{{ platformName(s.platform) }}</span>
+                  <span v-if="s.username" class="block text-sm text-[#64748b]">@{{ s.username }}</span>
+                  <span v-if="s.followers_count" class="block text-xs font-medium text-[#e63946]">{{ formatFollowers(s.followers_count) }} followers</span>
+                </div>
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -29,12 +46,37 @@
     </div>
     <div class="mt-8">
       <h2 class="text-xl font-semibold text-[#1a1a1a]">Packages & rates</h2>
+      <p class="mt-1 text-sm text-[#64748b]">Collaboration packages with transparent pricing.</p>
       <div class="mt-4 space-y-4">
-        <div v-for="pkg in profile.user?.packages" :key="pkg.id" class="rounded-xl border border-[#e2e8f0] bg-white p-4">
-          <div class="font-semibold text-[#1a1a1a]">{{ pkg.name }}</div>
-          <div class="text-[#e63946] font-medium">₹{{ pkg.price }}</div>
-          <p v-if="pkg.description" class="mt-2 text-sm text-[#64748b]">{{ pkg.description }}</p>
-          <button v-if="isBrand" type="button" class="mt-3 cursor-link rounded-lg bg-[#e63946] px-4 py-2 text-sm text-white hover:bg-[#c1121f]" @click="openCollab(pkg)">Collaborate</button>
+        <div v-for="pkg in profile.user?.packages" :key="pkg.id" class="rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-sm">
+          <div class="flex flex-wrap items-center gap-2">
+            <span v-if="pkg.package_category" class="rounded-full bg-[#e63946]/10 px-2.5 py-0.5 text-xs font-medium text-[#c1121f]">{{ pkg.package_category.name }}</span>
+          </div>
+          <h3 class="mt-2 font-semibold text-[#1a1a1a]">{{ pkg.name }}</h3>
+          <div class="mt-1 text-2xl font-bold text-[#e63946]">₹{{ formatPrice(pkg.price) }}</div>
+          <div v-if="pkg.items?.length" class="mt-3 rounded-lg bg-[#f8fafc] px-4 py-3 text-sm">
+            <table class="w-full text-left text-[#64748b]">
+              <thead>
+                <tr class="border-b border-[#e2e8f0]">
+                  <th class="pb-2 font-medium text-[#1a1a1a]">Item</th>
+                  <th class="pb-2 text-right font-medium text-[#1a1a1a]">Qty</th>
+                  <th class="pb-2 text-right font-medium text-[#1a1a1a]">Unit price</th>
+                  <th class="pb-2 text-right font-medium text-[#1a1a1a]">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(it, i) in pkg.items" :key="i" class="border-b border-[#e2e8f0] last:border-0">
+                  <td class="py-2">{{ it.name }}</td>
+                  <td class="py-2 text-right">{{ it.quantity }}</td>
+                  <td class="py-2 text-right">₹{{ formatPrice(it.unit_price) }}</td>
+                  <td class="py-2 text-right font-medium">₹{{ formatPrice(it.quantity * it.unit_price) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p v-if="pkg.description" class="mt-3 text-sm text-[#64748b]">{{ pkg.description }}</p>
+          <p v-if="pkg.deliverables" class="mt-1 text-xs text-[#94a3b8]">Deliverables: {{ pkg.deliverables }}</p>
+          <button v-if="isBrand" type="button" class="mt-4 cursor-link rounded-lg bg-[#e63946] px-4 py-2 text-sm font-medium text-white hover:bg-[#c1121f]" @click="openCollab(pkg)">Collaborate</button>
         </div>
       </div>
       <p v-if="isBrand && !profile.user?.packages?.length" class="mt-4 text-[#64748b]">No packages listed. Contact the creator directly.</p>
@@ -74,6 +116,8 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
+import SocialPlatformIcon from '../components/SocialPlatformIcon.vue';
+import { platformDisplayName } from '../lib/socialPlatforms.js';
 
 const route = useRoute();
 const profile = ref(null);
@@ -89,6 +133,28 @@ const platformFee = computed(() => {
   const amt = Number(collabForm.amount);
   if (!amt || amt <= 0) return '0.00';
   return (amt * 0.1).toFixed(2);
+});
+
+function formatPrice(n) {
+  const x = Number(n);
+  return Number.isFinite(x) ? x.toFixed(2) : '0.00';
+}
+
+function platformName(platform) {
+  return platformDisplayName(platform);
+}
+
+function formatFollowers(n) {
+  if (n == null || n === '') return '';
+  const num = Number(n);
+  if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+  if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
+  return num.toLocaleString();
+}
+
+const connectedSocialAccounts = computed(() => {
+  const list = profile.value?.user?.social_accounts || [];
+  return list.filter((s) => s.profile_url || s.username);
 });
 
 onMounted(async () => {
