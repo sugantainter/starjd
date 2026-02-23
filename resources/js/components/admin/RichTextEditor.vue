@@ -39,6 +39,44 @@
         <span class="text-sm line-through">S</span>
       </button>
       <span class="mx-0.5 h-4 w-px bg-[#e2e8f0]"></span>
+      <!-- Text color -->
+      <div ref="colorPickerWrapRef" class="relative inline-block">
+        <button
+          type="button"
+          class="flex items-center gap-1 rounded p-1.5 text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#1a1a1a]"
+          :class="{ 'bg-[#e2e8f0] text-[#1a1a1a]': editor.isActive('textColor') }"
+          :title="'Text color: ' + (editor.getAttributes('textColor').color || 'default')"
+          @mousedown.prevent="openColorPicker"
+        >
+          <span class="inline-block h-4 w-4 rounded border border-[#e2e8f0]" :style="{ backgroundColor: (editor.getAttributes('textColor')?.color) || '#1a1a1a' }"></span>
+          <span class="text-xs">A</span>
+        </button>
+        <div v-if="showColorPicker" class="absolute left-0 top-full z-20 mt-1 flex flex-wrap gap-1 rounded-lg border border-[#e2e8f0] bg-white p-2 shadow-lg">
+          <button
+            v-for="c in textColorPresets"
+            :key="c"
+            type="button"
+            class="h-6 w-6 rounded border-2 border-transparent hover:border-[#e63946]"
+            :style="{ backgroundColor: c }"
+            :title="c"
+            @mousedown.prevent
+            @click="setTextColor(c)"
+          />
+          <button
+            type="button"
+            class="rounded border border-[#e2e8f0] px-2 py-1 text-xs text-[#64748b] hover:bg-[#f1f5f9]"
+            @mousedown.prevent
+            @click="setTextColor(null)"
+          >
+            Reset
+          </button>
+          <label class="flex items-center gap-1 rounded border border-[#e2e8f0] px-2 py-1 text-xs" @mousedown.prevent>
+            <input ref="customColorInputRef" v-model="customColor" type="color" class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0" @input="setTextColor(customColor)" />
+            Custom
+          </label>
+        </div>
+      </div>
+      <span class="mx-0.5 h-4 w-px bg-[#e2e8f0]"></span>
       <!-- Headings -->
       <button
         type="button"
@@ -167,9 +205,53 @@ import Table from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableHeader from '@tiptap/extension-table-header';
 import TableCell from '@tiptap/extension-table-cell';
-import { Node } from '@tiptap/core';
-import { ref, watch, onBeforeUnmount } from 'vue';
+import { Node, Mark, mergeAttributes } from '@tiptap/core';
+import { ref, watch, onBeforeUnmount, onMounted } from 'vue';
 import axios from 'axios';
+
+const TextColor = Mark.create({
+  name: 'textColor',
+  addAttributes() {
+    return {
+      color: {
+        default: null,
+        parseHTML: (el) => {
+          if (typeof el === 'string') return null;
+          const node = el;
+          if (node.style && node.style.color) return node.style.color;
+          return null;
+        },
+        renderHTML(attrs) {
+          if (!attrs.color) return {};
+          return { style: `color: ${attrs.color}` };
+        },
+      },
+    };
+  },
+  parseHTML() {
+    return [
+      {
+        tag: 'span[style*="color"]',
+        getAttrs: (el) => {
+          if (typeof el !== 'object' || !el) return false;
+          const style = el.style || el.getAttribute?.('style');
+          if (!style) return false;
+          const color = typeof style === 'string' ? style.match(/color:\s*([^;]+)/)?.[1]?.trim() : (el.style?.color || null);
+          return color ? { color } : false;
+        },
+      },
+    ];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ['span', mergeAttributes(HTMLAttributes), 0];
+  },
+  addCommands() {
+    return {
+      setColor: (color) => ({ chain }) => (color ? chain().focus().setMark('textColor', { color }).run() : chain().focus().unsetMark('textColor').run()),
+      unsetColor: () => ({ chain }) => chain().focus().unsetMark('textColor').run(),
+    };
+  },
+});
 
 const YouTube = Node.create({
   name: 'youtube',
@@ -230,6 +312,25 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue']);
 
 const imageInputRef = ref(null);
+const colorPickerWrapRef = ref(null);
+const customColorInputRef = ref(null);
+const showColorPicker = ref(false);
+const savedSelection = ref(null);
+const customColor = ref('#1a1a1a');
+const textColorPresets = [
+  '#1a1a1a',
+  '#e63946',
+  '#059669',
+  '#2563eb',
+  '#7c3aed',
+  '#dc2626',
+  '#ea580c',
+  '#ca8a04',
+  '#16a34a',
+  '#0891b2',
+  '#4f46e5',
+  '#db2777',
+];
 
 const editor = useEditor({
   content: props.modelValue || '',
@@ -238,6 +339,7 @@ const editor = useEditor({
       heading: { levels: [2, 3] },
     }),
     Underline,
+    TextColor,
     Image,
     Link.configure({ openOnClick: false, HTMLAttributes: { target: '_blank', rel: 'noopener' } }),
     Placeholder.configure({ placeholder: props.placeholder }),
@@ -266,9 +368,42 @@ watch(
   }
 );
 
+function onDocClick(e) {
+  if (showColorPicker.value && colorPickerWrapRef.value && !colorPickerWrapRef.value.contains(e.target)) {
+    showColorPicker.value = false;
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', onDocClick);
+});
+
 onBeforeUnmount(() => {
+  document.removeEventListener('click', onDocClick);
   editor.value?.destroy();
 });
+
+function openColorPicker() {
+  if (!editor.value) return;
+  const { from, to } = editor.value.state.selection;
+  savedSelection.value = { from, to };
+  showColorPicker.value = !showColorPicker.value;
+}
+
+function setTextColor(color) {
+  if (!editor.value) return;
+  const chain = editor.value.chain().focus();
+  if (savedSelection.value && savedSelection.value.from !== savedSelection.value.to) {
+    chain.setTextSelection(savedSelection.value.from, savedSelection.value.to);
+  }
+  if (color) {
+    chain.setMark('textColor', { color }).run();
+  } else {
+    chain.unsetMark('textColor').run();
+  }
+  savedSelection.value = null;
+  showColorPicker.value = false;
+}
 
 function setLink() {
   if (!editor.value) return;

@@ -285,10 +285,14 @@ function focusComments() {
 
 watch(post, updateDocumentMeta, { immediate: true });
 
-onMounted(async () => {
+async function loadPost() {
+  const slug = route.params.slug;
+  if (!slug) return;
+  loading.value = true;
+  post.value = null;
   try {
     const [postRes, listRes] = await Promise.all([
-      axios.get('/api/posts/' + encodeURIComponent(route.params.slug)),
+      axios.get('/api/posts/' + encodeURIComponent(slug)),
       axios.get('/api/posts'),
     ]);
     post.value = postRes.data;
@@ -303,7 +307,19 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
-});
+}
+
+watch(
+  () => route.params.slug,
+  (newSlug, oldSlug) => {
+    if (newSlug && newSlug !== oldSlug) {
+      loadPost();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  },
+);
+
+onMounted(loadPost);
 </script>
 
 <style scoped>

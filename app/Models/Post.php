@@ -21,6 +21,7 @@ class Post extends Model
         'category_label',
         'category_tags',
         'user_id',
+        'author_name',
         'published_at',
         'status',
         'sort_order',

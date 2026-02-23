@@ -69,7 +69,7 @@ class PostController extends Controller
             'category_tags' => $post->category_tags ?? [],
             'date' => $post->published_at?->format('M j, Y'),
             'updated_at' => $post->updated_at?->format('F j, Y'),
-            'author' => $post->author?->name,
+            'author' => $post->author_name ?? $post->author?->name,
             'view_count' => (int) $post->view_count,
         ]);
     }

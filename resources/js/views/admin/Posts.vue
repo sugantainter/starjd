@@ -43,6 +43,10 @@
             <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Excerpt</label>
             <input v-model="form.excerpt" type="text" class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-[#1a1a1a]" placeholder="Short summary for listings" maxlength="500" />
           </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Author name</label>
+            <input v-model="form.author_name" type="text" class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-[#1a1a1a]" placeholder="Display name shown on blog pages (optional)" maxlength="255" />
+          </div>
 
           <!-- SEO -->
           <div class="rounded-lg border border-[#e2e8f0] bg-[#f8fafc] p-3">
@@ -148,6 +152,7 @@ const form = reactive({
   title: '',
   slug: '',
   excerpt: '',
+  author_name: '',
   meta_title: '',
   meta_description: '',
   body: '',
@@ -183,6 +188,7 @@ function openForm(item = null) {
     form.title = item.title || '';
     form.slug = item.slug || '';
     form.excerpt = item.excerpt || '';
+    form.author_name = item.author_name || '';
     form.meta_title = item.meta_title || '';
     form.meta_description = item.meta_description || '';
     form.body = item.body || '';
@@ -194,6 +200,7 @@ function openForm(item = null) {
     form.title = '';
     form.slug = '';
     form.excerpt = '';
+    form.author_name = '';
     form.meta_title = '';
     form.meta_description = '';
     form.body = '';
@@ -245,6 +252,7 @@ async function save() {
       title: form.title,
       slug: form.slug || undefined,
       excerpt: form.excerpt || undefined,
+      author_name: form.author_name || undefined,
       meta_title: form.meta_title || undefined,
       meta_description: form.meta_description || undefined,
       body: form.body,
