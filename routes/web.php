@@ -6,16 +6,20 @@
  */
 
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\CityController as AdminCityController;
 use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FaqController as AdminFaqController;
+use App\Http\Controllers\Admin\PageController as AdminPageController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
+use App\Http\Controllers\Admin\StateController as AdminStateController;
 use App\Http\Controllers\Admin\StepController as AdminStepController;
 use App\Http\Controllers\Admin\VideoController as AdminVideoController;
 use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialController;
 use App\Http\Controllers\Admin\HeroController as AdminHeroController;
 use App\Http\Controllers\Admin\PartnerController as AdminPartnerController;
 use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
+use App\Http\Controllers\Api\PageController as ApiPageController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\ServiceController;
 use App\Http\Controllers\Api\SectionsController;
@@ -74,6 +78,12 @@ Route::prefix('api')->group(function () {
     Route::get('creators/{slug}', [CreatorPublicController::class, 'show']);
     Route::get('services', [ServiceController::class, 'index']);
     Route::get('services/{slug}', [ServiceController::class, 'show']);
+    Route::get('pages/{slug}', [ApiPageController::class, 'show']);
+    Route::get('states', fn () => response()->json(\App\Models\State::orderBy('sort_order')->orderBy('name')->get(['id', 'name', 'slug'])));
+    Route::get('cities', function () {
+        $stateId = request()->query('state_id');
+        return response()->json(\App\Models\City::when($stateId, fn ($q) => $q->where('state_id', $stateId))->with('state:id,name,slug')->orderBy('sort_order')->orderBy('name')->get(['id', 'state_id', 'name', 'slug']));
+    });
 
     Route::middleware(['auth:web'])->group(function () {
         Route::get('me', fn () => response()->json(request()->user()->only('id', 'name', 'email', 'role')));
@@ -128,6 +138,9 @@ Route::apiResource('posts', AdminPostController::class)->only(['index', 'store',
         Route::apiResource('partners', AdminPartnerController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::post('partners/upload', [AdminPartnerController::class, 'upload']);
         Route::apiResource('services', AdminServiceController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::apiResource('states', AdminStateController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::apiResource('cities', AdminCityController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::apiResource('pages', AdminPageController::class)->only(['index', 'store', 'update', 'destroy']);
     });
 });
 

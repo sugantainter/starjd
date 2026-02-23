@@ -131,11 +131,9 @@ async function save() {
     const status = e.response?.status;
     const is413 = status === 413 || (e.message && e.message.includes('413'));
     const msg = is413
-      ? 'Image or request too large (413). Use an image under 2 MB and ensure the server allows uploads (PHP: upload_max_filesize, post_max_size; Nginx: client_max_body_size).'
-      : (e.response?.data?.message || e.response?.data?.errors?.image?.[0] || e.message || 'Error saving');
-    const detail = e.response?.data?.errors ? JSON.stringify(e.response.data.errors) : (e.response?.data ? JSON.stringify(e.response.data) : '');
-    console.error('Category save error:', { message: msg, status, data: e.response?.data, detail });
-    alert(detail ? `${msg}\n\nDetails: ${detail}` : msg);
+      ? 'Image or request too large. Use an image under 2 MB.'
+      : (e.response?.data?.message || e.response?.data?.errors?.image?.[0] || 'Error saving');
+    alert(msg);
   }
 }
 async function remove(item) {
