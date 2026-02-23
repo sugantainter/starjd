@@ -4,6 +4,7 @@
       <div class="mx-auto max-w-4xl">
         <h1 class="section-title text-3xl font-bold text-[#1a1a1a] md:text-4xl">Privacy Policy</h1>
         <p class="section-subtitle mt-6 text-lg text-[#6b7280]">Last updated: {{ lastUpdated }}</p>
+        <p class="mt-2 text-sm text-[#94a3b8]">StarJD is powered by Suganta International.</p>
         <div class="prose prose-lg mt-12 max-w-none text-[#1a1a1a]">
           <p>
             StarJD (“we”, “our”, or “us”) operates the website starjd.com and related services. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform, including when you sign in or register using social login (Google, Facebook) or provide data connected to your social accounts.
@@ -62,6 +63,7 @@
           <p class="mt-2 text-[#6b7280]">
             For questions about this Privacy Policy or our data practices, please use our <router-link to="/contact" class="font-medium text-[#e63946] hover:underline">Contact</router-link> page.
           </p>
+          <p class="mt-6 text-sm text-[#94a3b8]">StarJD is powered by Suganta International.</p>
         </div>
       </div>
     </section>

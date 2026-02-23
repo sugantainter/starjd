@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * StarJD — Powered by Suganta International
+ * https://starjd.com
+ */
+
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\DashboardController;

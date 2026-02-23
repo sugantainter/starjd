@@ -4,6 +4,7 @@
       <div class="mx-auto max-w-4xl">
         <h1 class="section-title text-3xl font-bold text-[#1a1a1a] md:text-4xl">About StarJD</h1>
         <p class="mt-4 text-xl font-bold text-[#1a1a1a]">India's Premium Creative Media Studio & Production Company</p>
+        <p class="mt-2 text-sm text-[#64748b]">StarJD is powered by Suganta International.</p>
         <div class="prose prose-lg mt-12 max-w-none text-[#374151]">
           <p>
             Welcome to StarJD — a full-service creative video production and professional media agency based in New Delhi, India. We specialize in transforming ideas into visually powerful stories with strategic impact. Our work goes beyond simple content creation — we design experiences that connect, engage, and inspire audiences across digital platforms.
@@ -118,6 +119,7 @@
           <h2 class="mt-12 text-2xl font-bold text-[#1a1a1a]">Let's Create Something Impactful</h2>
           <p>Strong visuals build strong brands. If you are looking for high-quality video production, professional photography, model portfolio shoots, drone videography, live streaming services, or studio rentals in India, StarJD is ready to partner with you.</p>
           <p>Contact us today to transform your ideas into powerful visual experiences.</p>
+          <p class="mt-8 text-sm text-[#64748b]">StarJD is powered by Suganta International.</p>
         </div>
       </div>
     </section>

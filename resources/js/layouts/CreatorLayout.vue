@@ -16,6 +16,7 @@
           <router-link to="/creator/featured" class="block rounded-lg px-3 py-2 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#10b981]/10 !text-[#10b981]">Featured</router-link>
         </nav>
         <div class="mt-auto pt-6">
+          <p class="mb-2 px-3 text-xs text-[#94a3b8]">StarJD powered by Suganta International</p>
           <router-link to="/creators" class="block rounded-lg px-3 py-2 text-sm text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#1a1a1a]">View my profile</router-link>
           <button type="button" class="w-full rounded-lg px-3 py-2 text-left text-sm text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#10b981]" @click="logout">Logout</button>
         </div>

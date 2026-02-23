@@ -52,6 +52,7 @@
         </div>
       </form>
       <p class="mt-6 text-center text-sm text-[#6b7280]">Already have an account? <router-link to="/login" class="font-medium text-[#e63946] hover:underline">Login</router-link></p>
+      <p class="mt-4 text-center text-xs text-[#94a3b8]">StarJD powered by Suganta International</p>
     </div>
   </div>
 </template>

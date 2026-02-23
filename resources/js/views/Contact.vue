@@ -4,6 +4,7 @@
       <div class="mx-auto max-w-2xl">
         <h1 class="section-title text-3xl font-bold text-[#1a1a1a] md:text-4xl">Contact Us</h1>
         <p class="section-subtitle mt-4 text-[#6b7280]">Have a question or want to work with us? Send a message.</p>
+        <p class="mt-2 text-sm text-[#94a3b8]">StarJD is powered by Suganta International.</p>
 
         <form @submit.prevent="submit" class="mt-10 space-y-6 rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm md:p-8">
           <div v-if="message" :class="['rounded-lg px-4 py-3 text-sm', success ? 'bg-emerald-50 text-emerald-800' : 'bg-red-50 text-red-800']">{{ message }}</div>

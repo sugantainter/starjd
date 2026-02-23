@@ -15,6 +15,7 @@
         <p class="mt-3 max-w-sm text-sm leading-relaxed text-[#94a3b8]">
           Connect with creators. Build your brand. India's premium creative media studio & production company.
         </p>
+        <p class="mt-2 text-xs text-[#64748b]">StarJD powered by Suganta International</p>
       </div>
 
       <!-- Category & link sections (influencer.in style: each section = category group with page links) -->
@@ -97,7 +98,7 @@
 
       <!-- Bottom bar -->
       <div class="mt-12 flex flex-col items-center justify-between gap-4 border-t border-[#334155] pt-8 md:flex-row">
-        <p class="text-sm text-[#64748b]">© {{ new Date().getFullYear() }} StarJD. All rights reserved.</p>
+        <p class="text-sm text-[#64748b]">© {{ new Date().getFullYear() }} StarJD, powered by Suganta International. All rights reserved.</p>
         <div class="flex flex-wrap justify-center gap-6 text-sm">
           <router-link to="/about" class="transition hover:text-white">About</router-link>
           <router-link to="/contact" class="transition hover:text-white">Contact</router-link>
