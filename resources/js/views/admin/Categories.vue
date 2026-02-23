@@ -37,6 +37,7 @@
               <button v-if="imagePreview" type="button" class="text-sm text-red-600 hover:underline" @click="clearImage">Remove</button>
             </div>
             <p class="mt-1 text-xs text-[#64748b]">JPEG, PNG or WebP. Max 2 MB.</p>
+            <p v-if="imageError" class="mt-1 text-xs text-red-600">{{ imageError }}</p>
             <div v-if="imagePreview" class="mt-2">
               <img :src="imagePreview" :alt="form.name" class="max-h-40 rounded-lg border border-[#e2e8f0] object-cover" />
             </div>
@@ -61,6 +62,8 @@ const imageFile = ref(null);
 const form = reactive({ name: '', slug: '', count_display: '', image: '' });
 
 const imagePreview = ref('');
+const imageError = ref('');
+const MAX_IMAGE_BYTES = 2 * 1024 * 1024; // 2 MB
 
 async function load() {
   loading.value = true;
@@ -74,6 +77,7 @@ async function load() {
 function openForm(item = null) {
   editing.value = item;
   imageFile.value = null;
+  imageError.value = '';
   if (item) {
     form.name = item.name;
     form.slug = item.slug;
@@ -89,11 +93,20 @@ function openForm(item = null) {
 function onImageSelect(e) {
   const file = e.target.files?.[0];
   if (!file) return;
+  imageError.value = '';
+  if (file.size > MAX_IMAGE_BYTES) {
+    imageError.value = `File is ${(file.size / 1024 / 1024).toFixed(1)} MB. Please choose an image under 2 MB, or the server may reject it (413).`;
+    imageFile.value = null;
+    imagePreview.value = '';
+    if (imageInput.value) imageInput.value.value = '';
+    return;
+  }
   imageFile.value = file;
   imagePreview.value = URL.createObjectURL(file);
 }
 function clearImage() {
   imageFile.value = null;
+  imageError.value = '';
   imagePreview.value = editing.value?.image_url || '';
   if (imageInput.value) imageInput.value.value = '';
 }
@@ -106,14 +119,23 @@ async function save() {
     if (imageFile.value) payload.append('image', imageFile.value);
 
     if (editing.value) {
-      await axios.put(`/api/admin/categories/${editing.value.id}`, payload);
+      // POST with _method=PUT so PHP populates $_FILES (PUT + multipart is not parsed by PHP)
+      payload.append('_method', 'PUT');
+      await axios.post(`/api/admin/categories/${editing.value.id}`, payload);
     } else {
       await axios.post('/api/admin/categories', payload);
     }
     showModal.value = false;
     load();
   } catch (e) {
-    alert(e.response?.data?.message || e.response?.data?.errors?.image?.[0] || 'Error saving');
+    const status = e.response?.status;
+    const is413 = status === 413 || (e.message && e.message.includes('413'));
+    const msg = is413
+      ? 'Image or request too large (413). Use an image under 2 MB and ensure the server allows uploads (PHP: upload_max_filesize, post_max_size; Nginx: client_max_body_size).'
+      : (e.response?.data?.message || e.response?.data?.errors?.image?.[0] || e.message || 'Error saving');
+    const detail = e.response?.data?.errors ? JSON.stringify(e.response.data.errors) : (e.response?.data ? JSON.stringify(e.response.data) : '');
+    console.error('Category save error:', { message: msg, status, data: e.response?.data, detail });
+    alert(detail ? `${msg}\n\nDetails: ${detail}` : msg);
   }
 }
 async function remove(item) {

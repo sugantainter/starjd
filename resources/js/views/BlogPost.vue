@@ -8,10 +8,11 @@
           <h1 class="mt-2 text-3xl font-bold leading-tight text-[#1a1a1a] md:text-4xl lg:text-[2.75rem]">{{ post.title }}</h1>
           <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#6b7280]">
             <span v-if="post.author">Author: {{ post.author }}</span>
-            <span v-if="post.updated_at">|</span>
-            <span v-if="post.updated_at">Updated: {{ post.updated_at }}</span>
-            <span v-if="!post.updated_at && post.date">|</span>
-            <span v-if="post.date">{{ post.date }}</span>
+            <template v-if="post.updated_at || post.date">
+              <span v-if="post.author">|</span>
+              <span v-if="post.updated_at">Updated: {{ post.updated_at }}</span>
+              <span v-else-if="post.date">{{ post.date }}</span>
+            </template>
           </div>
         </div>
         <div v-if="post.image" class="mx-auto max-w-6xl px-4 pb-8">
