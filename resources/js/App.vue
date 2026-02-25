@@ -463,7 +463,7 @@
             <div class="hero-glow hero-glow-4" aria-hidden="true" />
 
             <div
-                class="hero-inner relative z-10 mx-auto flex w-full min-h-[50vh] max-w-6xl flex-col items-center justify-center px-4 py-8 text-center sm:min-h-[60vh] sm:px-5 sm:py-10 md:min-h-[70vh] md:px-6 md:py-12 lg:px-8"
+                class="hero-inner relative z-10 mx-auto flex w-full min-h-[50vh] max-w-6xl flex-col items-center justify-center px-4 py-6 text-center sm:min-h-[55vh] sm:px-5 sm:py-8 md:min-h-[60vh] md:px-6 md:py-10 lg:px-8"
             >
                 <!-- Text header – above everything, centered on all viewports -->
                 <div
@@ -536,7 +536,7 @@
 
                 <!-- Gallery cascade – centered, no scrollbar, contained -->
                 <div
-                    class="hero-media-center relative z-10 mt-4 flex w-full flex-1 justify-center overflow-hidden px-2 sm:mt-6 md:mt-8"
+                    class="hero-media-center relative z-10 mt-3 flex w-full flex-1 justify-center overflow-hidden px-2 sm:mt-4 md:mt-6"
                 >
                     <div
                         class="gallery-cascade-inner gallery-cascade-in-hero mx-auto flex scale-75 justify-center drop-shadow-2xl sm:scale-90 md:scale-100"
@@ -610,7 +610,7 @@
 
         <!-- Search & filter section: filters above search bar, full responsive -->
         <section
-            class="border-b border-[#e5e7eb] bg-[#fafaf9] px-3 py-8 sm:px-4 sm:py-10 md:py-14"
+            class="border-b border-[#e5e7eb] bg-[#fafaf9] px-3 py-6 sm:px-4 sm:py-8 md:py-10"
         >
             <div class="mx-auto max-w-4xl">
                 <h2
@@ -799,7 +799,7 @@
         <!-- Choose your path -->
         <section
             id="join-creator"
-            class="animate-on-scroll border-y border-[#e5e7eb] bg-white px-4 py-16 md:py-24"
+            class="animate-on-scroll border-y border-[#e5e7eb] bg-white px-4 py-10 md:py-16"
         >
             <div class="mx-auto max-w-6xl">
                 <h2 class="section-title mb-2 text-2xl font-bold md:text-3xl">
@@ -931,7 +931,7 @@
         <!-- Categories with images -->
         <section
             id="categories"
-            class="animate-on-scroll border-b border-[#e5e7eb] bg-[#fafaf9] px-4 py-16 md:py-24"
+            class="animate-on-scroll border-b border-[#e5e7eb] bg-[#fafaf9] px-4 py-10 md:py-16"
         >
             <div class="mx-auto max-w-6xl">
                 <h2 class="section-title mb-2 text-2xl font-bold md:text-3xl">
@@ -977,7 +977,7 @@
         </section>
 
         <!-- Stats -->
-        <section class="border-b border-[#e5e7eb] bg-white px-4 py-16 md:py-20">
+        <section class="border-b border-[#e5e7eb] bg-white px-4 py-10 md:py-16">
             <div class="mx-auto max-w-6xl">
                 <div class="grid gap-10 text-center md:grid-cols-4">
                     <div class="stat-item animate-on-scroll">
@@ -1018,7 +1018,7 @@
 
         <!-- For Creators (split section) -->
         <section
-            class="animate-on-scroll border-b border-[#e5e7eb] bg-[#f0fdf4] px-4 py-16 md:py-24"
+            class="animate-on-scroll border-b border-[#e5e7eb] bg-[#f0fdf4] px-4 py-10 md:py-16"
         >
             <div class="mx-auto max-w-6xl">
                 <div class="grid items-center gap-12 md:grid-cols-2 md:gap-16">
@@ -1066,7 +1066,7 @@
         <!-- For Brands (split section) -->
         <section
             id="join-brand"
-            class="animate-on-scroll border-b border-[#e5e7eb] bg-[#fff5f5] px-4 py-16 md:py-24"
+            class="animate-on-scroll border-b border-[#e5e7eb] bg-[#fff5f5] px-4 py-10 md:py-16"
         >
             <div class="mx-auto max-w-6xl">
                 <div class="grid items-center gap-12 md:grid-cols-2 md:gap-16">
@@ -1132,7 +1132,7 @@
         </section>
 
         <!-- Featured section (reference image style) -->
-        <section id="featured" class="animate-on-scroll px-4 py-16 md:py-24">
+        <section id="featured" class="animate-on-scroll px-4 py-10 md:py-16">
             <div class="mx-auto max-w-6xl">
                 <div
                     class="mb-10 flex flex-wrap items-end justify-between gap-4"
@@ -1268,7 +1268,7 @@
 
         <!-- Featured Studios + CTA -->
         <section
-            class="animate-on-scroll border-t border-[#e5e7eb] bg-[#fafaf9] px-4 py-16 md:py-24"
+            class="animate-on-scroll border-t border-[#e5e7eb] bg-[#fafaf9] px-4 py-10 md:py-16"
         >
             <div class="mx-auto max-w-6xl">
                 <div
@@ -1375,7 +1375,7 @@
         <!-- How it works -->
         <section
             id="how-it-works"
-            class="animate-on-scroll border-t border-[#e5e7eb] bg-white px-4 py-16 md:py-24"
+            class="animate-on-scroll border-t border-[#e5e7eb] bg-white px-4 py-10 md:py-16"
         >
             <div class="mx-auto max-w-6xl">
                 <h2 class="section-title mb-2 text-2xl font-bold md:text-3xl">
@@ -1407,7 +1407,7 @@
         <!-- Grid cards – animated grid section -->
         <section
             id="grid-cards"
-            class="grid-cards-section animate-on-scroll border-t border-[#e5e7eb] bg-[#fafaf9] px-4 py-16 md:py-24"
+            class="grid-cards-section animate-on-scroll border-t border-[#e5e7eb] bg-[#fafaf9] px-4 py-10 md:py-16"
         >
             <div class="mx-auto max-w-7xl">
                 <div class="grid-cards-header mb-12 text-center">
@@ -1507,7 +1507,7 @@
         <!-- YouTube videos – featured video + sidebar list -->
         <section
             id="videos"
-            class="videos-section animate-on-scroll border-t border-[#e5e7eb] px-4 py-16 md:py-24"
+            class="videos-section animate-on-scroll border-t border-[#e5e7eb] px-4 py-10 md:py-16"
         >
             <div class="mx-auto max-w-6xl">
                 <div class="videos-section-header mb-10 text-center">
@@ -1666,7 +1666,7 @@
         <!-- Articles – featured hero + list rows -->
         <section
             id="articles"
-            class="articles-section animate-on-scroll border-t border-[#e5e7eb] bg-[#fafaf9] px-4 py-16 md:py-24"
+            class="articles-section animate-on-scroll border-t border-[#e5e7eb] bg-[#fafaf9] px-4 py-10 md:py-16"
         >
             <div class="mx-auto max-w-6xl">
                 <div
@@ -1824,7 +1824,7 @@
         <!-- Testimonials -->
         <section
             id="testimonials"
-            class="animate-on-scroll border-t border-[#e5e7eb] bg-[#fafaf9] px-4 py-16 md:py-24"
+            class="animate-on-scroll border-t border-[#e5e7eb] bg-[#fafaf9] px-4 py-10 md:py-16"
         >
             <div class="mx-auto max-w-6xl">
                 <h2 class="section-title mb-2 text-2xl font-bold md:text-3xl">
@@ -1861,7 +1861,7 @@
         </section>
 
         <!-- CTA with Join options -->
-        <section class="border-t border-[#e5e7eb] px-4 py-20">
+        <section class="border-t border-[#e5e7eb] px-4 py-12 md:py-16">
             <div class="mx-auto max-w-4xl">
                 <div
                     class="rounded-3xl bg-[#1a1a1a] p-10 text-center text-white md:p-16"
@@ -1893,7 +1893,7 @@
         <!-- FAQ section (above footer) -->
         <section
             id="faq"
-            class="animate-on-scroll border-t border-[#e5e7eb] bg-[#fafaf9] px-4 py-16 md:py-24"
+            class="animate-on-scroll border-t border-[#e5e7eb] bg-[#fafaf9] px-4 py-10 md:py-16"
         >
             <div class="mx-auto max-w-3xl">
                 <h2
@@ -1953,16 +1953,44 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import Footer from "@/components/Footer.vue";
-import Navbar from "@/components/Navbar.vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 
 const activePlatform = ref("All");
 const activeCascadeIndex = ref(null);
 const openFaq = ref(null);
+const headerRef = ref(null);
+const navServicesRef = ref(null);
+const navUserMenuRef = ref(null);
+const navUser = ref(null);
+const navServices = ref([]);
+const navUserMenuOpen = ref(false);
+const navServicesOpen = ref(false);
+const navMobileOpen = ref(false);
 const platforms = ["All", "Instagram", "TikTok", "YouTube", "UGC", "Twitter"];
+
+function onNavUserMenuClickOutside(e) {
+    if (navUserMenuRef.value && !navUserMenuRef.value.contains(e.target)) {
+        navUserMenuOpen.value = false;
+    }
+    if (navServicesRef.value && !navServicesRef.value.contains(e.target)) {
+        navServicesOpen.value = false;
+    }
+}
+
+function navLogout() {
+    axios
+        .post("/api/logout", {}, { withCredentials: true })
+        .catch(() => {})
+        .finally(() => {
+            navUser.value = null;
+            navUserMenuOpen.value = false;
+            navMobileOpen.value = false;
+            window.location.href = "/";
+        });
+}
 
 /* Hero wallpaper: 5–7 soft images as background (theme: creator, lifestyle, pastel) */
 const heroWallpaperImages = [
@@ -2478,6 +2506,10 @@ onMounted(() => {
     document
         .querySelectorAll(".animate-on-scroll")
         .forEach((el) => observer.observe(el));
+});
+
+onBeforeUnmount(() => {
+    document.removeEventListener("click", onNavUserMenuClickOutside);
 });
 </script>
 
