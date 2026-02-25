@@ -1267,40 +1267,107 @@
         </section>
 
         <!-- Featured Studios + CTA -->
-        <section class="animate-on-scroll border-t border-[#e5e7eb] bg-[#fafaf9] px-4 py-16 md:py-24">
+        <section
+            class="animate-on-scroll border-t border-[#e5e7eb] bg-[#fafaf9] px-4 py-16 md:py-24"
+        >
             <div class="mx-auto max-w-6xl">
-                <div class="mb-10 flex flex-wrap items-end justify-between gap-4">
+                <div
+                    class="mb-10 flex flex-wrap items-end justify-between gap-4"
+                >
                     <div>
-                        <h2 class="section-title text-2xl font-bold text-[#1a1a1a] md:text-3xl">Featured Studios</h2>
-                        <p class="section-subtitle mt-1 text-[#6b7280]">Photography, film, podcast & event spaces.</p>
+                        <h2
+                            class="section-title text-2xl font-bold text-[#1a1a1a] md:text-3xl"
+                        >
+                            Featured Studios
+                        </h2>
+                        <p class="section-subtitle mt-1 text-[#6b7280]">
+                            Photography, film, podcast & event spaces.
+                        </p>
                     </div>
-                    <router-link to="/studios" class="text-sm font-semibold text-[#e63946] transition hover:underline">Browse all</router-link>
+                    <router-link
+                        to="/studios"
+                        class="text-sm font-semibold text-[#e63946] transition hover:underline"
+                        >Browse all</router-link
+                    >
                 </div>
-                <div v-if="featuredStudios.length" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div
+                    v-if="featuredStudios.length"
+                    class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
+                >
                     <router-link
                         v-for="s in featuredStudios"
                         :key="s.id"
                         :to="'/studios/' + (s.slug || s.id)"
                         class="group block overflow-hidden rounded-2xl border border-[#e5e7eb] bg-white shadow-sm transition hover:border-[#e63946]/30 hover:shadow-md"
                     >
-                        <div class="relative aspect-[4/3] overflow-hidden bg-[#f3f4f6]">
-                            <img :src="s.main_image || 'https://images.unsplash.com/photo-1595846519845-68e298c2f195?w=400&h=300&fit=crop'" :alt="s.name" class="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
-                            <span v-if="s.featured" class="absolute left-2 top-2 rounded-full bg-[#f59e0b] px-2 py-0.5 text-xs font-medium text-white">Featured</span>
-                            <span v-if="s.rating_avg != null" class="absolute bottom-2 right-2 rounded bg-black/60 px-2 py-1 text-xs text-white">★ {{ s.rating_avg }}</span>
+                        <div
+                            class="relative aspect-[4/3] overflow-hidden bg-[#f3f4f6]"
+                        >
+                            <img
+                                :src="
+                                    s.main_image ||
+                                    'https://images.unsplash.com/photo-1595846519845-68e298c2f195?w=400&h=300&fit=crop'
+                                "
+                                :alt="s.name"
+                                class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                            />
+                            <span
+                                v-if="s.featured"
+                                class="absolute left-2 top-2 rounded-full bg-[#f59e0b] px-2 py-0.5 text-xs font-medium text-white"
+                                >Featured</span
+                            >
+                            <span
+                                v-if="s.rating_avg != null"
+                                class="absolute bottom-2 right-2 rounded bg-black/60 px-2 py-1 text-xs text-white"
+                                >★ {{ s.rating_avg }}</span
+                            >
                         </div>
                         <div class="p-4">
-                            <h3 class="font-semibold text-[#1a1a1a]">{{ s.name }}</h3>
-                            <p v-if="s.city" class="mt-1 text-sm text-[#6b7280]">{{ s.city }}</p>
-                            <p v-if="s.price_per_hour != null" class="mt-2 font-semibold text-[#e63946]">₹{{ s.price_per_hour }}/hr</p>
-                            <p v-else-if="s.price_per_day != null" class="mt-2 font-semibold text-[#e63946]">₹{{ s.price_per_day }}/day</p>
+                            <h3 class="font-semibold text-[#1a1a1a]">
+                                {{ s.name }}
+                            </h3>
+                            <p
+                                v-if="s.city"
+                                class="mt-1 text-sm text-[#6b7280]"
+                            >
+                                {{ s.city }}
+                            </p>
+                            <p
+                                v-if="s.price_per_hour != null"
+                                class="mt-2 font-semibold text-[#e63946]"
+                            >
+                                ₹{{ s.price_per_hour }}/hr
+                            </p>
+                            <p
+                                v-else-if="s.price_per_day != null"
+                                class="mt-2 font-semibold text-[#e63946]"
+                            >
+                                ₹{{ s.price_per_day }}/day
+                            </p>
                         </div>
                     </router-link>
                 </div>
-                <div v-else class="rounded-2xl border border-[#e5e7eb] bg-white p-8 text-center text-[#6b7280]">No featured studios yet.</div>
-                <div class="mt-10 rounded-2xl border-2 border-dashed border-[#e63946]/30 bg-white p-8 text-center">
-                    <h3 class="text-lg font-semibold text-[#1a1a1a]">List your studio</h3>
-                    <p class="mt-2 text-sm text-[#6b7280]">Reach thousands of brands and creators. List your space on StarJD.</p>
-                    <router-link to="/register?type=studio_owner" class="mt-4 inline-block rounded-xl bg-[#e63946] px-6 py-2.5 text-sm font-medium text-white hover:bg-[#c1121f]">Get started</router-link>
+                <div
+                    v-else
+                    class="rounded-2xl border border-[#e5e7eb] bg-white p-8 text-center text-[#6b7280]"
+                >
+                    No featured studios yet.
+                </div>
+                <div
+                    class="mt-10 rounded-2xl border-2 border-dashed border-[#e63946]/30 bg-white p-8 text-center"
+                >
+                    <h3 class="text-lg font-semibold text-[#1a1a1a]">
+                        List your studio
+                    </h3>
+                    <p class="mt-2 text-sm text-[#6b7280]">
+                        Reach thousands of brands and creators. List your space
+                        on StarJD.
+                    </p>
+                    <router-link
+                        to="/register?type=studio_owner"
+                        class="mt-4 inline-block rounded-xl bg-[#e63946] px-6 py-2.5 text-sm font-medium text-white hover:bg-[#c1121f]"
+                        >Get started</router-link
+                    >
                 </div>
             </div>
         </section>
@@ -1886,19 +1953,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import Footer from "@/components/Footer.vue";
+import Navbar from "@/components/Navbar.vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 
-const navUser = ref(null);
-const navUserMenuOpen = ref(false);
-const navUserMenuRef = ref(null);
-const navServices = ref([]);
-const navServicesOpen = ref(false);
-const navServicesRef = ref(null);
-const navMobileOpen = ref(false);
-const headerRef = ref(null);
 const activePlatform = ref("All");
 const activeCascadeIndex = ref(null);
 const openFaq = ref(null);
@@ -2329,30 +2389,6 @@ function toggleFaq(index) {
     openFaq.value = openFaq.value === index ? null : index;
 }
 
-function navLogout() {
-    navUserMenuOpen.value = false;
-    axios
-        .post("/api/logout", {}, { withCredentials: true })
-        .catch(() => {})
-        .finally(() => {
-            navUser.value = null;
-            window.location.href = "/";
-        });
-}
-
-function onNavUserMenuClickOutside(e) {
-    if (navUserMenuRef.value && !navUserMenuRef.value.contains(e.target))
-        navUserMenuOpen.value = false;
-    if (navServicesRef.value && !navServicesRef.value.contains(e.target))
-        navServicesOpen.value = false;
-    if (
-        navMobileOpen.value &&
-        headerRef.value &&
-        !headerRef.value.contains(e.target)
-    )
-        navMobileOpen.value = false;
-}
-
 onMounted(() => {
     axios
         .get("/api/me", { withCredentials: true })
@@ -2375,7 +2411,9 @@ onMounted(() => {
         .get("/api/studios", { params: { featured: 1, per_page: 4 } })
         .then((r) => {
             const data = r.data?.data ?? r.data ?? [];
-            featuredStudios.value = Array.isArray(data) ? data : data?.data ?? [];
+            featuredStudios.value = Array.isArray(data)
+                ? data
+                : (data?.data ?? []);
         })
         .catch(() => {
             featuredStudios.value = [];
@@ -2440,10 +2478,6 @@ onMounted(() => {
     document
         .querySelectorAll(".animate-on-scroll")
         .forEach((el) => observer.observe(el));
-});
-
-onUnmounted(() => {
-    document.removeEventListener("click", onNavUserMenuClickOutside);
 });
 </script>
 
