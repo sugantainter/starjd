@@ -37,6 +37,7 @@ class CreatorProfileController extends Controller
             'language' => ['nullable', 'string', Rule::in(config('creator.languages', []))],
             'is_public' => ['nullable', 'boolean'],
             'min_rate' => ['nullable', 'numeric', 'min:0'],
+            'engagement_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ];
 
         if ($request->hasFile('avatar')) {
@@ -59,7 +60,7 @@ class CreatorProfileController extends Controller
             ]);
         }
 
-        $data = $request->only(['bio', 'location', 'tagline', 'category', 'gender', 'language', 'min_rate']);
+        $data = $request->only(['bio', 'location', 'tagline', 'category', 'gender', 'language', 'min_rate', 'engagement_rate']);
         $data['is_public'] = $request->boolean('is_public');
 
         if ($request->hasFile('avatar')) {

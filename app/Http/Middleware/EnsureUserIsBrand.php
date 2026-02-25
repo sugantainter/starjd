@@ -10,7 +10,7 @@ class EnsureUserIsBrand
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $request->user() || $request->user()->role !== 'brand') {
+        if (! $request->user() || ! $request->user()->hasRole('brand')) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Unauthorized.'], 403);
             }

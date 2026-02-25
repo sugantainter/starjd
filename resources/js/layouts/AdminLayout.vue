@@ -82,6 +82,20 @@
             </div>
           </div>
 
+          <!-- Studio marketplace -->
+          <div class="mt-4">
+            <button type="button" class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[#94a3b8]" @click="navOpen.studios = !navOpen.studios">
+              <span>Studio marketplace</span>
+              <svg class="h-4 w-4 transition-transform" :class="{ 'rotate-180': navOpen.studios }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+            </button>
+            <div v-show="navOpen.studios" class="mt-0.5 space-y-0.5">
+              <router-link to="/admin/studios" class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#e63946]/10 !text-[#e63946]">
+                <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                Studios
+              </router-link>
+            </div>
+          </div>
+
           <!-- Inbox -->
           <div class="mt-4">
             <button type="button" class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[#94a3b8]" @click="navOpen.inbox = !navOpen.inbox">
@@ -116,7 +130,7 @@ import axios from 'axios';
 
 const router = useRouter();
 const route = useRoute();
-const navOpen = reactive({ content: true, locations: true, site: true, inbox: true });
+const navOpen = reactive({ content: true, locations: true, site: true, studios: true, inbox: true });
 
 onMounted(async () => {
   try {
@@ -132,6 +146,7 @@ watch(() => route.path, (path) => {
   if (path.startsWith('/admin/pages') || path.startsWith('/admin/posts') || path.startsWith('/admin/videos')) navOpen.content = true;
   if (path.startsWith('/admin/states') || path.startsWith('/admin/cities')) navOpen.locations = true;
   if (path.startsWith('/admin/categories') || path.startsWith('/admin/hero') || path.startsWith('/admin/testimonials') || path.startsWith('/admin/faqs') || path.startsWith('/admin/steps') || path.startsWith('/admin/partners') || path.startsWith('/admin/services')) navOpen.site = true;
+  if (path.startsWith('/admin/studios')) navOpen.studios = true;
   if (path.startsWith('/admin/contacts')) navOpen.inbox = true;
 }, { immediate: true });
 

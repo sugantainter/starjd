@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BrandProfile;
+use App\Models\CreatorProfile;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -65,14 +68,15 @@ class SocialAuthController extends Controller
     private function storeOAuthRole(Request $request): void
     {
         $role = $request->query('role');
-        if (in_array($role, ['creator', 'brand'], true)) {
+        $allowed = ['creator', 'brand', 'studio_owner', 'agency', 'customer'];
+        if (in_array($role, $allowed, true)) {
             $request->session()->put('oauth_role', $role);
         }
     }
 
     private function handleOAuthUser(Request $request, SocialiteUser $oauthUser): RedirectResponse
     {
-        $role = $request->session()->pull('oauth_role', 'creator');
+        $role = $request->session()->pull('oauth_role', 'customer');
 
         $email = $oauthUser->getEmail();
         if (! $email) {
@@ -84,10 +88,14 @@ class SocialAuthController extends Controller
             $request->session()->forget('oauth_register');
             Auth::login($user, true);
             $request->session()->regenerate();
-            $redirect = match ($user->role) {
+            $primary = $user->primaryRole();
+            $slug = $primary?->slug ?? 'customer';
+            $redirect = match ($slug) {
                 'admin' => url('/admin'),
                 'creator' => url('/creator/dashboard'),
                 'brand' => url('/brand/dashboard'),
+                'agency' => url('/agency/dashboard'),
+                'studio_owner' => url('/studio/dashboard'),
                 default => url('/'),
             };
             return redirect()->away($redirect);
@@ -99,11 +107,26 @@ class SocialAuthController extends Controller
             'name' => $name,
             'email' => $email,
             'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(32)),
-            'role' => $role,
         ]);
+        $roleModel = Role::where('slug', $role)->first();
+        if ($roleModel) {
+            $user->roles()->attach($roleModel->id, ['is_primary' => true]);
+        }
+        if ($role === 'creator') {
+            CreatorProfile::create(['user_id' => $user->id]);
+        }
+        if ($role === 'brand') {
+            BrandProfile::create(['user_id' => $user->id]);
+        }
         Auth::login($user, true);
         $request->session()->regenerate();
-        $redirect = $role === 'creator' ? url('/creator/choose-plan') : url('/brand/choose-plan');
+        $redirect = match ($role) {
+            'creator' => url('/creator/choose-plan'),
+            'brand' => url('/brand/choose-plan'),
+            'studio_owner' => url('/studio/dashboard'),
+            'agency' => url('/agency/dashboard'),
+            default => url('/'),
+        };
         return redirect()->away($redirect);
     }
 }

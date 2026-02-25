@@ -12,7 +12,7 @@ class EnsureCreatorOrBrandHasPaid
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
-        if (! $user || ! in_array($user->role, ['creator', 'brand'], true)) {
+        if (! $user || (! $user->hasRole('creator') && ! $user->hasRole('brand'))) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Unauthorized.'], 403);
             }
@@ -26,7 +26,7 @@ class EnsureCreatorOrBrandHasPaid
                     'requires_payment' => true,
                 ], 402);
             }
-            $path = $user->role === 'creator' ? '/creator/choose-plan' : '/brand/choose-plan';
+            $path = $user->hasRole('creator') ? '/creator/choose-plan' : '/brand/choose-plan';
             return redirect($path);
         }
 

@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'creator' => \App\Http\Middleware\EnsureUserIsCreator::class,
             'brand' => \App\Http\Middleware\EnsureUserIsBrand::class,
+            'agency' => \App\Http\Middleware\EnsureUserIsAgency::class,
+            'studio_owner' => \App\Http\Middleware\EnsureUserIsStudioOwner::class,
             'paid' => \App\Http\Middleware\EnsureCreatorOrBrandHasPaid::class,
         ]);
     })
