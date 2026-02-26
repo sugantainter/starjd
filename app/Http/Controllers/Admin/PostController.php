@@ -23,7 +23,7 @@ class PostController extends Controller
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255',
-            'excerpt' => 'nullable|string|max:500',
+            'excerpt' => 'nullable|string|max:255',
             'meta_title' => 'nullable|string|max:70',
             'meta_description' => 'nullable|string|max:160',
             'body' => 'required|string',
@@ -35,6 +35,8 @@ class PostController extends Controller
             'status' => 'nullable|in:draft,published',
             'published_at' => 'nullable|date',
             'sort_order' => 'nullable|integer',
+        ], [
+            'excerpt.max' => 'The excerpt must not exceed 255 characters.',
         ]);
         $data['slug'] = $data['slug'] ?? Str::slug($data['title']);
         $data['user_id'] = $request->user()->id;
@@ -52,7 +54,7 @@ class PostController extends Controller
         $data = $request->validate([
             'title' => 'sometimes|string|max:255',
             'slug' => 'sometimes|string|max:255',
-            'excerpt' => 'nullable|string|max:500',
+            'excerpt' => 'nullable|string|max:255',
             'meta_title' => 'nullable|string|max:70',
             'meta_description' => 'nullable|string|max:160',
             'body' => 'sometimes|string',
@@ -64,6 +66,8 @@ class PostController extends Controller
             'status' => 'nullable|in:draft,published',
             'published_at' => 'nullable|date',
             'sort_order' => 'nullable|integer',
+        ], [
+            'excerpt.max' => 'The excerpt must not exceed 255 characters.',
         ]);
         if (isset($data['status']) && $data['status'] === 'published' && ! $post->published_at) {
             $data['published_at'] = $data['published_at'] ?? now();
