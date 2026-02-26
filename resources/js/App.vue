@@ -1347,10 +1347,10 @@
             </div>
         </section>
 
-        <!-- FAQ section (above footer) -->
+        <!-- FAQ section (above footer); extra pb so CTA banner can overlap half above -->
         <section
             id="faq"
-            class="animate-on-scroll border-t border-[#e5e7eb] bg-[#fafaf9] px-4 py-16 md:py-24"
+            class="animate-on-scroll border-t border-[#e5e7eb] bg-[#fafaf9] px-4 py-16 pb-20 md:py-24 md:pb-28"
         >
             <div class="mx-auto max-w-3xl">
                 <h2
