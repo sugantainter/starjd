@@ -53,8 +53,8 @@ class PostController extends Controller
         }
         $data = $request->validate([
             'title' => 'required|string|max:255',
-            'slug' => ['nullable', 'string', 'max:255', 'unique:posts,slug'],
-            'excerpt' => 'nullable|string|max:500',
+            'slug' => 'nullable|string|max:255',
+            'excerpt' => 'nullable|string|max:255',
             'meta_title' => 'nullable|string|max:70',
             'meta_description' => 'nullable|string|max:160',
             'body' => 'required|string',
@@ -66,6 +66,8 @@ class PostController extends Controller
             'status' => 'nullable|in:draft,published',
             'published_at' => 'nullable|date',
             'sort_order' => 'nullable|integer',
+        ], [
+            'excerpt.max' => 'The excerpt must not exceed 255 characters.',
         ], [
             'slug.unique' => 'This URL slug is already used by another post. Please use a different title or enter a unique slug.',
         ]);
@@ -111,6 +113,8 @@ class PostController extends Controller
             'status' => 'nullable|in:draft,published',
             'published_at' => 'nullable|date',
             'sort_order' => 'nullable|integer',
+        ], [
+            'excerpt.max' => 'The excerpt must not exceed 255 characters.',
         ], [
             'slug.unique' => 'This URL slug is already used by another post. Please enter a different slug.',
         ]);
