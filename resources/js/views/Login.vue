@@ -185,7 +185,13 @@ async function submit() {
     const path = raw.startsWith('http') ? new URL(raw).pathname : (raw.startsWith('/') ? raw : `/${raw}`);
     window.location.href = path;
   } catch (e) {
-    error.value = e.response?.data?.message || (e.response?.data?.errors?.email?.[0]) || 'Invalid email or password.';
+    const data = e.response?.data;
+    if (data?.needs_verification && data?.email) {
+      const params = new URLSearchParams({ email: data.email });
+      window.location.href = `/verify-email?${params.toString()}`;
+      return;
+    }
+    error.value = data?.message || (data?.errors?.email?.[0]) || 'Invalid email or password.';
   } finally {
     loading.value = false;
   }

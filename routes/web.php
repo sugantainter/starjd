@@ -88,6 +88,8 @@ Route::prefix('api')->group(function () {
     Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('reset-password', [AuthController::class, 'resetPassword']);
     Route::post('email/verification-notification', [AuthController::class, 'resendVerification']);
+    Route::post('verify-email-otp', [AuthController::class, 'verifyOtp']);
+    Route::post('resend-otp', [AuthController::class, 'resendOtp']);
     Route::post('contact', [ContactController::class, 'store']);
     Route::get('sections', [SectionsController::class, 'index']);
     Route::get('posts', [PostController::class, 'index']);

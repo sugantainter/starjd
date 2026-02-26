@@ -174,7 +174,12 @@ async function submit() {
   try {
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     const res = await axios.post(registerEndpoint(), form, { headers: token ? { 'X-CSRF-TOKEN': token } : {}, withCredentials: true });
-    const raw = res.data?.redirect || '/';
+    const data = res.data;
+    if (data && data.needs_verification && data.email) {
+      window.location.href = '/verify-email?email=' + encodeURIComponent(data.email);
+      return;
+    }
+    const raw = data?.redirect || '/';
     const path = raw.startsWith('http') ? new URL(raw).pathname : (raw.startsWith('/') ? raw : `/${raw}`);
     window.location.href = path;
   } catch (e) {

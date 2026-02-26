@@ -30,6 +30,14 @@
     <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-4" @click.self="showModal = false">
       <div class="my-8 w-full max-w-3xl max-h-[95vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
         <h2 class="mb-4 text-lg font-semibold text-[#1a1a1a]">{{ editing ? 'Edit' : 'Add' }} Post</h2>
+
+        <div v-if="saveError" class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          <p class="font-medium">Please fix the following:</p>
+          <ul class="mt-1 list-inside list-disc space-y-0.5">
+            <li v-for="(msg, key) in saveErrorMessages" :key="key">{{ msg }}</li>
+          </ul>
+        </div>
+
         <form @submit.prevent="save" class="space-y-4">
           <div>
             <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Title</label>
@@ -38,6 +46,7 @@
           <div>
             <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Slug</label>
             <input v-model="form.slug" type="text" class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-[#1a1a1a]" placeholder="auto from title" />
+            <p class="mt-1 text-xs text-[#64748b]">Leave empty to generate from title. Must be unique—if a post with this URL already exists, use a different slug or title.</p>
           </div>
           <div>
             <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Excerpt</label>
@@ -148,6 +157,9 @@ const editing = ref(null);
 const tagInput = ref('');
 const featuredImageInput = ref(null);
 
+const saveError = ref('');
+const saveErrorMessages = ref([]);
+
 const form = reactive({
   title: '',
   slug: '',
@@ -183,6 +195,8 @@ async function load() {
 
 function openForm(item = null) {
   editing.value = item;
+  saveError.value = '';
+  saveErrorMessages.value = [];
   tagInput.value = '';
   if (item) {
     form.title = item.title || '';
@@ -247,6 +261,8 @@ async function onFeaturedImageSelect(ev) {
 }
 
 async function save() {
+  saveError.value = '';
+  saveErrorMessages.value = [];
   try {
     const payload = {
       title: form.title,
@@ -269,7 +285,14 @@ async function save() {
     showModal.value = false;
     load();
   } catch (e) {
-    alert(e.response?.data?.message || 'Error saving');
+    const data = e.response?.data;
+    if (data?.errors) {
+      saveError.value = data.message || 'Validation failed';
+      saveErrorMessages.value = Object.values(data.errors).flat();
+    } else {
+      saveError.value = data?.message || 'Error saving post.';
+      saveErrorMessages.value = [saveError.value];
+    }
   }
 }
 

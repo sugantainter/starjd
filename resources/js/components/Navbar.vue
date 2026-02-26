@@ -122,7 +122,7 @@
           <router-link to="/videos" class="text-sm font-semibold transition hover:text-[#e63946]">Videos</router-link>
           <router-link to="/creators" class="text-sm font-semibold transition hover:text-[#e63946]">Discover Creators</router-link>
 
-          <template v-if="user">
+          <template v-if="displayUser">
             <div class="relative" ref="userMenuRef">
               <button
                 type="button"
@@ -149,7 +149,7 @@
                     <p class="text-xs font-medium uppercase tracking-wide text-[#64748b]">{{ user.role }}</p>
                     <p class="truncate text-sm font-medium text-[#1a1a1a]">{{ user.name }}</p>
                   </div>
-                  <template v-if="user.role === 'creator'">
+                  <template v-if="displayUser && displayUser.role === 'creator'">
                     <router-link to="/creator/dashboard" class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#10b981]/5 hover:text-[#10b981]" @click="userMenuOpen = false">Creator Dashboard</router-link>
                     <router-link to="/creator/profile" class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#10b981]/5 hover:text-[#10b981]" @click="userMenuOpen = false">My Profile</router-link>
                   </template>
@@ -198,12 +198,12 @@
             <router-link to="/services" class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Services</router-link>
             <router-link to="/videos" class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Videos</router-link>
             <router-link to="/creators" class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]" @click="navMobileOpen = false">Discover Creators</router-link>
-            <template v-if="user">
+            <template v-if="displayUser">
               <div class="my-2 border-t border-[#e5e7eb] pt-2">
                 <p class="px-4 py-1 text-xs font-medium uppercase text-[#64748b]">{{ user.role }}</p>
                 <p class="truncate px-4 py-1 text-sm font-medium text-[#1a1a1a]">{{ user.name }}</p>
               </div>
-              <template v-if="user.role === 'creator'">
+              <template v-if="displayUser && displayUser.role === 'creator'">
                 <router-link to="/creator/dashboard" class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#10b981]/5 hover:text-[#10b981]" @click="navMobileOpen = false">Creator Dashboard</router-link>
                 <router-link to="/creator/profile" class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#10b981]/5 hover:text-[#10b981]" @click="navMobileOpen = false">My Profile</router-link>
               </template>
@@ -231,8 +231,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRoute } from 'vue-router';
 import axios from 'axios';
+
+const route = useRoute();
 
 const servicesColumn1 = [
   { name: 'Video Production', slug: 'video-production' },
@@ -249,6 +252,11 @@ const servicesColumn2 = [
 ];
 
 const user = ref(null);
+// On login/register pages always show logged-out UI so logout redirect looks correct
+const displayUser = computed(() => {
+  if (route.path === '/login' || route.path === '/register') return null;
+  return user.value;
+});
 const userMenuOpen = ref(false);
 const userMenuRef = ref(null);
 const navMobileOpen = ref(false);
@@ -260,10 +268,10 @@ const servicesLoading = ref(false);
 const servicesDropdownImage = ref('');
 
 function logout() {
-  axios.post('/api/logout', {}, { withCredentials: true }).catch(() => {}).finally(() => {
-    user.value = null;
-    window.location.href = '/';
-  });
+  const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+  axios.post('/api/logout', {}, { withCredentials: true, headers: token ? { 'X-CSRF-TOKEN': token } : {} })
+    .then(() => { user.value = null; window.location.href = '/login'; })
+    .catch(() => { user.value = null; window.location.href = '/login'; });
 }
 
 function onClickOutside(e) {
