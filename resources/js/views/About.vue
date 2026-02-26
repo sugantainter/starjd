@@ -35,21 +35,25 @@
               </a>
             </div>
           </div>
-          <!-- Hero right: two circles — large left (portrait), small right on top (overlap) -->
-          <div class="about-hero-section relative hidden lg:block lg:min-h-[320px]">
-            <div class="relative flex justify-end py-8">
-              <!-- Large circle (left): portrait, behind -->
-              <div class="relative z-0 mr-[-80px] h-72 w-72 shrink-0 overflow-hidden rounded-full border border-[#e5e7eb] bg-white shadow-lg">
+          <!-- Hero right: 3 round images centered — 1 large (dominant), 2 same size; overlapping cluster -->
+          <div class="about-hero-section relative flex justify-center py-6 sm:py-8 lg:min-h-[380px]">
+            <div class="relative mx-auto h-[300px] w-[300px] sm:h-[340px] sm:w-[340px] md:h-[400px] md:w-[400px] lg:h-[420px] lg:w-[420px]">
+              <!-- 01 — large circle (left), dominant like reference -->
+              <div class="absolute bottom-0 left-0 z-0 h-52 w-52 overflow-hidden rounded-full border-2 border-[#e5e7eb] bg-white shadow-lg sm:h-60 sm:w-60 md:h-72 md:w-72 lg:h-80 lg:w-80">
                 <img
-                  src="/images/hero-deco.jpg"
-                  alt=""
+                  src="/images/about-1.png"
+                  alt="StarJD"
                   class="h-full w-full object-cover object-top"
                   onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop';"
                 />
               </div>
-              <!-- Smaller circle (right, on top of large): team with laptops -->
-              <div class="relative z-10 h-48 w-48 shrink-0 overflow-hidden rounded-full border border-[#e5e7eb] bg-white shadow-lg">
-                <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=300&h=300&fit=crop" alt="Team with laptop" class="h-full w-full object-cover" />
+              <!-- 02 — top-right round (same size as 03) -->
+              <div class="absolute right-2 top-2 z-10 h-32 w-32 overflow-hidden rounded-full border-2 border-[#e5e7eb] bg-white shadow-lg sm:right-4 sm:top-4 sm:h-36 sm:w-36 md:h-40 md:w-40 lg:right-6 lg:top-6 lg:h-44 lg:w-44">
+                <img src="/images/about-2.png" alt="Team with laptop" class="h-full w-full object-cover" />
+              </div>
+              <!-- 03 — bottom-right round (same size as 02) -->
+              <div class="absolute bottom-2 right-6 z-20 h-32 w-32 overflow-hidden rounded-full border-2 border-[#e5e7eb] bg-white shadow-lg sm:bottom-3 sm:right-8 sm:h-36 sm:w-36 md:bottom-4 md:right-8 md:h-40 md:w-40 lg:bottom-5 lg:right-10 lg:h-44 lg:w-44">
+                <img src="/images/about-3.png" alt="Creative production" class="h-full w-full object-cover" />
               </div>
             </div>
           </div>
@@ -61,17 +65,20 @@
       <div class="mx-auto max-w-6xl">
         <div class="grid gap-12 lg:grid-cols-2 lg:items-center">
           <div class="relative order-2 lg:order-1">
-            <div class="relative flex">
-              <div class="h-64 w-48 overflow-hidden rounded-xl shadow-lg md:h-80 md:w-56" style="background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);">
-                <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=500&fit=crop" alt="Creative work" class="h-full w-full object-cover" />
+            <div class="relative flex items-center justify-center">
+              <!-- Back: 2 images with gapping between -->
+              <div class="flex gap-4 md:gap-6 lg:gap-8">
+                <div class="h-56 w-40 overflow-hidden rounded-xl shadow-lg md:h-64 md:w-44 lg:h-72 lg:w-52" style="background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);">
+                  <img src="/images/about-4.png" alt="Creative work" class="h-full w-full object-cover" />
+                </div>
+                <div class="h-56 w-40 overflow-hidden rounded-xl shadow-lg md:h-64 md:w-44 lg:h-72 lg:w-52" style="background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);">
+                  <img src="/images/about-5.png" alt="Creative work" class="h-full w-full object-cover" />
+                </div>
               </div>
-              <div class="absolute left-24 top-16 h-64 w-48 overflow-hidden rounded-xl shadow-lg md:left-32 md:top-20 md:h-80 md:w-56" style="background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);">
-                <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=500&fit=crop" alt="Team collaboration" class="h-full w-full object-cover" />
+              <!-- Front: 1 larger central image overlapping both -->
+              <div class="absolute left-1/2 top-4/5 z-10 h-64 w-48 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl shadow-lg md:h-80 md:w-56" style="background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);">
+                <img src="/images/about-6.png" alt="Team collaboration" class="h-full w-full object-cover" />
               </div>
-              <div class="absolute -bottom-4 left-16 flex h-16 w-16 items-center justify-center rounded-full bg-[#0f172a] text-white shadow-lg md:left-24">
-                <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-              </div>
-              <div class="absolute -right-2 top-1/2 h-20 w-20 -translate-y-1/2 rounded-full border-2 border-dashed border-[#0f172a]/20 md:h-24 md:w-24" aria-hidden="true" />
             </div>
           </div>
           <div class="order-1 lg:order-2">
@@ -120,14 +127,14 @@
           StarJD brings all creative production services under one roof, making us a reliable partner for businesses and individuals seeking professional media solutions.
         </p>
         <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <div class="rounded-xl border border-[#e5e7eb] bg-white p-6 shadow-sm transition hover:shadow-md">
-            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#f1f5f9] text-[#fc4402]">
+          <div class="group rounded-xl border border-[#e5e7eb] bg-white p-6 shadow-sm transition hover:bg-[#fc4402] hover:shadow-md">
+            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#f1f5f9] text-[#fc4402] group-hover:bg-white/20 group-hover:text-white">
               <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
             </div>
-            <h3 class="mt-4 font-bold text-[#1a1a1a]">Professional Video Production</h3>
-            <p class="mt-2 text-sm text-[#64748b]">Corporate video shoots and brand films, advertisement and promotional campaign videos, product demo and launch videos, event filming and highlight reels, social media optimized video content.</p>
-            <p class="mt-4 text-xs text-[#94a3b8]">01</p>
-            <hr class="mt-1 w-8 border-[#e5e7eb]" />
+            <h3 class="mt-4 font-bold text-[#1a1a1a] group-hover:text-white">Professional Video Production</h3>
+            <p class="mt-2 text-sm text-[#64748b] group-hover:text-white/90">Corporate video shoots and brand films, advertisement and promotional campaign videos, product demo and launch videos, event filming and highlight reels, social media optimized video content.</p>
+            <p class="mt-4 text-xs text-[#94a3b8] group-hover:text-white/80">01</p>
+            <hr class="mt-1 w-8 border-[#e5e7eb] group-hover:border-white/30" />
           </div>
           <div class="rounded-xl bg-[#fc4402] p-6 text-white shadow-lg transition hover:shadow-xl">
             <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-white/20 text-white">
@@ -138,41 +145,41 @@
             <p class="mt-4 text-xs text-white/80">02</p>
             <hr class="mt-1 w-8 border-white/30" />
           </div>
-          <div class="rounded-xl border border-[#e5e7eb] bg-white p-6 shadow-sm transition hover:shadow-md">
-            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#f1f5f9] text-[#fc4402]">
+          <div class="group rounded-xl border border-[#e5e7eb] bg-white p-6 shadow-sm transition hover:bg-[#fc4402] hover:shadow-md">
+            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#f1f5f9] text-[#fc4402] group-hover:bg-white/20 group-hover:text-white">
               <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
             </div>
-            <h3 class="mt-4 font-bold text-[#1a1a1a]">Model & Portfolio Shoots</h3>
-            <p class="mt-2 text-sm text-[#64748b]">Model portfolio photography, actor headshot sessions, fashion and editorial shoots, personal branding photoshoots, influencer profile shoots.</p>
-            <p class="mt-4 text-xs text-[#94a3b8]">03</p>
-            <hr class="mt-1 w-8 border-[#e5e7eb]" />
+            <h3 class="mt-4 font-bold text-[#1a1a1a] group-hover:text-white">Model & Portfolio Shoots</h3>
+            <p class="mt-2 text-sm text-[#64748b] group-hover:text-white/90">Model portfolio photography, actor headshot sessions, fashion and editorial shoots, personal branding photoshoots, influencer profile shoots.</p>
+            <p class="mt-4 text-xs text-[#94a3b8] group-hover:text-white/80">03</p>
+            <hr class="mt-1 w-8 border-[#e5e7eb] group-hover:border-white/30" />
           </div>
-          <div class="rounded-xl border border-[#e5e7eb] bg-white p-6 shadow-sm transition hover:shadow-md">
-            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#f1f5f9] text-[#fc4402]">
+          <div class="group rounded-xl border border-[#e5e7eb] bg-white p-6 shadow-sm transition hover:bg-[#fc4402] hover:shadow-md">
+            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#f1f5f9] text-[#fc4402] group-hover:bg-white/20 group-hover:text-white">
               <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v3m0 0V6a3 3 0 016 0v3m0 0v10h-6v-4m-6 4v-4h12v4"/></svg>
             </div>
-            <h3 class="mt-4 font-bold text-[#1a1a1a]">Podcast & Content Studio</h3>
-            <p class="mt-2 text-sm text-[#64748b]">Multi-camera podcast recording, studio-quality audio production, video podcast editing, short-form content creation for social media.</p>
-            <p class="mt-4 text-xs text-[#94a3b8]">04</p>
-            <hr class="mt-1 w-8 border-[#e5e7eb]" />
+            <h3 class="mt-4 font-bold text-[#1a1a1a] group-hover:text-white">Podcast & Content Studio</h3>
+            <p class="mt-2 text-sm text-[#64748b] group-hover:text-white/90">Multi-camera podcast recording, studio-quality audio production, video podcast editing, short-form content creation for social media.</p>
+            <p class="mt-4 text-xs text-[#94a3b8] group-hover:text-white/80">04</p>
+            <hr class="mt-1 w-8 border-[#e5e7eb] group-hover:border-white/30" />
           </div>
-          <div class="rounded-xl border border-[#e5e7eb] bg-white p-6 shadow-sm transition hover:shadow-md">
-            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#f1f5f9] text-[#fc4402]">
+          <div class="group rounded-xl border border-[#e5e7eb] bg-white p-6 shadow-sm transition hover:bg-[#fc4402] hover:shadow-md">
+            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#f1f5f9] text-[#fc4402] group-hover:bg-white/20 group-hover:text-white">
               <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
             </div>
-            <h3 class="mt-4 font-bold text-[#1a1a1a]">Live Streaming & Virtual</h3>
-            <p class="mt-2 text-sm text-[#64748b]">Corporate webinars, hybrid and virtual events, product launches, online conferences and panel discussions.</p>
-            <p class="mt-4 text-xs text-[#94a3b8]">05</p>
-            <hr class="mt-1 w-8 border-[#e5e7eb]" />
+            <h3 class="mt-4 font-bold text-[#1a1a1a] group-hover:text-white">Live Streaming & Virtual</h3>
+            <p class="mt-2 text-sm text-[#64748b] group-hover:text-white/90">Corporate webinars, hybrid and virtual events, product launches, online conferences and panel discussions.</p>
+            <p class="mt-4 text-xs text-[#94a3b8] group-hover:text-white/80">05</p>
+            <hr class="mt-1 w-8 border-[#e5e7eb] group-hover:border-white/30" />
           </div>
-          <div class="rounded-xl border border-[#e5e7eb] bg-white p-6 shadow-sm transition hover:shadow-md">
-            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#f1f5f9] text-[#fc4402]">
+          <div class="group rounded-xl border border-[#e5e7eb] bg-white p-6 shadow-sm transition hover:bg-[#fc4402] hover:shadow-md">
+            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#f1f5f9] text-[#fc4402] group-hover:bg-white/20 group-hover:text-white">
               <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
             </div>
-            <h3 class="mt-4 font-bold text-[#1a1a1a]">Video Editing & Studio Rental</h3>
-            <p class="mt-2 text-sm text-[#64748b]">Post-production, color grading, motion graphics, sound design. Drone services. Fully equipped studio rental and equipment.</p>
-            <p class="mt-4 text-xs text-[#94a3b8]">06</p>
-            <hr class="mt-1 w-8 border-[#e5e7eb]" />
+            <h3 class="mt-4 font-bold text-[#1a1a1a] group-hover:text-white">Video Editing & Studio Rental</h3>
+            <p class="mt-2 text-sm text-[#64748b] group-hover:text-white/90">Post-production, color grading, motion graphics, sound design. Drone services. Fully equipped studio rental and equipment.</p>
+            <p class="mt-4 text-xs text-[#94a3b8] group-hover:text-white/80">06</p>
+            <hr class="mt-1 w-8 border-[#e5e7eb] group-hover:border-white/30" />
           </div>
         </div>
         <!-- Full services detail (collapsed prose) -->

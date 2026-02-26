@@ -1,7 +1,8 @@
 <template>
     <div class="min-h-screen bg-[#fafaf9] text-[#1a1a1a]">
-        <!-- Nav -->
+        <!-- Nav (hidden when used inside AppLayout for home) -->
         <header
+            v-if="!noHeaderFooter"
             ref="headerRef"
             class="sticky top-0 z-50 border-b border-[#e5e7eb] bg-white/90 backdrop-blur-md"
         >
@@ -1947,14 +1948,16 @@
             </div>
         </section>
 
-        <!-- Footer -->
-        <Footer />
+        <!-- Footer (hidden when used inside AppLayout for home) -->
+        <Footer v-if="!noHeaderFooter" />
     </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import Footer from "@/components/Footer.vue";
+
+defineProps({ noHeaderFooter: { type: Boolean, default: false } });
 import { useRouter } from "vue-router";
 import axios from "axios";
 
