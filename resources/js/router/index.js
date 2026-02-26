@@ -25,6 +25,7 @@ const routes = [
   { path: '/studios/:slug', component: AppLayout, children: [ { path: '', name: 'studio-detail', component: () => import('../views/StudioDetail.vue') } ] },
   { path: '/login', component: AppLayout, children: [ { path: '', name: 'login', component: () => import('../views/Login.vue') } ] },
   { path: '/register', component: AppLayout, children: [ { path: '', name: 'register', component: () => import('../views/Register.vue') } ] },
+  { path: '/verify-email', component: AppLayout, children: [ { path: '', name: 'verify-email', component: () => import('../views/VerifyEmail.vue') } ] },
   { path: '/forgot-password', component: AppLayout, children: [ { path: '', name: 'forgot-password', component: () => import('../views/ForgotPassword.vue') } ] },
   { path: '/reset-password', component: AppLayout, children: [ { path: '', name: 'reset-password', component: () => import('../views/ResetPassword.vue') } ] },
   {

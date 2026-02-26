@@ -108,6 +108,7 @@ class SocialAuthController extends Controller
             'email' => $email,
             'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(32)),
         ]);
+        $user->markEmailAsVerified(); // OAuth (Google/Facebook) emails are auto-verified
         $roleModel = Role::where('slug', $role)->first();
         if ($roleModel) {
             $user->roles()->attach($roleModel->id, ['is_primary' => true]);

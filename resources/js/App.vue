@@ -1984,14 +1984,19 @@ function onNavUserMenuClickOutside(e) {
 }
 
 function navLogout() {
+    navUserMenuOpen.value = false;
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     axios
-        .post("/api/logout", {}, { withCredentials: true })
-        .catch(() => {})
-        .finally(() => {
+        .post("/api/logout", {}, { withCredentials: true, headers: token ? { 'X-CSRF-TOKEN': token } : {} })
+        .then(() => {
             navUser.value = null;
-            navUserMenuOpen.value = false;
             navMobileOpen.value = false;
-            window.location.href = "/";
+            window.location.href = "/login";
+        })
+        .catch(() => {
+            navUser.value = null;
+            navMobileOpen.value = false;
+            window.location.href = "/login";
         });
 }
 

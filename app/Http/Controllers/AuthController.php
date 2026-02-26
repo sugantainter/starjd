@@ -17,9 +17,12 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Notifications\VerifyEmailOtpNotification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 
@@ -31,10 +34,20 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         $request->authenticate();
+        $user = $request->user();
+        if (! $user->hasVerifiedEmail()) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $this->sendOtpToUser($user);
+            return response()->json([
+                'message' => 'Email not verified. We have sent an OTP to your email.',
+                'needs_verification' => true,
+                'email' => $user->email,
+                'redirect' => url('/verify-email'),
+            ], 422);
+        }
         $request->session()->regenerate();
         $request->session()->save();
-
-        $user = $request->user();
         $redirect = $this->redirectForUser($user);
 
         return response()->json([
@@ -57,9 +70,19 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        try {
+            Auth::guard('web')->logout();
+            $request->session()->flush();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        } catch (\Throwable $e) {
+            report($e);
+        }
+        try {
+            $request->session()->save();
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return response()->json(['message' => 'Logged out']);
     }
@@ -74,13 +97,12 @@ class AuthController extends Controller
         }
         $user = $this->createUserWithRole($request->only('name', 'email', 'password'), 'creator');
         CreatorProfile::create(['user_id' => $user->id]);
-        Auth::login($user);
-        $request->session()->regenerate();
-        $request->session()->save();
-
+        $this->sendOtpToUser($user);
         return response()->json([
-            'user' => $this->userPayload($user),
-            'redirect' => url('/creator/choose-plan'),
+            'message' => 'Please verify your email with the OTP we sent.',
+            'needs_verification' => true,
+            'email' => $user->email,
+            'redirect' => url('/verify-email'),
         ], 201);
     }
 
@@ -94,13 +116,12 @@ class AuthController extends Controller
         }
         $user = $this->createUserWithRole($request->only('name', 'email', 'password'), 'brand');
         BrandProfile::create(['user_id' => $user->id]);
-        Auth::login($user);
-        $request->session()->regenerate();
-        $request->session()->save();
-
+        $this->sendOtpToUser($user);
         return response()->json([
-            'user' => $this->userPayload($user),
-            'redirect' => url('/brand/choose-plan'),
+            'message' => 'Please verify your email with the OTP we sent.',
+            'needs_verification' => true,
+            'email' => $user->email,
+            'redirect' => url('/verify-email'),
         ], 201);
     }
 
@@ -124,13 +145,12 @@ class AuthController extends Controller
             'website' => $request->website,
             'approval_status' => 'pending',
         ]);
-        Auth::login($user);
-        $request->session()->regenerate();
-        $request->session()->save();
-
+        $this->sendOtpToUser($user);
         return response()->json([
-            'user' => $this->userPayload($user),
-            'redirect' => url('/agency/dashboard'),
+            'message' => 'Please verify your email with the OTP we sent.',
+            'needs_verification' => true,
+            'email' => $user->email,
+            'redirect' => url('/verify-email'),
         ], 201);
     }
 
@@ -140,13 +160,12 @@ class AuthController extends Controller
     public function registerStudioOwner(RegisterStudioOwnerRequest $request): JsonResponse
     {
         $user = $this->createUserWithRole($request->only('name', 'email', 'password'), 'studio_owner');
-        Auth::login($user);
-        $request->session()->regenerate();
-        $request->session()->save();
-
+        $this->sendOtpToUser($user);
         return response()->json([
-            'user' => $this->userPayload($user),
-            'redirect' => url('/studio/dashboard'),
+            'message' => 'Please verify your email with the OTP we sent.',
+            'needs_verification' => true,
+            'email' => $user->email,
+            'redirect' => url('/verify-email'),
         ], 201);
     }
 
@@ -156,13 +175,12 @@ class AuthController extends Controller
     public function registerCustomer(RegisterCustomerRequest $request): JsonResponse
     {
         $user = $this->createUserWithRole($request->only('name', 'email', 'password'), 'customer');
-        Auth::login($user);
-        $request->session()->regenerate();
-        $request->session()->save();
-
+        $this->sendOtpToUser($user);
         return response()->json([
-            'user' => $this->userPayload($user),
-            'redirect' => url('/studios'),
+            'message' => 'Please verify your email with the OTP we sent.',
+            'needs_verification' => true,
+            'email' => $user->email,
+            'redirect' => url('/verify-email'),
         ], 201);
     }
 
@@ -242,6 +260,78 @@ class AuthController extends Controller
         $user->sendEmailVerificationNotification();
 
         return response()->json(['message' => 'Verification link sent.']);
+    }
+
+    /**
+     * Verify email with OTP (sent after email registration). On success, log user in and return redirect.
+     */
+    public function verifyOtp(Request $request): JsonResponse
+    {
+        $request->validate([
+            'email' => ['required', 'string', 'email'],
+            'otp' => ['required', 'string', 'size:6'],
+        ]);
+        $email = $request->email;
+        $otp = $request->otp;
+        $key = 'email_otp:' . $email;
+        $stored = Cache::get($key);
+        if ($stored === null || (string) $stored !== (string) $otp) {
+            throw ValidationException::withMessages(['otp' => ['Invalid or expired verification code.']]);
+        }
+        $user = User::where('email', $email)->first();
+        if (! $user) {
+            throw ValidationException::withMessages(['email' => ['User not found.']]);
+        }
+        $user->markEmailAsVerified();
+        Cache::forget($key);
+        Auth::login($user, true);
+        $request->session()->regenerate();
+        $request->session()->save();
+        $redirect = $this->postVerificationRedirect($user);
+
+        return response()->json([
+            'message' => 'Email verified.',
+            'verified' => true,
+            'user' => $this->userPayload($user),
+            'redirect' => $redirect,
+        ]);
+    }
+
+    /**
+     * Resend OTP to email (for unverified users).
+     */
+    public function resendOtp(Request $request): JsonResponse
+    {
+        $request->validate(['email' => ['required', 'string', 'email']]);
+        $user = User::where('email', $request->email)->first();
+        if (! $user || $user->hasVerifiedEmail()) {
+            return response()->json(['message' => 'Invalid or already verified.'], 422);
+        }
+        $this->sendOtpToUser($user);
+
+        return response()->json(['message' => 'Verification code sent to your email.']);
+    }
+
+    private function sendOtpToUser(User $user): void
+    {
+        $otp = (string) random_int(100000, 999999);
+        Cache::put('email_otp:' . $user->email, $otp, 600); // 10 minutes
+        $user->notify(new VerifyEmailOtpNotification($otp));
+    }
+
+    private function postVerificationRedirect(User $user): string
+    {
+        $primary = $user->primaryRole();
+        $slug = $primary?->slug ?? 'customer';
+
+        return match ($slug) {
+            'admin' => url('/admin'),
+            'creator' => url('/creator/choose-plan'),
+            'brand' => url('/brand/choose-plan'),
+            'agency' => url('/agency/dashboard'),
+            'studio_owner' => url('/studio/dashboard'),
+            default => url('/'),
+        };
     }
 
     private function createUserWithRole(array $data, string $roleSlug): User

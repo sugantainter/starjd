@@ -55,8 +55,9 @@ onMounted(async () => {
 });
 
 function logout() {
-  axios.post('/api/logout').catch(() => {}).finally(() => {
-    window.location.href = '/login';
-  });
+  const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+  axios.post('/api/logout', {}, { withCredentials: true, headers: token ? { 'X-CSRF-TOKEN': token } : {} })
+    .then(() => { window.location.href = '/login'; })
+    .catch(() => { window.location.href = '/login'; });
 }
 </script>
