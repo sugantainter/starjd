@@ -4,11 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class CreatorProfile extends Model
 {
     protected $fillable = [
         'user_id',
+        'agency_id',
         'slug',
         'bio',
         'avatar',
@@ -19,6 +21,8 @@ class CreatorProfile extends Model
         'language',
         'is_public',
         'min_rate',
+        'engagement_rate',
+        'verification_status',
         'featured_until',
     ];
 
@@ -29,8 +33,38 @@ class CreatorProfile extends Model
         return [
             'is_public' => 'boolean',
             'min_rate' => 'decimal:2',
+            'engagement_rate' => 'decimal:2',
             'featured_until' => 'datetime',
         ];
+    }
+
+    public function agency(): BelongsTo
+    {
+        return $this->belongsTo(Agency::class);
+    }
+
+    public function reviews(): MorphMany
+    {
+        return $this->morphMany(Review::class, 'reviewable');
+    }
+
+    /**
+     * Total followers from connected social accounts (for display/sort).
+     */
+    public function getTotalFollowersAttribute(): int
+    {
+        return (int) $this->user?->socialAccounts()
+            ->where('is_connected', true)
+            ->sum('followers_count');
+    }
+
+    /**
+     * Average rating from approved reviews (for display/sort).
+     */
+    public function getAverageRatingAttribute(): ?float
+    {
+        $avg = $this->reviews()->approved()->avg('rating');
+        return $avg !== null ? round((float) $avg, 2) : null;
     }
 
     public function getIsFeaturedAttribute(): bool

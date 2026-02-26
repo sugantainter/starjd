@@ -3,6 +3,7 @@ import AppLayout from '../layouts/AppLayout.vue';
 import AdminLayout from '../layouts/AdminLayout.vue';
 import CreatorLayout from '../layouts/CreatorLayout.vue';
 import BrandLayout from '../layouts/BrandLayout.vue';
+import StudioLayout from '../layouts/StudioLayout.vue';
 
 const routes = [
   { path: '/', name: 'home', component: () => import('../App.vue') },
@@ -20,8 +21,12 @@ const routes = [
   { path: '/page/:slug', component: AppLayout, children: [ { path: '', name: 'dynamic-page', component: () => import('../views/DynamicPage.vue') } ] },
   { path: '/creators', component: AppLayout, children: [ { path: '', name: 'creators', component: () => import('../views/Creators.vue') } ] },
   { path: '/creators/:slug', component: AppLayout, children: [ { path: '', name: 'creator-public', component: () => import('../views/CreatorPublicProfile.vue') } ] },
+  { path: '/studios', component: AppLayout, children: [ { path: '', name: 'studios', component: () => import('../views/Studios.vue') } ] },
+  { path: '/studios/:slug', component: AppLayout, children: [ { path: '', name: 'studio-detail', component: () => import('../views/StudioDetail.vue') } ] },
   { path: '/login', component: AppLayout, children: [ { path: '', name: 'login', component: () => import('../views/Login.vue') } ] },
   { path: '/register', component: AppLayout, children: [ { path: '', name: 'register', component: () => import('../views/Register.vue') } ] },
+  { path: '/forgot-password', component: AppLayout, children: [ { path: '', name: 'forgot-password', component: () => import('../views/ForgotPassword.vue') } ] },
+  { path: '/reset-password', component: AppLayout, children: [ { path: '', name: 'reset-password', component: () => import('../views/ResetPassword.vue') } ] },
   {
     path: '/creator',
     component: CreatorLayout,
@@ -49,6 +54,18 @@ const routes = [
     ],
   },
   {
+    path: '/studio',
+    component: StudioLayout,
+    children: [
+      { path: '', redirect: '/studio/dashboard' },
+      { path: 'dashboard', name: 'studio-dashboard', component: () => import('../views/studio/Dashboard.vue') },
+      { path: 'studios', name: 'studio-my-studios', component: () => import('../views/studio/MyStudios.vue') },
+      { path: 'studios/new', name: 'studio-add', component: () => import('../views/studio/AddStudio.vue') },
+      { path: 'studios/:id/edit', name: 'studio-edit', component: () => import('../views/studio/EditStudio.vue') },
+      { path: 'bookings', name: 'studio-bookings', component: () => import('../views/studio/Bookings.vue') },
+    ],
+  },
+  {
     path: '/admin',
     component: AdminLayout,
     children: [
@@ -66,6 +83,9 @@ const routes = [
       { path: 'hero', name: 'admin-hero', component: () => import('../views/admin/Hero.vue') },
       { path: 'partners', name: 'admin-partners', component: () => import('../views/admin/Partners.vue') },
       { path: 'services', name: 'admin-services', component: () => import('../views/admin/Services.vue') },
+      { path: 'studios', name: 'admin-studios', component: () => import('../views/admin/Studios.vue') },
+      { path: 'studios/new', name: 'admin-studios-new', component: () => import('../views/admin/AddStudio.vue') },
+      { path: 'studios/:id/edit', name: 'admin-studios-edit', component: () => import('../views/admin/EditStudio.vue') },
     ],
   },
 ];
