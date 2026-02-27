@@ -142,17 +142,31 @@ class PayUController extends Controller
         $amount = $params['amount'] ?? '';
         $gatewayRef = $params['mihpayid'] ?? $params['payuMoneyId'] ?? $params['txnid'] ?? '';
 
+        // persist callback data for troubleshooting
         $payment = Payment::where('txnid', $txnid)->first();
         if (! $payment) {
+            \\Log::warning('PayU callback received for unknown txn', $params);
             return redirect()->to(url('/payment/result?status=failed&reason=invalid_txn'));
         }
 
+        // attach response parameters to existing record (merge with original request)
+        $payment->update(['request_params' => array_merge($payment->request_params ?? [], $params)]);
+
         if (! $this->payu->verifyResponseHash($params)) {
+            \\Log::warning('PayU hash verification failed', ['expected' => null, 'received' => $params]);
             $payment->markFailed();
             return redirect()->to(url('/payment/result?status=failed&reason=hash_mismatch'));
         }
 
-        $isSuccess = strtolower($status) === 'success' && (float) $amount === (float) $payment->amount;
+        // normalize status, compare amounts with precision
+        $statusNorm = trim(strtolower((string) $status));
+        $amountNorm = (string) $amount;
+        $paymentAmount = (string) $payment->amount;
+        $isSuccess = $statusNorm === 'success' && bccomp($amountNorm, $paymentAmount, 2) === 0;
+
+        if ($statusNorm === 'success' && ! $isSuccess) {
+            \\Log::warning('PayU amount mismatch', compact('txnid', 'amountNorm', 'paymentAmount'));
+        }
 
         if ($isSuccess) {
             $payment->markCompleted($gatewayRef);

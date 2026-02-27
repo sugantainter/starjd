@@ -238,4 +238,10 @@ Route::get('/auth/facebook/callback', [SocialAuthController::class, 'facebookCal
 | /contact, /privacy, /terms, /blog, /services, /creators, /login, /register,
 | /creator/*, /brand/*, /admin/*, etc.
 */
+// SPA-specific login/register names so that middleware can redirect properly
+// these simply render the main Vue application like the catch-all does
+Route::get('login', [HomeController::class, 'index'])->name('login');
+Route::get('register', [HomeController::class, 'index'])->name('register');
+
+// catch-all must remain last
 Route::get('/{any?}', [HomeController::class, 'index'])->where('any', '.*')->name('home');
