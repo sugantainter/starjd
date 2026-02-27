@@ -14,6 +14,7 @@ class AccessPayment extends Model
         'status',
         'paid_at',
         'gateway_ref',
+        'coupon_id',
     ];
 
     protected function casts(): array
@@ -27,6 +28,11 @@ class AccessPayment extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function coupon(): BelongsTo
+    {
+        return $this->belongsTo(Coupon::class);
     }
 
     public static function hasPaidAccess(User $user): bool

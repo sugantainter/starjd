@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\StateController as AdminStateController;
 use App\Http\Controllers\Admin\StepController as AdminStepController;
 use App\Http\Controllers\Admin\StudioCategoryController as AdminStudioCategoryController;
 use App\Http\Controllers\Admin\AmenityController as AdminAmenityController;
+use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\StudioController as AdminStudioController;
 use App\Http\Controllers\Admin\VideoController as AdminVideoController;
 use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialController;
@@ -47,6 +48,7 @@ use App\Http\Controllers\CreatorOptionsController;
 use App\Http\Controllers\Brand\BrandController as BrandDashboardController;
 use App\Http\Controllers\Brand\BrandProfileController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\PayUController;
 use App\Http\Controllers\StudioOwner\StudioOwnerBookingController;
 use App\Http\Controllers\StudioOwner\StudioOwnerStudioController;
 use App\Http\Controllers\StudioOwner\StudioOwnerStudioImageController;
@@ -127,6 +129,8 @@ Route::prefix('api')->group(function () {
         Route::post('collaborations', [CollaborationController::class, 'store']);
         Route::post('collaborations/{collaboration}/accept', [CollaborationController::class, 'accept']);
         Route::post('collaborations/{collaboration}/pay', [CollaborationController::class, 'pay']);
+        Route::post('payment/payu/create', [PayUController::class, 'create']);
+        Route::get('payment/coupon/validate', [PayUController::class, 'validateCoupon']);
     });
 
     Route::middleware(['auth:web', 'verified', 'creator', 'paid'])->prefix('creator')->group(function () {
@@ -209,6 +213,7 @@ Route::prefix('api')->group(function () {
         Route::put('studios/{studio}', [AdminStudioController::class, 'update']);
         Route::apiResource('studio-categories', AdminStudioCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('amenities', AdminAmenityController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::apiResource('coupons', AdminCouponController::class)->only(['index', 'store', 'update', 'destroy']);
     });
 });
 
@@ -217,6 +222,9 @@ Route::prefix('api')->group(function () {
 | Social / OAuth login & registration (must be before SPA catch-all)
 |--------------------------------------------------------------------------
 */
+Route::match(['get', 'post'], '/payment/callback/success', [PayUController::class, 'callback'])->name('payu.callback.success');
+Route::match(['get', 'post'], '/payment/callback/failure', [PayUController::class, 'callback'])->name('payu.callback.failure');
+
 Route::get('/auth/google/redirect', [SocialAuthController::class, 'googleRedirect'])->name('auth.google.redirect');
 Route::get('/auth/google/callback', [SocialAuthController::class, 'googleCallback'])->name('auth.google.callback');
 Route::get('/auth/facebook/redirect', [SocialAuthController::class, 'facebookRedirect'])->name('auth.facebook.redirect');

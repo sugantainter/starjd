@@ -34,6 +34,7 @@ class Booking extends Model
         'customer_notes',
         'confirmed_at',
         'cancelled_at',
+        'coupon_id',
     ];
 
     protected function casts(): array
@@ -56,6 +57,11 @@ class Booking extends Model
     public function studio(): BelongsTo
     {
         return $this->belongsTo(Studio::class);
+    }
+
+    public function coupon(): BelongsTo
+    {
+        return $this->belongsTo(Coupon::class);
     }
 
     public function scopeConfirmed($query)

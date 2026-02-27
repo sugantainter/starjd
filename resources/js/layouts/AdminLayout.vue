@@ -96,6 +96,20 @@
             </div>
           </div>
 
+          <!-- Commerce -->
+          <div class="mt-4">
+            <button type="button" class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[#94a3b8]" @click="navOpen.commerce = !navOpen.commerce">
+              <span>Commerce</span>
+              <svg class="h-4 w-4 transition-transform" :class="{ 'rotate-180': navOpen.commerce }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+            </button>
+            <div v-show="navOpen.commerce" class="mt-0.5 space-y-0.5">
+              <router-link to="/admin/coupons" class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#e63946]/10 !text-[#e63946]">
+                <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
+                Coupon codes
+              </router-link>
+            </div>
+          </div>
+
           <!-- Inbox -->
           <div class="mt-4">
             <button type="button" class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[#94a3b8]" @click="navOpen.inbox = !navOpen.inbox">
@@ -147,6 +161,7 @@ watch(() => route.path, (path) => {
   if (path.startsWith('/admin/states') || path.startsWith('/admin/cities')) navOpen.locations = true;
   if (path.startsWith('/admin/categories') || path.startsWith('/admin/hero') || path.startsWith('/admin/testimonials') || path.startsWith('/admin/faqs') || path.startsWith('/admin/steps') || path.startsWith('/admin/partners') || path.startsWith('/admin/services')) navOpen.site = true;
   if (path.startsWith('/admin/studios')) navOpen.studios = true;
+  if (path.startsWith('/admin/coupons')) navOpen.commerce = true;
   if (path.startsWith('/admin/contacts')) navOpen.inbox = true;
 }, { immediate: true });
 

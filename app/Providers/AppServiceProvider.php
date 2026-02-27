@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Review;
 use App\Observers\ReviewObserver;
+use App\Services\PayUService;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\ServiceProvider;
 
@@ -14,7 +15,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(PayUService::class, function () {
+            return PayUService::fromConfig();
+        });
     }
 
     /**

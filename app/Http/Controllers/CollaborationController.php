@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Collaboration;
+use App\Models\Coupon;
 use App\Models\CreatorProfile;
 use App\Models\PlatformSetting;
 use Illuminate\Http\JsonResponse;
@@ -30,6 +31,7 @@ class CollaborationController extends Controller
             'package_id' => ['nullable', 'exists:packages,id'],
             'amount' => ['required', 'numeric', 'min:1'],
             'brand_notes' => ['nullable', 'string', 'max:1000'],
+            'coupon_code' => ['nullable', 'string', 'max:64'],
         ]);
 
         if ($request->user()->role !== 'brand') {
@@ -41,8 +43,18 @@ class CollaborationController extends Controller
             return response()->json(['message' => 'Invalid creator'], 422);
         }
 
-        $feePercent = (float) (PlatformSetting::get('platform_fee_percent', 10));
         $amount = (float) $request->amount;
+        $couponId = null;
+        if ($request->filled('coupon_code')) {
+            $applied = Coupon::apply($request->coupon_code, $amount, 'collaboration');
+            if (isset($applied['error'])) {
+                return response()->json(['message' => $applied['error']], 422);
+            }
+            $amount = $applied['final_amount'];
+            $couponId = $applied['coupon_id'] ?? null;
+        }
+
+        $feePercent = (float) (PlatformSetting::get('platform_fee_percent', 10));
         $platformFee = round($amount * $feePercent / 100, 2);
         $creatorAmount = $amount - $platformFee;
 
@@ -55,6 +67,7 @@ class CollaborationController extends Controller
             'creator_amount' => $creatorAmount,
             'status' => 'pending',
             'brand_notes' => $request->brand_notes,
+            'coupon_id' => $couponId,
         ]);
 
         $collab->load(['creator', 'creator.creatorProfile', 'package']);

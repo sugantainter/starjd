@@ -24,6 +24,7 @@ const routes = [
   { path: '/creators/:slug', component: AppLayout, children: [ { path: '', name: 'creator-public', component: () => import('../views/CreatorPublicProfile.vue') } ] },
   { path: '/studios', component: AppLayout, children: [ { path: '', name: 'studios', component: () => import('../views/Studios.vue') } ] },
   { path: '/studios/:slug', component: AppLayout, children: [ { path: '', name: 'studio-detail', component: () => import('../views/StudioDetail.vue') } ] },
+  { path: '/payment/result', component: AppLayout, children: [ { path: '', name: 'payment-result', component: () => import('../views/PaymentResult.vue') } ] },
   { path: '/login', component: AppLayout, children: [ { path: '', name: 'login', component: () => import('../views/Login.vue') } ] },
   { path: '/register', component: AppLayout, children: [ { path: '', name: 'register', component: () => import('../views/Register.vue') } ] },
   { path: '/verify-email', component: AppLayout, children: [ { path: '', name: 'verify-email', component: () => import('../views/VerifyEmail.vue') } ] },
@@ -96,6 +97,7 @@ const routes = [
       { path: 'studios', name: 'admin-studios', component: () => import('../views/admin/Studios.vue') },
       { path: 'studios/new', name: 'admin-studios-new', component: () => import('../views/admin/AddStudio.vue') },
       { path: 'studios/:id/edit', name: 'admin-studios-edit', component: () => import('../views/admin/EditStudio.vue') },
+      { path: 'coupons', name: 'admin-coupons', component: () => import('../views/admin/Coupons.vue') },
     ],
   },
 ];

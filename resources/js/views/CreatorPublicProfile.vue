@@ -100,6 +100,10 @@
             <input v-model.number="collabForm.amount" type="number" step="0.01" min="0" required class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" />
           </div>
           <div>
+            <label class="mb-1 block text-sm font-medium">Coupon code (optional)</label>
+            <input v-model="collabForm.coupon_code" type="text" placeholder="e.g. SAVE20" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" />
+          </div>
+          <div>
             <label class="mb-1 block text-sm font-medium">Notes (optional)</label>
             <textarea v-model="collabForm.brand_notes" rows="3" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]"></textarea>
           </div>
@@ -129,7 +133,7 @@ const profile = ref(null);
 const loading = ref(true);
 const showModal = ref(false);
 const selectedPackage = ref(null);
-const collabForm = reactive({ amount: 0, brand_notes: '' });
+const collabForm = reactive({ amount: 0, brand_notes: '', coupon_code: '' });
 const error = ref('');
 const loadingCollab = ref(false);
 const isBrand = ref(false);
@@ -221,6 +225,7 @@ function openCollab(pkg) {
   selectedPackage.value = pkg;
   collabForm.amount = Number(pkg.price);
   collabForm.brand_notes = '';
+  collabForm.coupon_code = '';
   error.value = '';
   showModal.value = true;
 }
@@ -234,6 +239,7 @@ async function submitCollab() {
       package_id: selectedPackage.value?.id ?? null,
       amount: collabForm.amount,
       brand_notes: collabForm.brand_notes || null,
+      coupon_code: collabForm.coupon_code?.trim() || null,
     }, { withCredentials: true });
     showModal.value = false;
     alert('Collaboration request sent. Check your Brand dashboard for updates.');
