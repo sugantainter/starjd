@@ -35,11 +35,11 @@
         </div>
       </div>
     </div>
-    <div v-if="profile.user?.creator_image_posts?.length" class="mt-8">
+    <div v-if="portfolio.length" class="mt-8">
       <h2 class="text-xl font-semibold text-[#1a1a1a]">Portfolio</h2>
       <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-        <div v-for="post in profile.user.creator_image_posts" :key="post.id" class="aspect-square rounded-xl overflow-hidden border border-[#e2e8f0] bg-[#f1f5f9]">
-          <img :src="post.image_url" :alt="post.caption" class="h-full w-full object-cover" />
+        <div v-for="post in portfolio" :key="post.id" class="aspect-square rounded-xl overflow-hidden border border-[#e2e8f0] bg-[#f1f5f9]">
+          <img :src="post.image" :alt="post.caption" class="h-full w-full object-cover" />
           <p v-if="post.caption" class="p-2 text-xs text-[#64748b] truncate">{{ post.caption }}</p>
         </div>
       </div>
@@ -48,9 +48,14 @@
       <h2 class="text-xl font-semibold text-[#1a1a1a]">Packages & rates</h2>
       <p class="mt-1 text-sm text-[#64748b]">Collaboration packages with transparent pricing.</p>
       <div class="mt-4 space-y-4">
-        <div v-for="pkg in profile.user?.packages" :key="pkg.id" class="rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-sm">
+        <div v-for="pkg in packages" :key="pkg.id" class="rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-sm">
           <div class="flex flex-wrap items-center gap-2">
-            <span v-if="pkg.package_category" class="rounded-full bg-[#e63946]/10 px-2.5 py-0.5 text-xs font-medium text-[#c1121f]">{{ pkg.package_category.name }}</span>
+            <span
+              v-if="pkg.package_category || pkg.category"
+              class="rounded-full bg-[#e63946]/10 px-2.5 py-0.5 text-xs font-medium text-[#c1121f]"
+            >
+              {{ pkg.package_category?.name || pkg.category }}
+            </span>
           </div>
           <h3 class="mt-2 font-semibold text-[#1a1a1a]">{{ pkg.name }}</h3>
           <div class="mt-1 text-2xl font-bold text-[#e63946]">₹{{ formatPrice(pkg.price) }}</div>
@@ -79,7 +84,7 @@
           <button v-if="isBrand" type="button" class="mt-4 cursor-link rounded-lg bg-[#e63946] px-4 py-2 text-sm font-medium text-white hover:bg-[#c1121f]" @click="openCollab(pkg)">Collaborate</button>
         </div>
       </div>
-      <p v-if="isBrand && !profile.user?.packages?.length" class="mt-4 text-[#64748b]">No packages listed. Contact the creator directly.</p>
+      <p v-if="isBrand && !packages.length" class="mt-4 text-[#64748b]">No packages listed. Contact the creator directly.</p>
       <p v-if="!isBrand" class="mt-4 text-[#64748b]">Log in as a brand to request a collaboration.</p>
     </div>
     <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="showModal = false">
@@ -155,6 +160,38 @@ function formatFollowers(n) {
 const connectedSocialAccounts = computed(() => {
   const list = profile.value?.user?.social_accounts || [];
   return list.filter((s) => s.profile_url || s.username);
+});
+
+const packages = computed(() => {
+  const p = profile.value;
+  if (!p) return [];
+  if (Array.isArray(p.user?.packages)) {
+    return p.user.packages;
+  }
+  if (Array.isArray(p.packages)) {
+    return p.packages;
+  }
+  return [];
+});
+
+const portfolio = computed(() => {
+  const p = profile.value;
+  if (!p) return [];
+  if (Array.isArray(p.user?.creator_image_posts)) {
+    return p.user.creator_image_posts.map((post) => ({
+      id: post.id,
+      image: post.image_url || post.image || null,
+      caption: post.caption,
+    }));
+  }
+  if (Array.isArray(p.portfolio)) {
+    return p.portfolio.map((post) => ({
+      id: post.id,
+      image: post.image_url || post.image || null,
+      caption: post.caption,
+    }));
+  }
+  return [];
 });
 
 onMounted(async () => {

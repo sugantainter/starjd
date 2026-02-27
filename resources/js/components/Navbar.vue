@@ -127,7 +127,7 @@
               <button
                 type="button"
                 class="flex items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-4 py-2 text-sm font-medium text-[#1a1a1a] shadow-sm transition hover:border-[#e63946] hover:bg-[#fafafa] focus:outline-none focus:ring-2 focus:ring-[#e63946]/20"
-                :class="user.role === 'creator' ? 'hover:border-[#10b981] focus:ring-[#10b981]/20' : user.role === 'admin' ? 'hover:border-[#1e293b] focus:ring-[#1e293b]/20' : ''"
+                :class="user.role === 'creator' ? 'hover:border-[#10b981] focus:ring-[#10b981]/20' : user.role === 'admin' ? 'hover:border-[#1e293b] focus:ring-[#1e293b]/20' : user.role === 'agency' ? 'hover:border-[#7c3aed] focus:ring-[#7c3aed]/20' : ''"
                 @click="userMenuOpen = !userMenuOpen"
               >
                 <span class="max-w-[120px] truncate">{{ user.name }}</span>
@@ -159,6 +159,9 @@
                   </template>
                   <template v-else-if="user.role === 'admin'">
                     <router-link to="/admin" class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#1e293b]/5 hover:text-[#1e293b]" @click="userMenuOpen = false">Admin Panel</router-link>
+                  </template>
+                  <template v-else-if="user.role === 'agency'">
+                    <router-link to="/agency/dashboard" class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#7c3aed]/5 hover:text-[#7c3aed]" @click="userMenuOpen = false">Agency Dashboard</router-link>
                   </template>
                   <div class="border-t border-[#e2e8f0] pt-1">
                     <button type="button" class="block w-full px-4 py-2.5 text-left text-sm text-[#64748b] transition hover:bg-red-50 hover:text-red-600" @click="logout">Logout</button>
@@ -213,6 +216,9 @@
               </template>
               <template v-else-if="user.role === 'admin'">
                 <router-link to="/admin" class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#1e293b]/5 hover:text-[#1e293b]" @click="navMobileOpen = false">Admin Panel</router-link>
+              </template>
+              <template v-else-if="user.role === 'agency'">
+                <router-link to="/agency/dashboard" class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#7c3aed]/5 hover:text-[#7c3aed]" @click="navMobileOpen = false">Agency Dashboard</router-link>
               </template>
               <button type="button" class="rounded-lg px-4 py-3 text-left text-sm text-red-600 transition hover:bg-red-50" @click="logout(); navMobileOpen = false">Logout</button>
             </template>

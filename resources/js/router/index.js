@@ -3,6 +3,7 @@ import AppLayout from '../layouts/AppLayout.vue';
 import AdminLayout from '../layouts/AdminLayout.vue';
 import CreatorLayout from '../layouts/CreatorLayout.vue';
 import BrandLayout from '../layouts/BrandLayout.vue';
+import AgencyLayout from '../layouts/AgencyLayout.vue';
 import StudioLayout from '../layouts/StudioLayout.vue';
 
 const routes = [
@@ -52,6 +53,14 @@ const routes = [
       { path: 'profile', name: 'brand-profile', component: () => import('../views/brand/Profile.vue') },
       { path: 'creators', name: 'brand-creators', component: () => import('../views/brand/DiscoverCreators.vue') },
       { path: 'collaborations', name: 'brand-collaborations', component: () => import('../views/brand/Collaborations.vue') },
+    ],
+  },
+  {
+    path: '/agency',
+    component: AgencyLayout,
+    children: [
+      { path: '', redirect: '/agency/dashboard' },
+      { path: 'dashboard', name: 'agency-dashboard', component: () => import('../views/agency/Dashboard.vue') },
     ],
   },
   {
