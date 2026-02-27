@@ -7,7 +7,7 @@ import AgencyLayout from '../layouts/AgencyLayout.vue';
 import StudioLayout from '../layouts/StudioLayout.vue';
 
 const routes = [
-  { path: '/', name: 'home', component: () => import('../App.vue') },
+  { path: '/', component: AppLayout, children: [ { path: '', name: 'home', component: () => import('../App.vue'), props: { noHeaderFooter: true } } ] },
   { path: '/about', component: AppLayout, children: [ { path: '', name: 'about', component: () => import('../views/About.vue') } ] },
   { path: '/contact', component: AppLayout, children: [ { path: '', name: 'contact', component: () => import('../views/Contact.vue') } ] },
   { path: '/privacy', component: AppLayout, children: [ { path: '', name: 'privacy', component: () => import('../views/Privacy.vue') } ] },
@@ -103,6 +103,18 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (to.hash) {
+      return { el: to.hash, behavior: 'smooth' };
+    }
+    if (savedPosition) {
+      return savedPosition;
+    }
+    // Naye page render hone ke baad top pe scroll (footer se link par top section dikhe)
+    return new Promise((resolve) => {
+      setTimeout(() => resolve({ top: 0, left: 0 }), 50);
+    });
+  },
 });
 
 export default router;

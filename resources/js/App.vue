@@ -1,7 +1,8 @@
 <template>
     <div class="min-h-screen bg-[#fafaf9] text-[#1a1a1a]">
-        <!-- Nav -->
+        <!-- Nav (hidden when used inside AppLayout for home) -->
         <header
+            v-if="!noHeaderFooter"
             ref="headerRef"
             class="sticky top-0 z-50 border-b border-[#e5e7eb] bg-white/90 backdrop-blur-md"
         >
@@ -1908,10 +1909,10 @@
             </div>
         </section>
 
-        <!-- FAQ section (above footer) -->
+        <!-- FAQ section (above footer); extra pb so CTA banner can overlap half above -->
         <section
             id="faq"
-            class="animate-on-scroll border-t border-[#e5e7eb] bg-[#fafaf9] px-4 py-10 md:py-16"
+            class="animate-on-scroll border-t border-[#e5e7eb] bg-[#fafaf9] px-4 py-16 pb-20 md:py-24 md:pb-28"
         >
             <div class="mx-auto max-w-3xl">
                 <h2
@@ -1965,14 +1966,16 @@
             </div>
         </section>
 
-        <!-- Footer -->
-        <Footer />
+        <!-- Footer (hidden when used inside AppLayout for home) -->
+        <Footer v-if="!noHeaderFooter" />
     </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import Footer from "@/components/Footer.vue";
+
+defineProps({ noHeaderFooter: { type: Boolean, default: false } });
 import { useRouter } from "vue-router";
 import axios from "axios";
 
