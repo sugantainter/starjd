@@ -19,6 +19,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'studio_owner' => \App\Http\Middleware\EnsureUserIsStudioOwner::class,
             'paid' => \App\Http\Middleware\EnsureCreatorOrBrandHasPaid::class,
         ]);
+        // PayU redirects here via POST without a CSRF token; we verify with PayU hash instead
+        $middleware->validateCsrfTokens(except: [
+            'payment/callback/success',
+            'payment/callback/failure',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
