@@ -140,7 +140,7 @@
               </div>
             </Transition>
           </div>
-          <router-link to="/creators" class="text-sm font-semibold transition hover:text-[#fc4402]">Campaign</router-link>
+          <router-link to="/campaign-landing" class="text-sm font-semibold transition hover:text-[#fc4402]">Campaign</router-link>
 
                     <div
                         ref="servicesRef"
