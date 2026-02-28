@@ -46,7 +46,7 @@ class PayUController extends Controller
         switch ($type) {
             case 'access':
                 $planId = $request->input('plan_id');
-                $plans = config('plans.' . $user->role, []);
+                $plans = config('plans.'.$user->role, []);
                 $plan = collect($plans)->firstWhere('id', $planId);
                 $originalAmount = (float) ($plan['price'] ?? 0);
                 if (! $plan) {
@@ -72,7 +72,7 @@ class PayUController extends Controller
                 ]);
                 $payableType = AccessPayment::class;
                 $payableId = $accessPayment->id;
-                $productinfo = 'StarJD ' . ucfirst($user->role) . ' Plan - ' . ($plan['name'] ?? $planId);
+                $productinfo = 'StarJD '.ucfirst($user->role).' Plan - '.($plan['name'] ?? $planId);
                 break;
 
             case 'collaboration':
@@ -86,7 +86,7 @@ class PayUController extends Controller
                 }
                 $payableType = Collaboration::class;
                 $payableId = $collab->id;
-                $productinfo = 'Collaboration #' . $collab->id . ' - StarJD';
+                $productinfo = 'Collaboration #'.$collab->id.' - StarJD';
                 break;
 
             case 'booking':
@@ -100,14 +100,14 @@ class PayUController extends Controller
                 }
                 $payableType = Booking::class;
                 $payableId = $booking->id;
-                $productinfo = 'Studio Booking #' . $booking->id . ' - StarJD';
+                $productinfo = 'Studio Booking #'.$booking->id.' - StarJD';
                 break;
 
             default:
                 return response()->json(['message' => 'Invalid payment type'], 422);
         }
 
-        $txnid = 'TXN' . strtoupper(Str::random(8)) . $payableId . time();
+        $txnid = 'TXN'.strtoupper(Str::random(8)).$payableId.time();
         $payment = Payment::create([
             'user_id' => $user->id,
             'type' => $type,
@@ -153,6 +153,7 @@ class PayUController extends Controller
                 'params' => $params,
                 'headers' => $request->headers->all(),
             ]);
+
             // If no txnid is provided, treat this as a non-final browser redirect
             // and show a pending result rather than marking payment failed.
             return redirect()->to(url('/payment/result?status=pending&reason=no_txn'));
@@ -168,6 +169,7 @@ class PayUController extends Controller
                 'payment_amount' => (string) $payment->amount,
             ]);
             $payment->markFailed();
+
             return redirect()->to(url('/payment/result?status=failed&reason=hash_mismatch'));
         }
 
@@ -195,6 +197,7 @@ class PayUController extends Controller
         $redirectUrl = $isSuccess
             ? $this->successRedirectFor($payment)
             : url('/payment/result?status=failed');
+
         return redirect()->to($redirectUrl);
     }
 
@@ -213,6 +216,7 @@ class PayUController extends Controller
         if (isset($result['error'])) {
             return response()->json(['valid' => false, 'message' => $result['error']], 422);
         }
+
         return response()->json(['valid' => true, 'data' => $result]);
     }
 
@@ -254,7 +258,7 @@ class PayUController extends Controller
         $base = url('/payment/result?status=success');
         switch ($payment->type) {
             case Payment::TYPE_BOOKING:
-                return $base . '&booking=1';
+                return $base.'&booking=1';
             default:
                 return $base;
         }
