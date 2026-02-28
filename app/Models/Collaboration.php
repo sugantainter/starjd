@@ -17,6 +17,7 @@ class Collaboration extends Model
         'status',
         'brand_notes',
         'paid_at',
+        'coupon_id',
     ];
 
     protected function casts(): array
@@ -42,5 +43,10 @@ class Collaboration extends Model
     public function package(): BelongsTo
     {
         return $this->belongsTo(Package::class);
+    }
+
+    public function coupon(): BelongsTo
+    {
+        return $this->belongsTo(Coupon::class);
     }
 }

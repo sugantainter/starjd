@@ -67,6 +67,9 @@ class BookingService
      * Create booking (payment_pending), optionally create transaction (hold in escrow).
      * Call confirmBooking() after payment success.
      */
+    /**
+     * @param  array{amount: float, platform_commission: float, studio_amount: float, hours: float}|null  $totalsOverride
+     */
     public function createBooking(
         User $customer,
         Studio $studio,
@@ -74,15 +77,17 @@ class BookingService
         string $startTime,
         string $endTime,
         string $cancellationPolicy = Booking::CANCELLATION_MODERATE,
-        ?string $customerNotes = null
+        ?string $customerNotes = null,
+        ?array $totalsOverride = null,
+        ?int $couponId = null
     ): Booking {
         if (! $this->validateAvailability($studio, $date, $startTime, $endTime)) {
             throw new InvalidArgumentException('The selected slot is no longer available.');
         }
 
-        $totals = $this->calculateTotal($studio, $date, $startTime, $endTime);
+        $totals = $totalsOverride ?? $this->calculateTotal($studio, $date, $startTime, $endTime);
 
-        return DB::transaction(function () use ($customer, $studio, $date, $startTime, $endTime, $cancellationPolicy, $customerNotes, $totals) {
+        return DB::transaction(function () use ($customer, $studio, $date, $startTime, $endTime, $cancellationPolicy, $customerNotes, $totals, $couponId) {
             $booking = Booking::create([
                 'user_id' => $customer->id,
                 'studio_id' => $studio->id,
@@ -96,6 +101,7 @@ class BookingService
                 'status' => Booking::STATUS_PAYMENT_PENDING,
                 'cancellation_policy' => $cancellationPolicy,
                 'customer_notes' => $customerNotes,
+                'coupon_id' => $couponId,
             ]);
 
             return $booking;

@@ -79,6 +79,12 @@
 
       <div class="lg:col-span-1">
         <div class="sticky top-24">
+          <div class="mb-3 flex flex-wrap items-end gap-2">
+            <div class="min-w-[140px] flex-1">
+              <label class="mb-1 block text-xs font-medium text-[#64748b]">Coupon code</label>
+              <input v-model="couponCode" type="text" placeholder="Optional" class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-sm" @change="fetchPrice" />
+            </div>
+          </div>
           <BookingWidget
             :studio="studio"
             :breakdown="priceBreakdown"
@@ -94,10 +100,13 @@
     </div>
   </div>
   <div v-else class="mx-auto max-w-6xl px-4 py-12 text-center text-[#64748b]">Studio not found.</div>
+  <form ref="payuForm" method="post" :action="payuUrl" class="hidden">
+    <input v-for="(val, key) in payuParams" :key="key" :name="key" :value="val" type="hidden" />
+  </form>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, nextTick, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import StudioCard from '../components/studio/StudioCard.vue';
@@ -141,37 +150,56 @@ async function fetchPrice() {
     return;
   }
   try {
-    const res = await axios.get('/api/bookings/calculate', {
-      params: {
-        studio_id: studio.value.id,
-        date: bookingDate.value,
-        start_time: bookingStart.value,
-        end_time: bookingEnd.value,
-      },
-    });
+    const params = {
+      studio_id: studio.value.id,
+      date: bookingDate.value,
+      start_time: bookingStart.value,
+      end_time: bookingEnd.value,
+    };
+    if (couponCode.value?.trim()) params.coupon_code = couponCode.value.trim();
+    const res = await axios.get('/api/bookings/calculate', { params });
     priceBreakdown.value = res.data;
   } catch {
     priceBreakdown.value = null;
   }
 }
 
-watch([bookingDate, bookingStart, bookingEnd], () => fetchPrice());
+watch([bookingDate, bookingStart, bookingEnd, couponCode], () => fetchPrice());
+
+const payuForm = ref(null);
+const payuUrl = ref('');
+const payuParams = ref({});
 
 async function onBook() {
   if (!bookingDate.value || !bookingStart.value || !bookingEnd.value) return;
   bookingInProgress.value = true;
   try {
-    await axios.post('/api/bookings', {
+    const bookPayload = {
       studio_id: studio.value.id,
       date: bookingDate.value,
       start_time: bookingStart.value,
       end_time: bookingEnd.value,
       cancellation_policy: 'moderate',
+    };
+    if (couponCode.value?.trim()) bookPayload.coupon_code = couponCode.value.trim();
+    const bookRes = await axios.post('/api/bookings', bookPayload, { withCredentials: true });
+    const booking = bookRes.data?.booking;
+    if (!booking?.id || booking.amount == null) {
+      alert('Booking created. Complete payment from your account.');
+      return;
+    }
+    const payRes = await axios.post('/api/payment/payu/create', {
+      type: 'booking',
+      booking_id: booking.id,
+      amount: Number(booking.amount),
+    }, { withCredentials: true });
+    payuUrl.value = payRes.data.payment_url;
+    payuParams.value = payRes.data.params || {};
+    nextTick(() => {
+      if (payuForm.value) payuForm.value.submit();
     });
-    alert('Booking request created. Complete payment to confirm.');
   } catch (e) {
     alert(e.response?.data?.message || 'Booking failed. Are you logged in?');
-  } finally {
     bookingInProgress.value = false;
   }
 }

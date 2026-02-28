@@ -38,6 +38,7 @@
 
     <div v-if="breakdown" class="mt-4 rounded-lg bg-[#f8fafc] p-3 text-sm">
       <div class="flex justify-between"><span>Subtotal</span><span>₹{{ breakdown.amount }}</span></div>
+      <div v-if="breakdown.discount > 0" class="flex justify-between text-[#10b981]"><span>Discount</span><span>-₹{{ breakdown.discount }}</span></div>
       <div v-if="breakdown.platform_commission > 0" class="flex justify-between text-[#64748b]"><span>Platform fee</span><span>₹{{ breakdown.platform_commission }}</span></div>
       <div class="mt-2 flex justify-between font-semibold"><span>Total</span><span>₹{{ breakdown.amount }}</span></div>
     </div>

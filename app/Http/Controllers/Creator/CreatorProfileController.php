@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Creator;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -28,11 +30,20 @@ class CreatorProfileController extends Controller
 
     public function update(Request $request): JsonResponse
     {
+        // Get categories from database or fallback to config
+        $categories = [];
+        if (Schema::hasTable('categories')) {
+            $categories = DB::table('categories')->pluck('name')->toArray();
+        }
+        if (empty($categories)) {
+            $categories = config('creator.categories', []);
+        }
+        
         $rules = [
             'bio' => ['nullable', 'string', 'max:2000'],
             'location' => ['nullable', 'string', 'max:255'],
             'tagline' => ['nullable', 'string', 'max:255'],
-            'category' => ['nullable', 'string', Rule::in(config('creator.categories', []))],
+            'category' => ['nullable', 'string', Rule::in($categories)],
             'gender' => ['nullable', 'string', Rule::in(array_keys(config('creator.genders', [])))],
             'language' => ['nullable', 'string', Rule::in(config('creator.languages', []))],
             'is_public' => ['nullable', 'boolean'],

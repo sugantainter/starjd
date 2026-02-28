@@ -166,7 +166,9 @@
                                         ? 'hover:border-[#10b981] focus:ring-[#10b981]/20'
                                         : navUser.role === 'admin'
                                           ? 'hover:border-[#1e293b] focus:ring-[#1e293b]/20'
-                                          : ''
+                                          : navUser.role === 'agency'
+                                            ? 'hover:border-[#7c3aed] focus:ring-[#7c3aed]/20'
+                                            : ''
                                 "
                                 @click="navUserMenuOpen = !navUserMenuOpen"
                             >
@@ -252,6 +254,14 @@
                                             class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#1e293b]/5 hover:text-[#1e293b]"
                                             @click="navUserMenuOpen = false"
                                             >Admin Panel</router-link
+                                        >
+                                    </template>
+                                    <template v-else-if="navUser.role === 'agency'">
+                                        <router-link
+                                            to="/agency/dashboard"
+                                            class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#7c3aed]/5 hover:text-[#7c3aed]"
+                                            @click="navUserMenuOpen = false"
+                                            >Agency Dashboard</router-link
                                         >
                                     </template>
                                     <div class="border-t border-[#e2e8f0] pt-1">
@@ -397,6 +407,14 @@
                                         class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#1e293b]/5 hover:text-[#1e293b]"
                                         @click="navMobileOpen = false"
                                         >Admin Panel</router-link
+                                    >
+                                </template>
+                                <template v-else-if="navUser.role === 'agency'">
+                                    <router-link
+                                        to="/agency/dashboard"
+                                        class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#7c3aed]/5 hover:text-[#7c3aed]"
+                                        @click="navMobileOpen = false"
+                                        >Agency Dashboard</router-link
                                     >
                                 </template>
                                 <button

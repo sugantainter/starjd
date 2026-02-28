@@ -36,7 +36,7 @@ class SectionsController extends Controller
             $categories = DB::table('categories')->orderBy('sort_order')->get()->map(fn ($r) => [
                 'name' => $r->name,
                 'count' => $r->count_display ?? '0',
-                'image' => $r->image ?? 'https://picsum.photos/seed/' . Str::slug($r->name) . '/400/500',
+                'image' => $r->image ? asset('storage/' . $r->image) : 'https://picsum.photos/seed/' . Str::slug($r->name) . '/400/500',
             ])->toArray();
         }
         if (\Schema::hasTable('testimonials')) {
@@ -44,7 +44,7 @@ class SectionsController extends Controller
                 'quote' => $r->quote,
                 'name' => $r->name,
                 'role' => $r->role,
-                'avatar' => $r->avatar ?? 'https://picsum.photos/seed/' . $r->id . '/80/80',
+                'avatar' => $r->avatar ? asset('storage/' . $r->avatar) : 'https://picsum.photos/seed/' . $r->id . '/80/80',
             ])->toArray();
         }
         if (\Schema::hasTable('faqs')) {
