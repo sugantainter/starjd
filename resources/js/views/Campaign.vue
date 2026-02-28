@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen">
     <!-- Hero: dark blue, left = headline + description + CTA, right = vertical scrolling video cards + brand badges (image jesa) -->
-    <section class="campaign-hero relative overflow-hidden border-b border-[#1e3a5f] bg-[#0f172a] px-4 py-12 md:py-16 lg:py-20">
+    <section class="campaign-hero relative overflow-hidden border-b border-[#1e3a5f] bg-[#0f172a] px-4">
       <div class="relative mx-auto max-w-6xl">
         <div class="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
           <!-- Left: content -->
