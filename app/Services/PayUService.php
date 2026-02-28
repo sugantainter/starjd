@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 
 class PayUService
 {
@@ -25,6 +26,47 @@ class PayUService
             $config['surl'],
             $config['furl']
         );
+    }
+
+    /**
+     * Query PayU for transaction status using merchant postservice.
+     * Returns decoded JSON or ['error'=>...] on failure.
+     */
+    public function getTransactionStatus(string $txnid): array
+    {
+        $statusUrl = config('payu.status_url');
+        $payload = [
+            'key' => $this->key,
+            'command' => 'verify_payment',
+            'var1' => $txnid,
+        ];
+
+        // Try common hash orders — PayU expects a sha512 hash but order varies by integration.
+        $hashes = [
+            strtolower(hash('sha512', $this->salt . '|' . 'verify_payment' . '|' . $txnid . '|' . $this->key)),
+            strtolower(hash('sha512', $this->key . '|' . 'verify_payment' . '|' . $txnid . '|' . $this->salt)),
+        ];
+
+        foreach ($hashes as $h) {
+            $payload['hash'] = $h;
+            try {
+                if (config('app.debug')) {
+                    \Illuminate\Support\Facades\Log::debug('PayU status request', ['url' => $statusUrl, 'payload' => $payload]);
+                }
+                $resp = Http::asForm()->post($statusUrl, $payload);
+                if (! $resp->successful()) {
+                    // try next hash variant
+                    continue;
+                }
+                $json = $resp->json();
+                // If API returns a message about hash, let caller decide; return raw json/array
+                return is_array($json) ? $json : ['raw' => $resp->body()];
+            } catch (\Exception $e) {
+                return ['error' => 'exception', 'message' => $e->getMessage()];
+            }
+        }
+
+        return ['error' => 'http_error_or_invalid_hash'];
     }
 
     /**
