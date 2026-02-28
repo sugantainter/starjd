@@ -147,8 +147,15 @@ class PayUController extends Controller
 
         $payment = Payment::where('txnid', $txnid)->first();
         if (! $payment) {
-            Log::warning('PayU callback: unknown txnid', ['txnid' => $txnid]);
-            return redirect()->to(url('/payment/result?status=failed&reason=invalid_txn'));
+            Log::warning('PayU callback received for unknown txn', [
+                'method' => $request->method(),
+                'content' => $request->getContent(),
+                'params' => $params,
+                'headers' => $request->headers->all(),
+            ]);
+            // If no txnid is provided, treat this as a non-final browser redirect
+            // and show a pending result rather than marking payment failed.
+            return redirect()->to(url('/payment/result?status=pending&reason=no_txn'));
         }
 
         $payment->update(['request_params' => array_merge($payment->request_params ?? [], $raw)]);
