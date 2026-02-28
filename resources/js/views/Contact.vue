@@ -319,7 +319,7 @@
                                     >
                                         {{ message }}
                                     </div>
-                                    <div>
+          <div>
                                         <label
                                             class="mb-1 block text-sm font-medium text-[#1a1a1a]"
                                             >Name</label
@@ -331,8 +331,8 @@
                                             class="w-full rounded-xl border border-[#e5e7eb] px-4 py-3 text-[#1a1a1a] focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]"
                                             placeholder="Your name"
                                         />
-                                    </div>
-                                    <div>
+          </div>
+          <div>
                                         <label
                                             class="mb-1 block text-sm font-medium text-[#1a1a1a]"
                                             >Email</label
@@ -344,8 +344,8 @@
                                             class="w-full rounded-xl border border-[#e5e7eb] px-4 py-3 text-[#1a1a1a] focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]"
                                             placeholder="you@example.com"
                                         />
-                                    </div>
-                                    <div>
+          </div>
+          <div>
                                         <label
                                             class="mb-1 block text-sm font-medium text-[#1a1a1a]"
                                             >Subject</label
@@ -356,8 +356,8 @@
                                             class="w-full rounded-xl border border-[#e5e7eb] px-4 py-3 text-[#1a1a1a] focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]"
                                             placeholder="Brief subject"
                                         />
-                                    </div>
-                                    <div>
+          </div>
+          <div>
                                         <label
                                             class="mb-1 block text-sm font-medium text-[#1a1a1a]"
                                             >Message</label
@@ -369,7 +369,7 @@
                                             class="w-full rounded-xl border border-[#e5e7eb] px-4 py-3 text-[#1a1a1a] focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]"
                                             placeholder="Your message"
                                         ></textarea>
-                                    </div>
+          </div>
                                     <button
                                         type="submit"
                                         :disabled="loading"
@@ -377,14 +377,14 @@
                                     >
                                         Send Message
                                     </button>
-                                </form>
-                            </div>
+        </form>
+      </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+  </div>
 </template>
 
 <script setup>
@@ -402,7 +402,7 @@ function scrollToForm() {
 }
 
 async function submit() {
-    loading.value = true;
+  loading.value = true;
     message.value = "";
     try {
         const token = document
@@ -411,19 +411,19 @@ async function submit() {
         await axios.post("/api/contact", form, {
             headers: token ? { "X-CSRF-TOKEN": token } : {},
         });
-        success.value = true;
+    success.value = true;
         message.value = "Thanks! We'll get back to you soon.";
         form.name = "";
         form.email = "";
         form.subject = "";
         form.body = "";
-    } catch (e) {
-        success.value = false;
+  } catch (e) {
+    success.value = false;
         message.value =
             e.response?.data?.message ||
             "Something went wrong. Please try again.";
-    } finally {
-        loading.value = false;
-    }
+  } finally {
+    loading.value = false;
+  }
 }
 </script>

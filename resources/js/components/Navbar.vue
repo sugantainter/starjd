@@ -28,7 +28,7 @@
         <!-- Desktop nav -->
         <div class="hidden items-center gap-4 md:flex">
           <router-link to="/" class="text-sm font-semibold transition hover:text-[#fc4402]">Home</router-link>
-          <router-link to="/videos" class="text-sm font-semibold transition hover:text-[#fc4402]">Brands</router-link>
+          <router-link to="/brand-landing" class="text-sm font-semibold transition hover:text-[#fc4402]">Brands</router-link>
           <div
             ref="creatorsRef"
             class="relative"

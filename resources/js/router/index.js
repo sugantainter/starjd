@@ -12,6 +12,7 @@ const routes = [
   { path: '/privacy', component: AppLayout, children: [ { path: '', name: 'privacy', component: () => import('../views/Privacy.vue') } ] },
   { path: '/terms', component: AppLayout, children: [ { path: '', name: 'terms', component: () => import('../views/Terms.vue') } ] },
   { path: '/brand-landing', component: AppLayout, children: [ { path: '', name: 'brand', component: () => import('../views/Brand.vue') } ] },
+  { path: '/campaign-landing', component: AppLayout, children: [ { path: '', name: 'campaign', component: () => import('../views/Campaign.vue') } ] },
   { path: '/creator-landing', component: AppLayout, children: [ { path: '', name: 'creator', component: () => import('../views/Creator.vue') } ] },
   { path: '/blog', component: AppLayout, children: [ { path: '', name: 'blog', component: () => import('../views/Blog.vue') } ] },
   { path: '/blog/:slug', component: AppLayout, children: [ { path: '', name: 'blog-post', component: () => import('../views/BlogPost.vue') } ] },

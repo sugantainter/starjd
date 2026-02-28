@@ -858,17 +858,21 @@
                             <div
                                 class="absolute bottom-0 left-0 right-0 p-6 text-white"
                             >
-                                <h3 class="text-2xl font-bold">I'm a Brand</h3>
-                                <p class="mt-1 text-white/90">
-                                    Find vetted creators. Brief, book, and get
-                                    content delivered.
+                                <h3 class="text-2xl font-bold">
+                                    AI‑ready creator campaigns.
+                                    <span class="block text-white/90">Without compromise.</span>
+                                </h3>
+                                <p class="mt-1 text-white/90 text-sm">
+                                    12M+ creators. Brief, discover, approve and measure
+                                    high‑impact influencer campaigns from one modern
+                                    workspace — built for speed and scale.
                                 </p>
                             </div>
                         </div>
                         <div class="p-6">
                             <span
                                 class="inline-flex items-center gap-2 font-semibold text-[#e63946]"
-                                >Join as Brand →</span
+                                >Get Started →</span
                             >
                         </div>
                     </router-link>
