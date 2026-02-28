@@ -61,7 +61,8 @@ class PayUService
 
         $hashString = $salt . '|' . $status . '||||||' . $udf5 . '|' . $udf4 . '|' . $udf3 . '|' . $udf2 . '|' . $udf1 . '|' . $email . '|' . $firstname . '|' . $productinfo . '|' . $amount . '|' . $txnid . '|' . $key;
         $expectedHash = strtolower(hash('sha512', $hashString));
-        return hash_equals($expectedHash, $receivedHash);
+        $receivedHashNorm = strtolower((string) $receivedHash);
+        return hash_equals($expectedHash, $receivedHashNorm);
     }
 
     public function buildPaymentParams(User $user, string $txnid, float $amount, string $productinfo, string $udf1 = ''): array

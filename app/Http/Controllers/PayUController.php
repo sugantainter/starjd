@@ -134,44 +134,53 @@ class PayUController extends Controller
 
     /**
      * PayU redirects here (success or failure). Verify hash and complete/fail payment.
+     * Params are normalized to lowercase keys so production PayU response is read correctly.
      */
     public function callback(Request $request)
     {
-        $params = $request->all();
+        $raw = $request->all();
+        $params = array_change_key_case($raw, CASE_LOWER);
         $txnid = $params['txnid'] ?? null;
         $status = $params['status'] ?? '';
         $amount = $params['amount'] ?? '';
-        $gatewayRef = $params['mihpayid'] ?? $params['payuMoneyId'] ?? $params['txnid'] ?? '';
+        $gatewayRef = $params['mihpayid'] ?? $params['payumoneyid'] ?? $params['txnid'] ?? '';
 
-        // persist callback data for troubleshooting
         $payment = Payment::where('txnid', $txnid)->first();
         if (! $payment) {
-            Log::warning('PayU callback received for unknown txn', $params);
+            Log::warning('PayU callback: unknown txnid', ['txnid' => $txnid]);
             return redirect()->to(url('/payment/result?status=failed&reason=invalid_txn'));
         }
 
-        // attach response parameters to existing record (merge with original request)
-        $payment->update(['request_params' => array_merge($payment->request_params ?? [], $params)]);
+        $payment->update(['request_params' => array_merge($payment->request_params ?? [], $raw)]);
 
         if (! $this->payu->verifyResponseHash($params)) {
-            Log::warning('PayU hash verification failed', ['txnid' => $txnid, 'received_status' => $status]);
+            Log::warning('PayU callback: hash verification failed', [
+                'txnid' => $txnid,
+                'status' => $status,
+                'amount' => $amount,
+                'payment_amount' => (string) $payment->amount,
+            ]);
             $payment->markFailed();
             return redirect()->to(url('/payment/result?status=failed&reason=hash_mismatch'));
         }
 
-        // normalize status, compare amounts with precision
         $statusNorm = trim(strtolower((string) $status));
-        $amountNorm = (string) $amount;
-        $paymentAmount = (string) $payment->amount;
+        $amountNorm = preg_replace('/[^\d.]/', '', (string) $amount);
+        $paymentAmount = number_format((float) $payment->amount, 2, '.', '');
         $isSuccess = $statusNorm === 'success' && bccomp($amountNorm, $paymentAmount, 2) === 0;
 
         if ($statusNorm === 'success' && ! $isSuccess) {
-            Log::warning('PayU amount mismatch', compact('txnid', 'amountNorm', 'paymentAmount', 'statusNorm'));
+            Log::warning('PayU callback: amount mismatch', [
+                'txnid' => $txnid,
+                'received_amount' => $amountNorm,
+                'expected_amount' => $paymentAmount,
+            ]);
         }
 
         if ($isSuccess) {
             $payment->markCompleted($gatewayRef);
             $this->completePayable($payment);
+            Log::info('PayU callback: payment completed', ['txnid' => $txnid, 'type' => $payment->type]);
         } else {
             $payment->markFailed();
         }
@@ -235,15 +244,12 @@ class PayUController extends Controller
 
     private function successRedirectFor(Payment $payment): string
     {
+        $base = url('/payment/result?status=success');
         switch ($payment->type) {
-            case Payment::TYPE_ACCESS:
-                return url($payment->user->role === 'creator' ? '/creator/dashboard' : '/brand/dashboard');
-            case Payment::TYPE_COLLABORATION:
-                return url('/brand/collaborations');
             case Payment::TYPE_BOOKING:
-                return url('/payment/result?status=success&booking=1');
+                return $base . '&booking=1';
             default:
-                return url('/payment/result?status=success');
+                return $base;
         }
     }
 }
