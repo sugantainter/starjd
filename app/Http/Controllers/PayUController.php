@@ -154,9 +154,14 @@ class PayUController extends Controller
                 'headers' => $request->headers->all(),
             ]);
 
-            // If no txnid is provided, treat this as a non-final browser redirect
-            // and show a pending result rather than marking payment failed.
-            return redirect()->to(url('/payment/result?status=pending&reason=no_txn'));
+            // PayU sometimes performs a preliminary GET without any parameters
+            // before the actual notification with txnid arrives. We should not
+            // redirect the end user to our failure/pending page on that first
+            // hit because they will already be on the PayU site and may still
+            // get a proper callback shortly afterwards. Returning a bare 200
+            // keeps the browser on the PayU side and prevents confusing the
+            // user with a failed payment screen.
+            return response('', 200);
         }
 
         $payment->update(['request_params' => array_merge($payment->request_params ?? [], $raw)]);
@@ -189,7 +194,11 @@ class PayUController extends Controller
         if ($isSuccess) {
             $payment->markCompleted($gatewayRef);
             $this->completePayable($payment);
-            Log::info('PayU callback: payment completed', ['txnid' => $txnid, 'type' => $payment->type]);
+            Log::info('PayU callback: payment completed', [
+                'method' => $request->method(),
+                'txnid' => $txnid,
+                'type' => $payment->type,
+            ]);
         } else {
             $payment->markFailed();
         }
@@ -197,6 +206,22 @@ class PayUController extends Controller
         $redirectUrl = $isSuccess
             ? $this->successRedirectFor($payment)
             : url('/payment/result?status=failed');
+
+        // PayU can call this endpoint twice: once via browser and once via its
+        // backend. When the backend POSTs, it will happily follow a 302, but the
+        // user’s browser will never see that response. To ensure the customer is
+        // sent to our front-end result page, return a small HTML page with a
+        // script redirect when handling a POST. A plain GET (with or without
+        // params) can still be redirected normally or returned as 200/empty.
+        if ($request->isMethod('post')) {
+            $escaped = e($redirectUrl);
+            $html = "<!doctype html><html><head><meta charset=\"utf-8\"></head><body>\n" .
+                    "<script>window.location.href='$escaped';</script>\n" .
+                    "If you are not redirected automatically, <a href='$escaped'>click here</a>.\n" .
+                    "</body></html>";
+            return response($html, 200)
+                    ->header('Content-Type', 'text/html');
+        }
 
         return redirect()->to($redirectUrl);
     }
