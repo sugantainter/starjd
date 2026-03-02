@@ -34,7 +34,8 @@
                     >View my bookings</router-link
                 >
                 <router-link
-                    to="/brand/dashboard"
+                    v-else
+                    :to="dashboardPath"
                     class="rounded-xl border border-[#e2e8f0] px-4 py-3 text-center font-medium hover:bg-[#f8fafc]"
                     >Go to dashboard</router-link
                 >
@@ -76,27 +77,49 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import axios from "axios";
 
 const route = useRoute();
 const router = useRouter();
 const status = computed(() => route.query.status || "failed");
 const isBooking = computed(() => route.query.booking === "1");
+const dashboardPath = ref("/");
 
-onMounted(() => {
+/** Dashboard path by role (same as Login.vue / backend). */
+function dashboardPathForRole(roleSlug) {
+    const map = {
+        admin: "/admin",
+        creator: "/creator/dashboard",
+        brand: "/brand/dashboard",
+        agency: "/agency/dashboard",
+        studio_owner: "/studio/dashboard",
+    };
+    return map[roleSlug] ?? "/";
+}
+
+onMounted(async () => {
     document.title =
         status.value === "success"
             ? "Payment successful - StarJD"
             : "Payment failed - StarJD";
 
-    // Auto-redirect to dashboard after 3 seconds on success
     if (status.value === "success") {
+        if (isBooking.value) {
+            dashboardPath.value = "/studio/bookings";
+        } else {
+            try {
+                const me = await axios.get("/api/me", { withCredentials: true });
+                const roleSlug = me.data?.primary_role?.slug ?? me.data?.role;
+                dashboardPath.value = dashboardPathForRole(roleSlug);
+            } catch (_) {
+                dashboardPath.value = "/";
+            }
+        }
+
         setTimeout(() => {
-            const targetRoute = isBooking.value
-                ? "/studio/bookings"
-                : "/brand/dashboard";
-            router.push(targetRoute);
+            router.push(dashboardPath.value);
         }, 3000);
     }
 });

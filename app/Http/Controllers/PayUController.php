@@ -147,20 +147,16 @@ class PayUController extends Controller
 
         $payment = Payment::where('txnid', $txnid)->first();
         if (! $payment) {
+            // PayU redirects the user's browser here with GET and no params (payment data came in the POST).
+            // This is expected; redirect the user to the result page so they see success, not a blank page.
+            if ($request->isMethod('get')) {
+                Log::info('PayU user redirect (GET, no params) – sending to result page');
+                return redirect()->to(url('/payment/result?status=success'));
+            }
             Log::warning('PayU callback received for unknown txn', [
                 'method' => $request->method(),
-                'content' => $request->getContent(),
                 'params' => $params,
-                'headers' => $request->headers->all(),
             ]);
-
-            // PayU sometimes performs a preliminary GET without any parameters
-            // before the actual notification with txnid arrives. We should not
-            // redirect the end user to our failure/pending page on that first
-            // hit because they will already be on the PayU site and may still
-            // get a proper callback shortly afterwards. Returning a bare 200
-            // keeps the browser on the PayU side and prevents confusing the
-            // user with a failed payment screen.
             return response('', 200);
         }
 

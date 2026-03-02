@@ -112,10 +112,11 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 
 const route = useRoute();
+const router = useRouter();
 const form = reactive({
   email: '',
   password: '',
@@ -131,6 +132,18 @@ const roleOptions = [
   { value: 'studio_owner', label: 'Studio Owner' },
   { value: 'customer', label: 'Customer' },
 ];
+
+/** Dashboard path by primary role (must match backend AuthController::redirectForUser). */
+function dashboardPathForRole(roleSlug) {
+  const map = {
+    admin: '/admin',
+    creator: '/creator/dashboard',
+    brand: '/brand/dashboard',
+    agency: '/agency/dashboard',
+    studio_owner: '/studio/dashboard',
+  };
+  return map[roleSlug] ?? '/';
+}
 
 const googleLoginUrl = computed(() => {
   const base = `${window.location.origin}/auth/google/redirect`;
@@ -149,21 +162,25 @@ onMounted(async () => {
   else if (e === 'no_email') error.value = 'No email was provided. Try another method.';
   const type = route.query.type;
   if (['brand', 'creator', 'studio_owner', 'customer'].includes(type)) form.role = type;
-  // If URL has ?redirect= and user is already logged in, go there
+  // If already logged in, redirect: to ?redirect= if present, otherwise to role-based dashboard
   const redirectPath = Array.isArray(route.query.redirect) ? route.query.redirect[0] : route.query.redirect;
-  if (redirectPath && typeof redirectPath === 'string') {
-    const path = redirectPath.startsWith('/') ? redirectPath : `/${redirectPath}`;
-    const tryRedirect = async () => {
-      try {
-        await axios.get('/api/me', { withCredentials: true });
+  const tryRedirect = async () => {
+    try {
+      const me = await axios.get('/api/me', { withCredentials: true });
+      const path = redirectPath && typeof redirectPath === 'string'
+        ? (redirectPath.startsWith('/') ? redirectPath : `/${redirectPath}`)
+        : dashboardPathForRole(me.data?.primary_role?.slug ?? me.data?.role);
+      if (path.startsWith('/') && !path.startsWith('//')) {
+        router.replace(path);
+      } else {
         window.location.href = path;
-      } catch (_) {
-        /* not logged in, show login form */
       }
-    };
-    await new Promise((r) => setTimeout(r, 200));
-    await tryRedirect();
-  }
+    } catch (_) {
+      /* not logged in, show login form */
+    }
+  };
+  await new Promise((r) => setTimeout(r, 200));
+  await tryRedirect();
 });
 
 async function submit() {
@@ -181,9 +198,15 @@ async function submit() {
       headers: token ? { 'X-CSRF-TOKEN': token } : {},
       withCredentials: true,
     });
+    // Prefer query redirect, then backend role-based redirect, then home
     const raw = route.query.redirect || res.data?.redirect || '/';
     const path = raw.startsWith('http') ? new URL(raw).pathname : (raw.startsWith('/') ? raw : `/${raw}`);
-    window.location.href = path;
+    // Use router so we don't full-reload; dashboard then sees the same session and won't redirect back to login
+    if (path.startsWith('/') && !path.startsWith('//')) {
+      router.push(path);
+    } else {
+      window.location.href = path;
+    }
   } catch (e) {
     const data = e.response?.data;
     if (data?.needs_verification && data?.email) {
