@@ -6,9 +6,12 @@ use App\Models\AccessPayment;
 use App\Models\Booking;
 use App\Models\Collaboration;
 use App\Models\Coupon;
+use App\Models\CreatorProfile;
+use App\Models\FeaturedPayment;
 use App\Models\Payment;
 use App\Services\BookingService;
 use App\Services\PayUService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -101,6 +104,47 @@ class PayUController extends Controller
                 $payableType = Booking::class;
                 $payableId = $booking->id;
                 $productinfo = 'Studio Booking #'.$booking->id.' - StarJD';
+                break;
+
+            case 'featured':
+                $planId = $request->input('plan_id');
+                $plans = config('creator.featured_plans', []);
+                $plan = collect($plans)->firstWhere('id', $planId);
+                $originalAmount = (float) ($plan['price'] ?? 0);
+                if (! $plan) {
+                    return response()->json(['message' => 'Invalid featured plan'], 422);
+                }
+                $featuredCouponId = null;
+                if ($request->filled('coupon_code')) {
+                    $applied = Coupon::apply($request->coupon_code, $originalAmount, 'featured');
+                    if (isset($applied['error'])) {
+                        return response()->json(['message' => $applied['error']], 422);
+                    }
+                    $amount = $applied['final_amount'];
+                    $featuredCouponId = $applied['coupon_id'] ?? null;
+                } elseif ((float) $amount !== $originalAmount) {
+                    return response()->json(['message' => 'Invalid featured plan or amount'], 422);
+                }
+                $profile = $user->creatorProfile;
+                if (! $profile) {
+                    $profile = $user->creatorProfile()->create([
+                        'slug' => Str::slug($user->name).'-'.$user->id,
+                    ]);
+                }
+                $featuredPayment = FeaturedPayment::create([
+                    'creator_id' => $user->id,
+                    'plan_id' => $plan['id'],
+                    'amount' => $amount,
+                    'duration_days' => (int) $plan['duration_days'],
+                    'status' => 'pending',
+                    'featured_until' => null,
+                    'paid_at' => null,
+                    'gateway_ref' => null,
+                    'coupon_id' => $featuredCouponId,
+                ]);
+                $payableType = FeaturedPayment::class;
+                $payableId = $featuredPayment->id;
+                $productinfo = 'StarJD Featured - '.($plan['name'] ?? $planId);
                 break;
 
             default:
@@ -227,7 +271,7 @@ class PayUController extends Controller
         $request->validate([
             'code' => ['required', 'string', 'max:64'],
             'amount' => ['required', 'numeric', 'min:0'],
-            'applicable_to' => ['nullable', 'string', 'in:access,collaboration,booking'],
+            'applicable_to' => ['nullable', 'string', 'in:access,collaboration,booking,featured'],
         ]);
         $result = Coupon::apply(
             $request->code,
@@ -269,6 +313,29 @@ class PayUController extends Controller
                 }
                 if ($booking && $booking->coupon_id) {
                     Coupon::where('id', $booking->coupon_id)->increment('used_count');
+                }
+                break;
+            case Payment::TYPE_FEATURED:
+                $featuredPayment = $payment->payable;
+                if ($featuredPayment && $featuredPayment->status === 'pending') {
+                    $profile = CreatorProfile::where('user_id', $featuredPayment->creator_id)->first();
+                    if ($profile) {
+                        $now = Carbon::now();
+                        $currentEnd = $profile->featured_until && Carbon::parse($profile->featured_until)->isFuture()
+                            ? Carbon::parse($profile->featured_until)
+                            : $now;
+                        $newFeaturedUntil = $currentEnd->copy()->addDays($featuredPayment->duration_days);
+                        $featuredPayment->update([
+                            'status' => 'paid',
+                            'paid_at' => $now,
+                            'gateway_ref' => $payment->gateway_ref,
+                            'featured_until' => $newFeaturedUntil,
+                        ]);
+                        $profile->update(['featured_until' => $newFeaturedUntil]);
+                    }
+                    if ($featuredPayment->coupon_id) {
+                        Coupon::where('id', $featuredPayment->coupon_id)->increment('used_count');
+                    }
                 }
                 break;
         }
