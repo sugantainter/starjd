@@ -23,6 +23,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'payment/callback/success',
             'payment/callback/failure',
+            'api/*',
+            'auth/*',
+            'login',
+            'register',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
