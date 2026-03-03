@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialControll
 use App\Http\Controllers\Admin\HeroController as AdminHeroController;
 use App\Http\Controllers\Admin\PartnerController as AdminPartnerController;
 use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
+use App\Http\Controllers\Api\AppConfigController;
 use App\Http\Controllers\Api\PageController as ApiPageController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\ServiceController;
@@ -78,6 +79,8 @@ Route::get('/storage/{path}', function (string $path) {
 |--------------------------------------------------------------------------
 */
 Route::prefix('api')->group(function () {
+    Route::get('/app/config', [AppConfigController::class, 'config']);
+
     // Auth (guest)
     Route::post('login', [AuthController::class, 'login']);
     Route::post('logout', [AuthController::class, 'logout']);
