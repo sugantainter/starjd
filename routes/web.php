@@ -84,6 +84,7 @@ Route::prefix('api')->group(function () {
     // Auth (guest)
     Route::post('login', [AuthController::class, 'login']);
     Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('auth/{provider}/token', [\App\Http\Controllers\SocialAuthController::class, 'apiCallback']);
     Route::post('register', [AuthController::class, 'register']);
     Route::post('register/creator', [AuthController::class, 'registerCreator']);
     Route::post('register/brand', [AuthController::class, 'registerBrand']);
