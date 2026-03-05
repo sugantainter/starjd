@@ -1,27 +1,27 @@
 <template>
-  <div class="mx-auto max-w-6xl px-4 py-8">
+  <div class="mx-auto max-w-6xl px-4 pt-8 pb-20 md:pb-24">
     <h1 class="text-3xl font-bold text-[#1a1a1a]">Discover Creators</h1>
     <p class="mt-2 text-[#64748b]">Find creators to collaborate with.</p>
     <div class="mt-6 flex flex-wrap gap-2">
-      <input v-model="search" type="text" placeholder="Keywords, niches or categories..." class="min-w-[200px] flex-1 rounded-xl border border-[#e2e8f0] px-4 py-2 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" @keyup.enter="load(1)" />
-      <select v-model="filters.category" class="rounded-xl border border-[#e2e8f0] px-4 py-2 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]">
+      <input v-model="search" type="text" placeholder="Keywords, niches or categories..." class="min-w-[200px] flex-1 rounded-xl border border-[#e2e8f0] px-4 py-2 focus:border-[#fc4402] focus:outline-none focus:ring-1 focus:ring-[#fc4402]" @keyup.enter="load(1)" />
+      <select v-model="filters.category" class="rounded-xl border border-[#e2e8f0] px-4 py-2 focus:border-[#fc4402] focus:outline-none focus:ring-1 focus:ring-[#fc4402]">
         <option value="">Category</option>
         <option v-for="c in filterOptions.categories" :key="c" :value="c">{{ c }}</option>
       </select>
-      <select v-model="filters.gender" class="rounded-xl border border-[#e2e8f0] px-4 py-2 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]">
+      <select v-model="filters.gender" class="rounded-xl border border-[#e2e8f0] px-4 py-2 focus:border-[#fc4402] focus:outline-none focus:ring-1 focus:ring-[#fc4402]">
         <option value="">Gender</option>
         <option v-for="(label, key) in filterOptions.genders" :key="key" :value="key">{{ label }}</option>
       </select>
-      <select v-model="filters.language" class="rounded-xl border border-[#e2e8f0] px-4 py-2 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]">
+      <select v-model="filters.language" class="rounded-xl border border-[#e2e8f0] px-4 py-2 focus:border-[#fc4402] focus:outline-none focus:ring-1 focus:ring-[#fc4402]">
         <option value="">Language</option>
         <option v-for="lang in filterOptions.languages" :key="lang" :value="lang">{{ lang }}</option>
       </select>
-      <select v-model="filters.platform" class="rounded-xl border border-[#e2e8f0] px-4 py-2 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]">
+      <select v-model="filters.platform" class="rounded-xl border border-[#e2e8f0] px-4 py-2 focus:border-[#fc4402] focus:outline-none focus:ring-1 focus:ring-[#fc4402]">
         <option value="">Platform</option>
         <option v-for="(label, key) in filterOptions.platforms" :key="key" :value="key">{{ label }}</option>
       </select>
-      <input v-model.number="filters.min_rate" type="number" min="0" step="100" placeholder="Min price (₹)" class="w-32 rounded-xl border border-[#e2e8f0] px-4 py-2 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" />
-      <button type="button" class="cursor-link rounded-xl bg-[#e63946] px-4 py-2 text-white hover:bg-[#c1121f]" @click="load(1)">Search</button>
+      <input v-model.number="filters.min_rate" type="number" min="0" step="100" placeholder="Min price (₹)" class="w-32 rounded-xl border border-[#e2e8f0] px-4 py-2 focus:border-[#fc4402] focus:outline-none focus:ring-1 focus:ring-[#fc4402]" />
+      <button type="button" class="cursor-link rounded-xl bg-[#fc4402] px-4 py-2 text-white hover:bg-[#e63d02]" @click="load(1)">Search</button>
       <button type="button" class="cursor-link rounded-xl border border-[#e2e8f0] px-4 py-2 hover:bg-[#f1f5f9]" @click="clearFilters">Clear all</button>
     </div>
     <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -29,11 +29,11 @@
         v-for="p in list"
         :key="p.id"
         :to="'/creators/' + p.slug"
-        class="group flex flex-col overflow-hidden rounded-2xl border border-[#e2e8f0] bg-white shadow-sm transition hover:border-[#e63946]/30 hover:shadow-md"
+        class="group flex flex-col overflow-hidden rounded-2xl border border-[#e2e8f0] bg-white shadow-sm transition hover:border-[#fc4402]/30 hover:shadow-md"
       >
         <div class="relative aspect-[4/5] shrink-0 overflow-hidden bg-[#f1f5f9]">
           <img
-            :src="p.avatar_url || 'https://ui-avatars.com/api?name=' + encodeURIComponent(p.user?.name || '') + '&size=400&background=e63946&color=fff'"
+            :src="p.avatar_url || 'https://ui-avatars.com/api?name=' + encodeURIComponent(p.user?.name || '') + '&size=400&background=fc4402&color=fff'"
             :alt="p.user?.name"
             class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
           />
@@ -43,8 +43,8 @@
         <div class="flex flex-1 flex-col p-4">
           <h3 class="font-semibold text-[#1a1a1a]">{{ p.user?.name }}</h3>
           <p v-if="p.tagline" class="mt-1 line-clamp-2 text-sm text-[#64748b]">{{ p.tagline }}</p>
-          <p v-if="p.min_rate != null" class="mt-2 text-base font-semibold text-[#e63946]">From ₹{{ p.min_rate }}/project</p>
-          <span class="mt-4 inline-block rounded-lg bg-[#e63946] px-4 py-2 text-center text-sm font-medium text-white transition group-hover:bg-[#c1121f]">View profile</span>
+          <p v-if="p.min_rate != null" class="mt-2 text-base font-semibold text-[#fc4402]">From ₹{{ p.min_rate }}/project</p>
+          <span class="mt-4 inline-block rounded-lg bg-[#fc4402] px-4 py-2 text-center text-sm font-medium text-white transition group-hover:bg-[#e63d02]">View profile</span>
         </div>
       </router-link>
     </div>
