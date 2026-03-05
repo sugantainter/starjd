@@ -26,25 +26,25 @@
       <!-- Main content -->
       <article class="border-b border-[#e5e7eb] bg-white px-4 py-12 md:py-20">
         <div class="mx-auto max-w-3xl">
-          <div class="prose prose-lg max-w-none text-[#1a1a1a] prose-headings:font-bold prose-headings:text-[#1a1a1a] prose-a:text-[#e63946] prose-a:no-underline hover:prose-a:underline services-body" v-html="renderedBody"></div>
+          <div class="prose prose-lg max-w-none text-[#1a1a1a] prose-headings:font-bold prose-headings:text-[#1a1a1a] prose-a:text-[#fc4402] prose-a:no-underline hover:prose-a:underline services-body" v-html="renderedBody"></div>
         </div>
       </article>
 
       <!-- Back + CTA -->
-      <section class="border-t border-[#e5e7eb] bg-[#f8fafc] px-4 py-10">
+      <section class="border-t border-[#e5e7eb] bg-[#f8fafc] px-4 pt-10 pb-20 md:pb-24">
         <div class="mx-auto flex max-w-3xl flex-col items-center justify-between gap-4 sm:flex-row">
-          <router-link to="/services" class="inline-flex items-center text-sm font-medium text-[#64748b] transition hover:text-[#e63946]">
+          <router-link to="/services" class="inline-flex items-center text-sm font-medium text-[#64748b] transition hover:text-[#fc4402]">
             <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
             All services
           </router-link>
-          <router-link to="/contact" class="rounded-lg bg-[#e63946] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[#c1121f]">Contact us</router-link>
+          <router-link to="/contact" class="rounded-lg bg-[#fc4402] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[#e63d02]">Contact us</router-link>
         </div>
       </section>
     </template>
     <div v-else-if="loading" class="flex min-h-[50vh] items-center justify-center">
-      <div class="h-10 w-10 animate-spin rounded-full border-2 border-[#e63946] border-t-transparent"></div>
+      <div class="h-10 w-10 animate-spin rounded-full border-2 border-[#fc4402] border-t-transparent"></div>
     </div>
-    <div v-else class="px-4 py-24 text-center text-[#64748b]">Service not found.</div>
+    <div v-else class="px-4 pt-24 pb-20 md:pb-24 text-center text-[#64748b]">Service not found.</div>
   </div>
 </template>
 
