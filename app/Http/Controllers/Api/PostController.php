@@ -30,7 +30,14 @@ class PostController extends Controller
 
     public function index(): JsonResponse
     {
-        $posts = Post::published()->orderByDesc('published_at')->get()->map(fn (Post $p) => [
+        $query = Post::published()->orderByDesc('published_at');
+
+        if (request()->has('category') && request()->category != '') {
+            $query->where('category_label', request()->category);
+        }
+
+        $paginator = $query->paginate(10);
+        $posts = $paginator->getCollection()->map(fn (Post $p) => [
             'id' => $p->id,
             'title' => $p->title,
             'slug' => $p->slug,
@@ -41,7 +48,12 @@ class PostController extends Controller
             'url' => '/blog/' . $p->slug,
         ]);
 
-        return response()->json(['posts' => $posts]);
+        return response()->json([
+            'posts' => $posts,
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'total' => $paginator->total(),
+        ]);
     }
 
     public function show(string $slug): JsonResponse
