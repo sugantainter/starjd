@@ -380,6 +380,8 @@ class AuthController extends Controller
             'role' => $user->role,
             'primary_role' => $primary ? ['id' => $primary->id, 'name' => $primary->name, 'slug' => $primary->slug] : null,
             'roles' => $roles,
+            'creator_profile' => $user->creatorProfile,
+            'brand_profile' => $user->brandProfile,
         ];
     }
 }
