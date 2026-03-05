@@ -18,6 +18,7 @@ class FeaturedPayment extends Model
         'status',
         'paid_at',
         'gateway_ref',
+        'coupon_id',
     ];
 
     protected function casts(): array
@@ -32,5 +33,10 @@ class FeaturedPayment extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'creator_id');
+    }
+
+    public function coupon(): BelongsTo
+    {
+        return $this->belongsTo(Coupon::class);
     }
 }

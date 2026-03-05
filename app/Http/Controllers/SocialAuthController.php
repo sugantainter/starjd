@@ -130,4 +130,68 @@ class SocialAuthController extends Controller
         };
         return redirect()->away($redirect);
     }
+
+    /**
+     * Handle Native Mobile Token callback
+     */
+    public function apiCallback(Request $request, string $provider): \Illuminate\Http\JsonResponse
+    {
+        $request->validate([
+            'token' => 'required|string',
+            'role' => 'nullable|string|in:creator,brand,customer'
+        ]);
+
+        try {
+            $oauthUser = Socialite::driver($provider)->userFromToken($request->token);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => 'Invalid token. ' . $e->getMessage()], 401);
+        }
+
+        $email = $oauthUser->getEmail();
+        if (! $email) {
+            return response()->json(['success' => false, 'message' => 'No email provided by ' . $provider], 400);
+        }
+
+        $user = User::where('email', $email)->first();
+        
+        if (!$user) {
+            $name = $oauthUser->getName() ?: explode('@', $email)[0];
+            $user = User::create([
+                'name' => $name,
+                'email' => $email,
+                'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(32)),
+            ]);
+            $user->markEmailAsVerified();
+            
+            $role = $request->role ?? 'customer';
+            $roleModel = Role::where('slug', $role)->first();
+            if ($roleModel) {
+                $user->roles()->attach($roleModel->id, ['is_primary' => true]);
+            }
+            if ($role === 'creator') {
+                CreatorProfile::create(['user_id' => $user->id]);
+            }
+            if ($role === 'brand') {
+                BrandProfile::create(['user_id' => $user->id]);
+            }
+        }
+
+        Auth::login($user, true);
+        $request->session()->regenerate();
+
+        $primary = $user->primaryRole();
+        $roles = $user->roles()->get()->map(fn ($r) => ['id' => $r->id, 'name' => $r->name, 'slug' => $r->slug]);
+
+        return response()->json([
+            'success' => true,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'primary_role' => $primary ? ['id' => $primary->id, 'name' => $primary->name, 'slug' => $primary->slug] : null,
+                'roles' => $roles,
+            ]
+        ]);
+    }
 }

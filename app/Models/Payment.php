@@ -15,6 +15,7 @@ class Payment extends Model
     public const TYPE_ACCESS = 'access';
     public const TYPE_COLLABORATION = 'collaboration';
     public const TYPE_BOOKING = 'booking';
+    public const TYPE_FEATURED = 'featured';
 
     protected $fillable = [
         'user_id',
