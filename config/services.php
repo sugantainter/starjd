@@ -48,4 +48,9 @@ return [
         'redirect' => env('FACEBOOK_REDIRECT_URI') ?: rtrim(env('APP_URL', 'http://localhost'), '/').'/auth/facebook/callback',
     ],
 
+    'youtube' => [
+        'api_key' => env('YOUTUBE_API_KEY'),
+        'channel_handle' => env('YOUTUBE_CHANNEL_HANDLE', 'StarJDs'),
+    ],
+
 ];

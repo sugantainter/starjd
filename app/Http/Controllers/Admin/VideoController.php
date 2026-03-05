@@ -24,6 +24,7 @@ class VideoController extends Controller
             'embed_url' => 'required|string|max:500',
             'watch_url' => 'required|string|max:500',
             'sort_order' => 'nullable|integer',
+            'is_short' => 'nullable|boolean',
         ]);
         $data['sort_order'] = $data['sort_order'] ?? 0;
         $video = Video::create($data);
@@ -40,6 +41,7 @@ class VideoController extends Controller
             'embed_url' => 'sometimes|string|max:500',
             'watch_url' => 'sometimes|string|max:500',
             'sort_order' => 'nullable|integer',
+            'is_short' => 'nullable|boolean',
         ]);
         $model->update($data);
         return response()->json(['message' => 'Updated', 'video' => $model->fresh()]);

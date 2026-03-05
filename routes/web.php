@@ -98,6 +98,7 @@ Route::prefix('api')->group(function () {
     Route::get('posts/categories', [PostController::class, 'categories']);
     Route::get('posts/{slug}', [PostController::class, 'show']);
     Route::get('videos', [VideoController::class, 'index']);
+    Route::get('shorts', [VideoController::class, 'shorts']);
     Route::get('creators', [CreatorPublicController::class, 'index']);
     Route::get('creators/options/filters', [CreatorOptionsController::class, 'filters']);
     Route::get('creators/{slug}', [CreatorPublicController::class, 'show']);
