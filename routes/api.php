@@ -4,6 +4,9 @@ use App\Http\Controllers\Api\AppConfigController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\StudioPublicController;
+use App\Http\Controllers\CreatorPublicController;
+use App\Http\Controllers\CreatorOptionsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -35,3 +38,13 @@ Route::post('email/verification-notification', [AuthController::class, 'resendVe
 Route::post('verify-email-otp', [AuthController::class, 'verifyOtp']);
 Route::post('resend-otp', [AuthController::class, 'resendOtp']);
 Route::post('contact', [ContactController::class, 'store']);
+
+// Studios - Public (no auth required)
+Route::get('studios', [StudioPublicController::class, 'index']);
+Route::get('studios/categories', [StudioPublicController::class, 'categories']);
+Route::get('studios/{slugOrId}', [StudioPublicController::class, 'show']);
+
+// Creators - Public (no auth required)
+Route::get('creators', [CreatorPublicController::class, 'index']);
+Route::get('creators/options/filters', [CreatorOptionsController::class, 'filters']);
+Route::get('creators/{slug}', [CreatorPublicController::class, 'show']);
