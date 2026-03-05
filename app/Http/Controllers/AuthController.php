@@ -185,7 +185,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Legacy register: accepts role creator|brand; redirects to specific handler.
+     * Legacy register: accepts role creator|brand|customer|studio_owner; redirects to specific handler.
      */
     public function register(Request $request): JsonResponse
     {
@@ -193,12 +193,15 @@ class AuthController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'confirmed', 'min:8', \Illuminate\Validation\Rules\Password::defaults()],
-            'role' => ['required', 'in:creator,brand'],
+            'role' => ['required', 'in:creator,brand,customer,studio_owner'],
         ]);
 
-        return $request->role === 'creator'
-            ? $this->registerCreator($request)
-            : $this->registerBrand($request);
+        return match ($request->role) {
+            'creator' => $this->registerCreator($request),
+            'brand' => $this->registerBrand($request),
+            'studio_owner' => $this->registerStudioOwner($request),
+            default => $this->registerCustomer($request),
+        };
     }
 
     /**
@@ -289,11 +292,63 @@ class AuthController extends Controller
         $request->session()->save();
         $redirect = $this->postVerificationRedirect($user);
 
+        // We also consider it "new" if they just verified their email and don't have a role yet (or their role is default customer)
+        $isNewUser = true;
+
         return response()->json([
             'message' => 'Email verified.',
             'verified' => true,
+            'is_new_user' => $isNewUser,
             'user' => $this->userPayload($user),
             'redirect' => $redirect,
+        ]);
+    }
+
+    /**
+     * Set the primary role for the authenticated user.
+     * This is called by the mobile app after social login / registration.
+     */
+    public function setRole(Request $request): JsonResponse
+    {
+        $request->validate([
+            'role' => ['required', 'string', 'in:creator,brand,customer,studio_owner'],
+        ]);
+
+        $user = $request->user();
+        if (! $user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
+        $roleSlug = $request->role;
+        $roleModel = Role::where('slug', $roleSlug)->first();
+
+        if (! $roleModel) {
+            return response()->json(['message' => 'Invalid role specified.'], 400);
+        }
+
+        // Remove existing primary role
+        DB::table('role_user')
+            ->where('user_id', $user->id)
+            ->where('is_primary', true)
+            ->delete();
+
+        // Attach new primary role
+        $user->roles()->attach($roleModel->id, ['is_primary' => true]);
+
+        // Create requisite profiles if they don't exist
+        if ($roleSlug === 'creator' && ! $user->creatorProfile) {
+            CreatorProfile::create(['user_id' => $user->id]);
+        }
+        if ($roleSlug === 'brand' && ! $user->brandProfile) {
+            BrandProfile::create(['user_id' => $user->id]);
+        }
+
+        $user->refresh();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Role updated successfully.',
+            'user' => $this->userPayload($user),
         ]);
     }
 

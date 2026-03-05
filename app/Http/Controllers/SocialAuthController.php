@@ -133,12 +133,13 @@ class SocialAuthController extends Controller
 
     /**
      * Handle Native Mobile Token callback
+     * Returns is_new_user=true when the account was just created.
      */
     public function apiCallback(Request $request, string $provider): \Illuminate\Http\JsonResponse
     {
         $request->validate([
             'token' => 'required|string',
-            'role' => 'nullable|string|in:creator,brand,customer'
+            'role'  => 'nullable|string|in:creator,brand,customer,studio_owner',
         ]);
 
         try {
@@ -152,46 +153,44 @@ class SocialAuthController extends Controller
             return response()->json(['success' => false, 'message' => 'No email provided by ' . $provider], 400);
         }
 
+        $isNewUser = false;
         $user = User::where('email', $email)->first();
-        
-        if (!$user) {
+
+        if (! $user) {
+            $isNewUser = true;
             $name = $oauthUser->getName() ?: explode('@', $email)[0];
             $user = User::create([
-                'name' => $name,
-                'email' => $email,
+                'name'     => $name,
+                'email'    => $email,
                 'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(32)),
             ]);
             $user->markEmailAsVerified();
-            
-            $role = $request->role ?? 'customer';
-            $roleModel = Role::where('slug', $role)->first();
-            if ($roleModel) {
-                $user->roles()->attach($roleModel->id, ['is_primary' => true]);
-            }
-            if ($role === 'creator') {
-                CreatorProfile::create(['user_id' => $user->id]);
-            }
-            if ($role === 'brand') {
-                BrandProfile::create(['user_id' => $user->id]);
-            }
+
+            // New social users get NO role yet — Flutter will ask via /api/set-role
+            // (role from request is ignored for new users to force role selection on mobile)
         }
 
         Auth::login($user, true);
         $request->session()->regenerate();
+        $request->session()->save();
 
         $primary = $user->primaryRole();
-        $roles = $user->roles()->get()->map(fn ($r) => ['id' => $r->id, 'name' => $r->name, 'slug' => $r->slug]);
+        $roles   = $user->roles()->get()->map(fn ($r) => ['id' => $r->id, 'name' => $r->name, 'slug' => $r->slug]);
 
         return response()->json([
-            'success' => true,
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-                'primary_role' => $primary ? ['id' => $primary->id, 'name' => $primary->name, 'slug' => $primary->slug] : null,
-                'roles' => $roles,
-            ]
+            'success'      => true,
+            'is_new_user'  => $isNewUser,
+            'user'         => [
+                'id'                 => $user->id,
+                'name'               => $user->name,
+                'email'              => $user->email,
+                'email_verified_at'  => $user->email_verified_at?->toIso8601String(),
+                'role'               => $user->role,
+                'primary_role'       => $primary ? ['id' => $primary->id, 'name' => $primary->name, 'slug' => $primary->slug] : null,
+                'roles'              => $roles,
+                'creator_profile'    => $user->creatorProfile,
+                'brand_profile'      => $user->brandProfile,
+            ],
         ]);
     }
 }

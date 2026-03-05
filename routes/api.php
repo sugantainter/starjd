@@ -87,6 +87,7 @@ Route::post('contact',                      [ContactController::class, 'store'])
 
 // ── Messages / Chat (Auth required) ─────────────────────────────────────────
 Route::middleware(['auth:web'])->group(function () {
+    Route::post('set-role',              [AuthController::class, 'setRole']);
     Route::post('update-fcm-token',      [AuthController::class, 'updateFcmToken']);
     Route::get('conversations',             [MessageController::class, 'index']);
     Route::get('messages/{userId}',         [MessageController::class, 'show']);
