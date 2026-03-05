@@ -1,34 +1,74 @@
 <template>
-  <div class="mx-auto max-w-7xl px-4 py-8">
-    <h1 class="text-3xl font-bold text-[#1a1a1a]">Studio Marketplace</h1>
-    <p class="mt-2 text-[#64748b]">Book photography, film, podcast, music & event spaces.</p>
-
-    <div class="mt-6 flex flex-wrap items-center gap-2">
-      <button
-        type="button"
-        class="rounded-xl border px-4 py-2 text-sm transition lg:hidden"
-        :class="showFilters ? 'border-[#e63946] bg-[#e63946] text-white' : 'border-[#e2e8f0] hover:bg-[#f1f5f9]'"
-        @click="showFilters = !showFilters"
-      >
-        Filters
-      </button>
-      <select
-        v-model="sort"
-        class="rounded-xl border border-[#e2e8f0] px-4 py-2 text-sm focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]"
-        @change="load(1)"
-      >
-        <option value="newest">Newest</option>
-        <option value="price_low">Price: Low to High</option>
-        <option value="price_high">Price: High to Low</option>
-        <option value="rating">Rating</option>
-      </select>
-      <span class="ml-auto text-sm text-[#64748b]">{{ total }} studios</span>
+  <div class="mx-auto max-w-7xl px-4 py-6 sm:py-8">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight text-[#1a1a1a] sm:text-3xl">Studio Marketplace</h1>
+        <p class="mt-1 text-sm text-[#64748b] sm:mt-2 sm:text-base">
+          Book photography, film, podcast, music &amp; event spaces.
+        </p>
+      </div>
+      <div class="mt-2 flex items-center gap-2 text-xs text-[#64748b] sm:mt-0 sm:text-sm">
+        <span v-if="!mapVisible" class="hidden sm:inline">Browse curated spaces in a responsive grid.</span>
+        <span v-else class="hidden sm:inline">Pan and zoom the map to explore nearby studios.</span>
+        <span class="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 shadow-sm ring-1 ring-[#e2e8f0]">
+          <span class="h-2 w-2 rounded-full" :class="mapVisible ? 'bg-[#22c55e]' : 'bg-[#e5e7eb]'"></span>
+          <span>{{ total }} studios</span>
+        </span>
+      </div>
     </div>
 
-    <div class="mt-6 flex flex-col gap-6 lg:flex-row">
+    <div class="mt-5 flex flex-col gap-3 rounded-2xl bg-white/80 p-3 shadow-sm ring-1 ring-[#e5e7eb]/60 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-4">
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-xl border border-[#e2e8f0] px-4 py-2 text-sm font-medium text-[#1f2937] transition hover:border-[#e63946] hover:bg-[#fef2f2] hover:text-[#b91c1c] focus:outline-none focus:ring-2 focus:ring-[#e63946]/20 lg:hidden"
+          :class="showFilters ? 'border-[#e63946] bg-[#e63946] text-white hover:bg-[#b91c1c] hover:text-white' : ''"
+          @click="showFilters = !showFilters"
+        >
+          <svg
+            class="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M4 6h16M6 12h12M10 18h8"
+            />
+          </svg>
+          <span>Filters</span>
+        </button>
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-xl border border-[#e2e8f0] px-3 py-2 text-sm font-medium text-[#1f2937] transition hover:border-[#0ea5e9] hover:bg-[#f0f9ff] hover:text-[#0369a1]"
+          @click="mapVisible = !mapVisible"
+        >
+          <span class="inline-flex h-2 w-2 rounded-full" :class="mapVisible ? 'bg-[#0ea5e9]' : 'bg-[#e5e7eb]'"></span>
+          <span class="hidden xs:inline">{{ mapVisible ? 'Show list view' : 'Show map view' }}</span>
+          <span class="xs:hidden">{{ mapVisible ? 'List view' : 'Map view' }}</span>
+        </button>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 sm:justify-end">
+        <select
+          v-model="sort"
+          class="min-w-[180px] rounded-xl border border-[#e2e8f0] bg-white px-3 py-2 text-sm text-[#111827] shadow-sm focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]"
+          @change="load(1)"
+        >
+          <option value="newest">Newest</option>
+          <option value="price_low">Price: Low to High</option>
+          <option value="price_high">Price: High to Low</option>
+          <option value="rating">Rating</option>
+        </select>
+        <span class="text-sm text-[#64748b] sm:pl-1">{{ total }} {{ total === 1 ? 'studio' : 'studios' }}</span>
+      </div>
+    </div>
+
+    <div class="mt-6 flex flex-col gap-6 lg:flex-row lg:items-start">
       <div
         v-show="showFilters"
-        class="lg:block"
+        class="lg:block lg:w-72 lg:flex-none"
         :class="{ 'hidden': !showFilters }"
       >
         <FilterSidebar
@@ -48,29 +88,50 @@
       </div>
 
       <div class="min-w-0 flex-1">
-        <div v-if="mapVisible" class="mb-4 rounded-xl border border-[#e2e8f0] bg-[#f1f5f9] p-8 text-center text-[#64748b]">
-          Map view (toggle off to see list). Integrate your map provider here.
+        <div
+          v-if="mapVisible"
+          class="mb-4 rounded-2xl border border-dashed border-[#cbd5f5] bg-[#eff6ff] p-6 text-center text-sm text-[#1d4ed8] sm:p-8"
+        >
+          Map view is enabled. Integrate your preferred map provider (Google Maps, Mapbox, etc.) here to show studios by
+          location.
         </div>
-        <div v-else class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        <div
+          v-else
+          class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:gap-6 xl:grid-cols-3"
+        >
           <StudioCard v-for="s in list" :key="s.id" :studio="s" />
         </div>
 
-        <div v-if="!list.length && !loading" class="mt-12 text-center text-[#64748b]">No studios found. Try adjusting filters.</div>
-        <div v-if="loading" class="mt-12 text-center text-[#64748b]">Loading…</div>
+        <div
+          v-if="!list.length && !loading"
+          class="mt-12 rounded-2xl border border-dashed border-[#e2e8f0] bg-white/80 p-8 text-center text-[#64748b]"
+        >
+          No studios found. Try adjusting filters or widening your search.
+        </div>
+        <div v-if="loading" class="mt-12 text-center text-sm text-[#64748b]">Loading…</div>
 
-        <div v-if="lastPage > 1" class="mt-8 flex justify-center gap-2">
+        <div
+          v-if="lastPage > 1"
+          class="mt-8 flex flex-wrap items-center justify-center gap-2 text-sm"
+        >
           <button
             type="button"
-            class="rounded-lg border border-[#e2e8f0] px-4 py-2 text-sm disabled:opacity-50"
+            class="rounded-lg border border-[#e2e8f0] bg-white px-4 py-2 text-sm font-medium text-[#111827] shadow-sm transition hover:border-[#e63946] hover:text-[#e63946] disabled:cursor-not-allowed disabled:opacity-50"
             :disabled="currentPage <= 1"
             @click="load(currentPage - 1)"
           >
             Previous
           </button>
-          <span class="flex items-center px-4 py-2 text-sm text-[#64748b]">Page {{ currentPage }} of {{ lastPage }}</span>
+          <span class="flex items-center px-4 py-2 text-sm text-[#64748b]">
+            Page
+            <span class="mx-1 inline-flex h-7 min-w-[2.25rem] items-center justify-center rounded-full bg-[#f3f4f6] px-2 text-sm font-medium text-[#111827]">
+              {{ currentPage }}
+            </span>
+            of {{ lastPage }}
+          </span>
           <button
             type="button"
-            class="rounded-lg border border-[#e2e8f0] px-4 py-2 text-sm disabled:opacity-50"
+            class="rounded-lg border border-[#e2e8f0] bg-white px-4 py-2 text-sm font-medium text-[#111827] shadow-sm transition hover:border-[#e63946] hover:text-[#e63946] disabled:cursor-not-allowed disabled:opacity-50"
             :disabled="currentPage >= lastPage"
             @click="load(currentPage + 1)"
           >
