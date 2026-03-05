@@ -12,6 +12,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\StudioPublicController;
 use App\Http\Controllers\CreatorPublicController;
 use App\Http\Controllers\CreatorOptionsController;
+use App\Http\Controllers\Api\MessageController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -83,3 +84,11 @@ Route::post('email/verification-notification', [AuthController::class, 'resendVe
 Route::post('verify-email-otp',             [AuthController::class, 'verifyOtp']);
 Route::post('resend-otp',                   [AuthController::class, 'resendOtp']);
 Route::post('contact',                      [ContactController::class, 'store']);
+
+// ── Messages / Chat (Auth required) ─────────────────────────────────────────
+Route::middleware(['auth:web'])->group(function () {
+    Route::post('update-fcm-token',      [AuthController::class, 'updateFcmToken']);
+    Route::get('conversations',             [MessageController::class, 'index']);
+    Route::get('messages/{userId}',         [MessageController::class, 'show']);
+    Route::post('messages',                 [MessageController::class, 'store']);
+});

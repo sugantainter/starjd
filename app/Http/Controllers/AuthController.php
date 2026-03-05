@@ -300,6 +300,19 @@ class AuthController extends Controller
     /**
      * Resend OTP to email (for unverified users).
      */
+    public function updateFcmToken(Request $request): JsonResponse
+    {
+        $request->validate(['fcm_token' => 'required|string']);
+        
+        $user = Auth::user();
+        if ($user) {
+            $user->update(['fcm_token' => $request->fcm_token]);
+            return response()->json(['message' => 'FCM token updated successfully.']);
+        }
+
+        return response()->json(['message' => 'Unauthorized.'], 401);
+    }
+
     public function resendOtp(Request $request): JsonResponse
     {
         $request->validate(['email' => ['required', 'string', 'email']]);
