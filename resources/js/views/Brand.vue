@@ -13,10 +13,10 @@
             <span class="h-1 w-8 rounded-full bg-[#fc4402]" />
           </p>
           <h1 class="mt-5 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-[2.7rem]">
-            I'm a Brand
+            I'm a Brand 
           </h1>
           <p class="mt-4 text-sm text-[#e5e7eb] sm:text-base">
-            Find vetted creators. Brief, book, and get content delivered — all in one place.
+            Find vetted creators, book campaigns, and get premium content delivered — all in one influencer marketing platform. 
           </p>
 
           <div class="mt-8 flex flex-wrap items-center justify-center gap-4 md:justify-start">
@@ -99,19 +99,19 @@
     <section class="border-b border-[#e5e7eb] bg-white px-4 py-16 md:py-24">
       <div class="mx-auto max-w-6xl">
         <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#fc4402]">Why choose us</p>
-        <h2 class="mt-3 text-2xl font-bold text-[#111827] md:text-3xl">Why Brands Choose StarJD</h2>
+        <h2 class="mt-3 text-2xl font-bold text-[#111827] md:text-3xl">Why Brands Choose StarJD </h2>
         <div class="mt-12 grid gap-8 md:grid-cols-3">
           <div class="rounded-2xl border border-[#e5e7eb] bg-[#fafaf9] p-6">
-            <h3 class="font-semibold text-[#111827]">Vetted Creators</h3>
-            <p class="mt-2 text-sm text-[#6b7280]">Search by niche, platform, and budget. Every creator is verified.</p>
+            <h3 class="font-semibold text-[#111827]">Verified & Performance-Driven Creators </h3>
+            <p class="mt-2 text-sm text-[#6b7280]">We connect you with vetted influencers and content creators selected based on niche relevance, audience quality, and engagement performance — ensuring your brand collaborates with the right talent. </p>
           </div>
           <div class="rounded-2xl border border-[#e5e7eb] bg-[#fafaf9] p-6">
-            <h3 class="font-semibold text-[#111827]">Escrow Payments</h3>
-            <p class="mt-2 text-sm text-[#6b7280]">Payments held securely until you approve content. No risk.</p>
+            <h3 class="font-semibold text-[#111827]">Streamlined Campaign Management </h3>
+            <p class="mt-2 text-sm text-[#6b7280]">From briefing and negotiations to booking and approvals, our all-in-one influencer marketing platform simplifies every step of your campaign workflow. </p>
           </div>
           <div class="rounded-2xl border border-[#e5e7eb] bg-[#fafaf9] p-6">
-            <h3 class="font-semibold text-[#111827]">Campaign Tracking</h3>
-            <p class="mt-2 text-sm text-[#6b7280]">Track briefs, approvals, and delivery from your dashboard.</p>
+            <h3 class="font-semibold text-[#111827]">Premium Content Production </h3>
+            <p class="mt-2 text-sm text-[#6b7280]">Get high-quality branded content — reels, videos, product shoots, and digital ads — crafted to boost engagement, visibility, and conversions. </p>
           </div>
         </div>
       </div>
@@ -208,7 +208,7 @@
               <div class="flex flex-col justify-between bg-white/95 p-4 text-xs text-[#111827] sm:text-sm">
                 <div class="space-y-3">
                   <div>
-                    <p class="text-[11px] font-semibold text-[#111827]">$55</p>
+                    <p class="text-[11px] font-semibold text-[#111827]">₹32,000</p>
                     <p class="text-[11px] text-[#6b7280] sm:text-xs">Fashion &amp; Beauty Content</p>
                   </div>
                   <div class="flex flex-col gap-1">
@@ -228,7 +228,7 @@
 
                 <div class="mt-4 space-y-3 border-t border-[#f3f4f6] pt-4">
                   <div>
-                    <p class="text-[11px] font-semibold text-[#111827]">$150</p>
+                    <p class="text-[11px] font-semibold text-[#111827]">₹56,000</p>
                     <p class="text-[11px] text-[#6b7280] sm:text-xs">Lifestyle Content Creator</p>
                   </div>
                   <div class="flex flex-col gap-1">
@@ -252,27 +252,29 @@
 
         <!-- Right: campaigns copy -->
         <div class="w-full lg:w-1/2">
-          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#fc4402]">Campaigns</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#fc4402]">Influencer Campaigns Made Simple </p>
           <h2 class="mt-3 text-2xl font-bold text-[#111827] md:text-3xl">
-            Post campaigns and have 550,000+ influencers come to you.
+            Launch powerful influencer marketing campaigns and get access to 550,000+ verified influencers ready to collaborate with your brand. 
           </h2>
           <div class="mt-6 space-y-6 text-sm text-[#4b5563]">
             <div>
-              <h3 class="font-semibold text-[#111827]">Set Targeting</h3>
+              <h3 class="font-semibold text-[#111827]">Set Advanced Targeting </h3>
               <p class="mt-1">
-                Specify demographics including niche, location and following size of the influencers you want to target.
+                Define your ideal creator by selecting specific niche, location, audience demographics, engagement rate, and follower size. Our smart targeting ensures your campaign reaches the most relevant influencers for maximum brand impact. 
               </p>
             </div>
             <div>
-              <h3 class="font-semibold text-[#111827]">Post Campaign</h3>
+              <h3 class="font-semibold text-[#111827]">Post Your Campaign </h3>
               <p class="mt-1">
-                Centralize your images, requirements, and more in a campaign brief sent to 550,000+ influencers.
+                Create a detailed campaign brief by uploading your brand guidelines, content requirements, deliverables, timelines, and reference creatives. Your campaign is then shared with 550,000+ active influencers across multiple categories. 
               </p>
             </div>
             <div>
-              <h3 class="font-semibold text-[#111827]">Influencers Apply</h3>
+              <h3 class="font-semibold text-[#111827]">Influencers Apply & You Choose </h3>
               <p class="mt-1">
-                Targeted influencers submit their pricing, and you choose who to collaborate with.
+                Interested influencers submit their pricing, proposal, and content ideas. Review applications, compare creator profiles, and select the best-fit influencers to execute your campaign with confidence. 
+
+Streamline your influencer outreach, improve campaign efficiency, and drive measurable results — all from one powerful platform. 
               </p>
             </div>
           </div>
@@ -288,25 +290,27 @@
           <div class="w-full lg:max-w-xl">
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#fc4402]">Track</p>
             <h2 class="mt-3 text-2xl font-bold leading-snug text-[#111827] md:text-3xl">
-              Track Post Analytics and Performance in Real Time
+              Track Influencer Campaign Performance in Real Time 
             </h2>
             <div class="mt-8 space-y-8">
               <div>
-                <h3 class="text-base font-bold text-[#111827] sm:text-lg">One-Click Tracking</h3>
+                <h3 class="text-base font-bold text-[#111827] sm:text-lg">One-Click Performance Tracking </h3>
                 <p class="mt-2 text-sm leading-relaxed text-[#6b7280] sm:text-base">
-                  Track Instagram, TikTok, and YouTube content in real time from a single dashboard. Say goodbye to manual tracking and messy spreadsheets.
+                  Monitor Instagram, TikTok, and YouTube content from a single, centralized dashboard. Eliminate manual tracking, scattered screenshots, and complicated spreadsheets — get instant visibility into campaign results in one place. 
                 </p>
               </div>
               <div>
-                <h3 class="text-base font-bold text-[#111827] sm:text-lg">Advanced Analytics &amp; Reporting</h3>
+                <h3 class="text-base font-bold text-[#111827] sm:text-lg">Advanced Analytics & Detailed Reporting </h3>
                 <p class="mt-2 text-sm leading-relaxed text-[#6b7280] sm:text-base">
-                  Analyze content performance over time, including impressions, engagement and more. Organize performance by campaign and effortlessly build reports.
+                  Gain deep insights into impressions, reach, engagement rate, clicks, and overall content performance. Compare results over time, organize data by campaign, and generate professional reports that clearly demonstrate ROI and campaign impact. 
                 </p>
               </div>
               <div>
-                <h3 class="text-base font-bold text-[#111827] sm:text-lg">Fully Automated</h3>
+                <h3 class="text-base font-bold text-[#111827] sm:text-lg">Fully Automated Data Updates </h3>
                 <p class="mt-2 text-sm leading-relaxed text-[#6b7280] sm:text-base">
-                  Metrics are updated every 24 hours, ensuring performance data is always up-to-date.
+                  Performance metrics are automatically refreshed every 24 hours, ensuring your influencer marketing data stays accurate, current, and decision-ready. 
+
+Make smarter marketing decisions with transparent reporting, streamlined analytics, and actionable performance insights — all built into one powerful platform. 
                 </p>
               </div>
             </div>
@@ -385,19 +389,18 @@
           <div class="lg:w-[40%]">
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#fc4402]">For modern brands</p>
             <h2 class="mt-3 text-2xl font-bold leading-snug text-[#111827] md:text-3xl">
-              Build, run and measure creator campaigns
-              <span class="block text-[#4b5563]">in one simple flow.</span>
+              Build, Launch & Scale Creator Campaigns — 
+              <span class="block text-[#4b5563]">All in One Place </span>
             </h2>
             <p class="mt-4 text-sm text-[#6b7280]">
-              Inspired by the best creator platforms, StarJD gives you the tools to brief, discover, approve and analyse — without
-              spreadsheets or endless DMs.
+              StarJD helps modern brands run powerful influencer marketing campaigns without the chaos. From briefing creators to tracking performance, everything is managed inside one streamlined platform. 
             </p>
             <div class="mt-6 grid gap-4 text-sm text-[#4b5563]">
               <div class="flex items-center gap-3">
                 <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#fee2e2] text-xs font-semibold text-[#b91c1c]">
                   80k+
                 </span>
-                <p class="text-[#6b7280]">Creators you can tap into across niches, platforms and regions.</p>
+                <p class="text-[#6b7280]">verified creators. Multi-platform reach</p>
               </div>
               <div class="flex items-center gap-3">
                 <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#dcfce7] text-xs font-semibold text-emerald-700">
@@ -421,10 +424,9 @@
                     1
                   </div>
                   <div>
-                    <h3 class="text-sm font-semibold text-[#111827]">Build your brief</h3>
+                    <h3 class="text-sm font-semibold text-[#111827]">Create Your Brief </h3>
                     <p class="mt-1 text-sm text-[#6b7280]">
-                      Describe the content you want, your budget and timelines. Save presets for launches, evergreen UGC or always‑on
-                      retention campaigns.
+                      Define goals, budget, deliverables, and timelines in minutes. Launch product campaigns, UGC collaborations, or performance ads with complete clarity.
                     </p>
                     <div class="mt-3 flex flex-wrap gap-2 text-[11px] text-[#6b7280]">
                       <span class="rounded-full bg-[#f3f4f6] px-3 py-1">TikTok • Reels • Shorts</span>
@@ -444,10 +446,9 @@
                     2
                   </div>
                   <div>
-                    <h3 class="text-sm font-semibold text-[#111827]">Manage creators &amp; content</h3>
+                    <h3 class="text-sm font-semibold text-[#111827]">Manage & Collaborate </h3>
                     <p class="mt-1 text-sm text-[#6b7280]">
-                      Review pitches, approve concepts, collect drafts and keep your team aligned with one shared pipeline across all
-                      campaigns.
+                      Review pitches, approve content, and release secure payments — all in one organized workflow. 
                     </p>
                     <div class="mt-3 grid gap-2 text-[11px] text-[#6b7280] sm:grid-cols-3">
                       <div class="rounded-xl bg-[#f3f4f6] p-2">
@@ -476,10 +477,9 @@
                     3
                   </div>
                   <div>
-                    <h3 class="text-sm font-semibold text-[#111827]">Measure, boost &amp; scale</h3>
+                    <h3 class="text-sm font-semibold text-[#111827]">Track & Optimize </h3>
                     <p class="mt-1 text-sm text-[#6b7280]">
-                      Track performance by creator, platform and asset. Turn top posts into ads and grow a reusable content library you
-                      control.
+                      Monitor real-time performance, identify top content, and scale what works to maximize ROI. 
                     </p>
                     <div class="mt-3 flex flex-wrap gap-3 text-[11px] text-[#6b7280]">
                       <div class="flex items-center gap-2">
@@ -511,92 +511,80 @@
           <!-- Left: 3 overlapping video cards – image jesa: left bottom-left, middle higher-right, right highest (diagonal up-right, bigger cards, proper gapping) -->
           <div class="content-needs-videos order-2 flex justify-center lg:order-1 lg:w-[48%]">
             <div class="content-needs-stack relative w-full max-w-[340px] sm:max-w-[400px] md:max-w-[440px]">
-              <!-- Card 1: leftmost, bottom-left of cluster -->
+              <!-- Card 1 -->
               <div
                 class="content-needs-card content-needs-card--1 absolute bottom-0 left-0 z-0 cursor-pointer overflow-hidden rounded-2xl border border-[#e5e7eb] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.1)] transition hover:z-10 hover:shadow-xl"
                 @click="toggleContentVideo(0)"
               >
                 <div class="content-needs-card-inner relative aspect-[9/16] w-full bg-[#f3f4f6]">
-                  <video
-                    :ref="(el) => setContentVideoRef(el, 0)"
-                    class="h-full w-full object-cover"
-                    playsinline
-                    muted
-                    :poster="contentVideos[0].poster"
-                    @click.stop="toggleContentVideo(0)"
-                    @ended="onContentVideoEnded(0)"
-                  >
-                    <source :src="contentVideos[0].src" type="video/mp4" />
-                  </video>
-                  <div
-                    v-show="!contentVideoPlaying[0]"
-                    class="absolute inset-0 flex items-center justify-center bg-black/20 transition"
-                  >
+                  <template v-if="contentVideos[0]?.embedUrl">
+                    <img v-show="!contentVideoPlaying[0]" :src="contentVideos[0].poster" :alt="contentVideos[0].title" class="h-full w-full object-cover" />
+                    <iframe v-show="contentVideoPlaying[0]" :src="contentVideos[0].embedUrl + '?autoplay=1'" class="absolute inset-0 h-full w-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen />
+                  </template>
+                  <template v-else>
+                    <video :ref="(el) => setContentVideoRef(el, 0)" class="h-full w-full object-cover" playsinline muted :poster="contentVideos[0]?.poster" @click.stop="toggleContentVideo(0)" @ended="onContentVideoEnded(0)">
+                      <source v-if="contentVideos[0]?.src" :src="contentVideos[0].src" type="video/mp4" />
+                    </video>
+                  </template>
+                  <div v-show="!contentVideoPlaying[0]" class="absolute inset-0 flex items-center justify-center bg-black/20 transition">
                     <span class="content-needs-play-btn flex items-center justify-center rounded-full bg-white/95 text-[#111827] shadow-lg">
                       <svg class="ml-1 h-6 w-6 sm:h-8 sm:w-8" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                     </span>
                   </div>
-                  <div class="absolute bottom-2 right-2 h-6 w-6 opacity-90 md:h-7 md:w-7" aria-hidden="true">
+                  <div v-if="contentVideos[0]?.embedUrl" class="absolute bottom-2 right-2 rounded bg-[#ff0000] px-1.5 py-0.5 text-[10px] font-bold text-white">YouTube</div>
+                  <div v-else class="absolute bottom-2 right-2 h-6 w-6 opacity-90 md:h-7 md:w-7" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="currentColor" class="h-full w-full"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
                   </div>
                 </div>
               </div>
-              <!-- Card 2: middle, overlaps top-right of card1, slightly higher and right -->
+              <!-- Card 2 -->
               <div
                 class="content-needs-card content-needs-card--2 absolute z-10 cursor-pointer overflow-hidden rounded-2xl border border-[#e5e7eb] bg-white shadow-[0_10px_32px_rgba(0,0,0,0.12)] transition hover:z-20 hover:shadow-xl"
                 @click="toggleContentVideo(1)"
               >
                 <div class="content-needs-card-inner relative aspect-[9/16] w-full bg-[#f3f4f6]">
-                  <video
-                    :ref="(el) => setContentVideoRef(el, 1)"
-                    class="h-full w-full object-cover"
-                    playsinline
-                    muted
-                    :poster="contentVideos[1].poster"
-                    @click.stop="toggleContentVideo(1)"
-                    @ended="onContentVideoEnded(1)"
-                  >
-                    <source :src="contentVideos[1].src" type="video/mp4" />
-                  </video>
-                  <div
-                    v-show="!contentVideoPlaying[1]"
-                    class="absolute inset-0 flex items-center justify-center bg-black/20 transition"
-                  >
+                  <template v-if="contentVideos[1]?.embedUrl">
+                    <img v-show="!contentVideoPlaying[1]" :src="contentVideos[1].poster" :alt="contentVideos[1].title" class="h-full w-full object-cover" />
+                    <iframe v-show="contentVideoPlaying[1]" :src="contentVideos[1].embedUrl + '?autoplay=1'" class="absolute inset-0 h-full w-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen />
+                  </template>
+                  <template v-else>
+                    <video :ref="(el) => setContentVideoRef(el, 1)" class="h-full w-full object-cover" playsinline muted :poster="contentVideos[1]?.poster" @click.stop="toggleContentVideo(1)" @ended="onContentVideoEnded(1)">
+                      <source v-if="contentVideos[1]?.src" :src="contentVideos[1].src" type="video/mp4" />
+                    </video>
+                  </template>
+                  <div v-show="!contentVideoPlaying[1]" class="absolute inset-0 flex items-center justify-center bg-black/20 transition">
                     <span class="content-needs-play-btn flex items-center justify-center rounded-full bg-white/95 text-[#111827] shadow-lg">
                       <svg class="ml-1 h-6 w-6 sm:h-8 sm:w-8" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                     </span>
                   </div>
-                  <div class="absolute bottom-2 right-2 h-6 w-6 opacity-90 md:h-7 md:w-7" aria-hidden="true">
+                  <div v-if="contentVideos[1]?.embedUrl" class="absolute bottom-2 right-2 rounded bg-[#ff0000] px-1.5 py-0.5 text-[10px] font-bold text-white">YouTube</div>
+                  <div v-else class="absolute bottom-2 right-2 h-6 w-6 opacity-90 md:h-7 md:w-7" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="currentColor" class="h-full w-full"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
                   </div>
                 </div>
               </div>
-              <!-- Card 3: rightmost, overlaps top-right of card2, highest and right -->
+              <!-- Card 3 -->
               <div
                 class="content-needs-card content-needs-card--3 absolute z-20 cursor-pointer overflow-hidden rounded-2xl border border-[#e5e7eb] bg-white shadow-[0_12px_36px_rgba(0,0,0,0.14)] transition hover:z-30 hover:shadow-xl"
                 @click="toggleContentVideo(2)"
               >
                 <div class="content-needs-card-inner relative aspect-[9/16] w-full bg-[#f3f4f6]">
-                  <video
-                    :ref="(el) => setContentVideoRef(el, 2)"
-                    class="h-full w-full object-cover"
-                    playsinline
-                    muted
-                    :poster="contentVideos[2].poster"
-                    @click.stop="toggleContentVideo(2)"
-                    @ended="onContentVideoEnded(2)"
-                  >
-                    <source :src="contentVideos[2].src" type="video/mp4" />
-                  </video>
-                  <div
-                    v-show="!contentVideoPlaying[2]"
-                    class="absolute inset-0 flex items-center justify-center bg-black/20 transition"
-                  >
+                  <template v-if="contentVideos[2]?.embedUrl">
+                    <img v-show="!contentVideoPlaying[2]" :src="contentVideos[2].poster" :alt="contentVideos[2].title" class="h-full w-full object-cover" />
+                    <iframe v-show="contentVideoPlaying[2]" :src="contentVideos[2].embedUrl + '?autoplay=1'" class="absolute inset-0 h-full w-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen />
+                  </template>
+                  <template v-else>
+                    <video :ref="(el) => setContentVideoRef(el, 2)" class="h-full w-full object-cover" playsinline muted :poster="contentVideos[2]?.poster" @click.stop="toggleContentVideo(2)" @ended="onContentVideoEnded(2)">
+                      <source v-if="contentVideos[2]?.src" :src="contentVideos[2].src" type="video/mp4" />
+                    </video>
+                  </template>
+                  <div v-show="!contentVideoPlaying[2]" class="absolute inset-0 flex items-center justify-center bg-black/20 transition">
                     <span class="content-needs-play-btn flex items-center justify-center rounded-full bg-white/95 text-[#111827] shadow-lg">
                       <svg class="ml-1 h-6 w-6 sm:h-8 sm:w-8" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                     </span>
                   </div>
-                  <div class="absolute bottom-2 right-2 h-6 w-6 opacity-90 md:h-7 md:w-7" aria-hidden="true">
+                  <div v-if="contentVideos[2]?.embedUrl" class="absolute bottom-2 right-2 rounded bg-[#ff0000] px-1.5 py-0.5 text-[10px] font-bold text-white">YouTube</div>
+                  <div v-else class="absolute bottom-2 right-2 h-6 w-6 opacity-90 md:h-7 md:w-7" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="currentColor" class="h-full w-full"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
                   </div>
                 </div>
@@ -632,9 +620,6 @@
             </div>
           </div>
         </div>
-
-        <!-- As seen in -->
-        <p class="mt-14 text-center text-sm text-[#9ca3af] md:mt-16">As seen in</p>
       </div>
     </section>
 
@@ -808,6 +793,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
+import axios from 'axios';
 
 // 8 avatars evenly on orbit circle (45° each); orbit radius and angle applied via style
 // Increase this value to push avatars further away from the center card
@@ -880,6 +866,20 @@ function advanceCreatorsCarousel() {
 let creatorsIntervalId = null;
 onMounted(() => {
   creatorsIntervalId = setInterval(advanceCreatorsCarousel, CREATORS_INTERVAL_MS);
+  axios.get('/api/shorts').then((r) => {
+    const shorts = r.data?.shorts ?? [];
+    const merged = shorts.slice(0, 3).map((s) => ({
+      videoId: s.videoId,
+      embedUrl: s.embedUrl,
+      watchUrl: s.watchUrl,
+      poster: s.poster || `https://img.youtube.com/vi/${s.videoId}/sddefault.jpg`,
+      title: s.title || 'Short',
+    }));
+    while (merged.length < 3) merged.push(defaultYouTubeShorts[merged.length]);
+    contentVideos.value = merged;
+  }).catch(() => {
+    contentVideos.value = [...defaultYouTubeShorts];
+  });
 });
 onUnmounted(() => {
   if (creatorsIntervalId) clearInterval(creatorsIntervalId);
@@ -901,12 +901,14 @@ const orbitAvatars = [
   },
 }));
 
-// Content Needs section: 3 videos, click to play in place
-const contentVideos = [
-  { poster: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=400&h=600&fit=crop', src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4' },
-  { poster: 'https://images.unsplash.com/photo-1529636798458-92182e662485?w=400&h=600&fit=crop', src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4' },
-  { poster: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=400&h=600&fit=crop', src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4' },
+// Content Needs: fixed YouTube Shorts (from @StarJDs)
+const defaultYouTubeShorts = [
+  { videoId: 'wrYFrnrWBmw', embedUrl: 'https://www.youtube.com/embed/wrYFrnrWBmw', watchUrl: 'https://www.youtube.com/watch?v=wrYFrnrWBmw', poster: 'https://img.youtube.com/vi/wrYFrnrWBmw/sddefault.jpg', title: 'Short' },
+  { videoId: '0lbMSg7tWxk', embedUrl: 'https://www.youtube.com/embed/0lbMSg7tWxk', watchUrl: 'https://www.youtube.com/watch?v=0lbMSg7tWxk', poster: 'https://img.youtube.com/vi/0lbMSg7tWxk/sddefault.jpg', title: 'Short' },
+  { videoId: 'EAsrw-DfZN4', embedUrl: 'https://www.youtube.com/embed/EAsrw-DfZN4', watchUrl: 'https://www.youtube.com/watch?v=EAsrw-DfZN4', poster: 'https://img.youtube.com/vi/EAsrw-DfZN4/sddefault.jpg', title: 'Short' },
 ];
+const defaultContentVideos = [...defaultYouTubeShorts];
+const contentVideos = ref([...defaultContentVideos]);
 const contentVideoRefs = ref([null, null, null]);
 const contentVideoPlaying = ref([false, false, false]);
 
@@ -915,6 +917,13 @@ function setContentVideoRef(el, index) {
 }
 
 function toggleContentVideo(index) {
+  const item = contentVideos.value[index];
+  if (item?.embedUrl) {
+    const next = [false, false, false];
+    next[index] = !contentVideoPlaying.value[index];
+    contentVideoPlaying.value = next;
+    return;
+  }
   const refs = contentVideoRefs.value;
   const video = refs[index];
   if (!video) return;

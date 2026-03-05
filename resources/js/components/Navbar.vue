@@ -66,7 +66,6 @@
                         />
                     </svg>
                 </button>
-
         <!-- Desktop nav -->
         <div class="hidden items-center gap-4 md:flex">
           <router-link to="/" class="text-sm font-semibold transition hover:text-[#fc4402]">Home</router-link>
@@ -487,7 +486,6 @@
                 </div>
             </div>
         </nav>
-
         <!-- Mobile / tablet dropdown -->
         <Transition
             enter-active-class="transition duration-200 ease-out"

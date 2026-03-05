@@ -13,5 +13,10 @@ class Video extends Model
         'embed_url',
         'watch_url',
         'sort_order',
+        'is_short',
+    ];
+
+    protected $casts = [
+        'is_short' => 'boolean',
     ];
 }

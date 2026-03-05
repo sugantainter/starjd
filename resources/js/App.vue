@@ -951,50 +951,98 @@
             </div>
         </section>
 
-        <!-- Categories with images -->
+        <!-- Categories carousel: 4 cards per row, page theme colors -->
         <section
             id="categories"
-            class="animate-on-scroll border-b border-[#e5e7eb] bg-[#fafaf9] px-4 py-10 md:py-16"
+            class="animate-on-scroll overflow-x-hidden border-b border-[#e5e7eb] bg-[#fafaf9] px-4 py-10 md:py-16"
         >
             <div class="mx-auto max-w-6xl">
-                <h2 class="section-title mb-2 text-2xl font-bold md:text-3xl">
+                <h2 class="section-title mb-2 text-2xl font-bold text-[#1a1a1a] md:text-3xl">
                     Explore by Category
                 </h2>
-                <p class="section-subtitle mb-12 text-[#6b7280]">
+                <p class="section-subtitle mb-10 text-[#6b7280] md:mb-12">
                     Find creators in your niche.
                 </p>
-                <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                    <div
-                        v-for="(cat, i) in categories"
-                        :key="cat.name"
-                        class="category-card cursor-link group overflow-hidden rounded-2xl border border-[#e5e7eb] bg-white shadow-sm transition hover:border-[#e63946]/50 hover:shadow-xl"
+                <div
+                    class="category-carousel relative mx-auto flex items-center justify-center"
+                    style="--category-card-w: 230px; --category-card-gap: 16px;"
+                >
+                    <!-- Prev arrow - theme -->
+                    <button
+                        type="button"
+                        class="category-carousel-arrow absolute left-0 z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e63946] text-white shadow-md transition hover:bg-[#c1121f] md:left-2 md:h-12 md:w-12"
+                        aria-label="Previous category"
+                        @click="categoryCarouselPrev()"
                     >
-                        <div class="relative aspect-[3/4] overflow-hidden">
-                            <img
-                                :src="cat.image_url || cat.image"
-                                :alt="cat.name"
-                                class="h-full w-full object-cover transition duration-500 group-hover:scale-110"
-                            />
+                        <svg class="h-5 w-5 md:h-6 md:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <!-- Cards track: exactly 4 cards visible -->
+                    <div
+                        class="category-carousel-track overflow-hidden px-4 py-4 md:px-6 md:py-5"
+                    >
+                        <div
+                            class="category-carousel-inner flex items-stretch gap-3 transition-transform duration-500 ease-out md:gap-4"
+                            :style="categoryCarouselTrackStyle"
+                        >
                             <div
-                                class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100"
-                            />
-                            <div
-                                class="absolute bottom-0 left-0 right-0 p-4 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                                v-for="(cat, i) in categories"
+                                :key="cat.name"
+                                class="category-carousel-card flex shrink-0 cursor-pointer flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-500"
+                                :class="i === categoryCenterIndex ? 'category-carousel-card--center border-[#e63946] shadow-md ring-2 ring-[#e63946]/20' : 'border-[#e5e7eb] hover:border-[#e63946]/50'"
+                                :style="{
+                                    width: 'var(--category-card-w)',
+                                    opacity: i === categoryCenterIndex ? 1 : 0.4,
+                                    transform: i === categoryCenterIndex ? 'scale(1.1)' : 'scale(1)',
+                                    transformOrigin: 'center center',
+                                }"
+                                @click="categoryCarouselGoTo(i)"
                             >
-                                <span class="font-semibold">{{
-                                    cat.name
-                                }}</span>
+                                <!-- Image only (no text overlay); text niche dikhega -->
+                                <div class="relative aspect-[3/4] w-full overflow-hidden">
+                                    <img
+                                        :src="cat.image_url || cat.image"
+                                        :alt="cat.name"
+                                        class="h-full w-full object-cover transition duration-300"
+                                    />
+                                    <span
+                                        class="absolute right-2 top-2 rounded-full bg-[#e63946] px-2 py-0.5 text-[10px] font-semibold uppercase text-white"
+                                    >
+                                        Categories
+                                    </span>
+                                </div>
+                                <!-- Text image ke niche -->
+                                <div class="flex flex-1 flex-col justify-center border-t border-[#e5e7eb] bg-white p-3">
+                                    <h3 class="font-semibold text-[#1a1a1a]">{{ cat.name }}</h3>
+                                    <p class="mt-0.5 text-xs text-[#6b7280]">{{ cat.count }} creators</p>
+                                </div>
                             </div>
                         </div>
-                        <div class="p-4">
-                            <h3 class="font-semibold text-[#1a1a1a]">
-                                {{ cat.name }}
-                            </h3>
-                            <p class="text-sm text-[#6b7280]">
-                                {{ cat.count }} creators
-                            </p>
-                        </div>
                     </div>
+                    <!-- Next arrow - theme -->
+                    <button
+                        type="button"
+                        class="category-carousel-arrow absolute right-0 z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e63946] text-white shadow-md transition hover:bg-[#c1121f] md:right-2 md:h-12 md:w-12"
+                        aria-label="Next category"
+                        @click="categoryCarouselNext()"
+                    >
+                        <svg class="h-5 w-5 md:h-6 md:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+                <!-- Dots - theme -->
+                <div class="mt-6 flex justify-center gap-2">
+                    <button
+                        v-for="(cat, i) in categories"
+                        :key="'dot-' + cat.name"
+                        type="button"
+                        class="h-2 w-2 rounded-full transition-all md:h-2.5 md:w-2.5"
+                        :class="i === categoryCenterIndex ? 'scale-125 bg-[#e63946]' : 'bg-[#e5e7eb] hover:bg-[#d1d5db]'"
+                        :aria-label="'Go to ' + cat.name"
+                        @click="categoryCarouselGoTo(i)"
+                    />
                 </div>
             </div>
         </section>
@@ -1976,7 +2024,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import Footer from "@/components/Footer.vue";
 
 defineProps({ noHeaderFooter: { type: Boolean, default: false } });
@@ -2223,6 +2271,58 @@ const categories = ref([
         image: "https://picsum.photos/seed/travel/400/500",
     },
 ]);
+
+const categoryCarouselIndex = ref(0);
+function categoryCarouselNext() {
+    categoryCarouselIndex.value =
+        (categoryCarouselIndex.value + 1) % Math.max(1, categories.value.length);
+}
+function categoryCarouselPrev() {
+    categoryCarouselIndex.value =
+        (categoryCarouselIndex.value - 1 + categories.value.length) %
+        Math.max(1, categories.value.length);
+}
+function categoryCarouselGoTo(i) {
+    const centerOffset = Math.floor(CATEGORY_CARDS_PER_ROW / 2);
+    const len = categories.value.length;
+    const targetScroll = Math.max(
+        0,
+        Math.min(len - CATEGORY_CARDS_PER_ROW, i - centerOffset),
+    );
+    categoryCarouselIndex.value = targetScroll;
+}
+const CATEGORY_CARD_WIDTH = 220;
+const CATEGORY_CARD_GAP = 16;
+const CATEGORY_CARDS_PER_ROW = 4;
+const categoryCarouselViewportWidth =
+    CATEGORY_CARDS_PER_ROW * CATEGORY_CARD_WIDTH +
+    (CATEGORY_CARDS_PER_ROW - 1) * CATEGORY_CARD_GAP;
+
+const categoryCarouselTrackStyle = computed(() => {
+    const cardW = CATEGORY_CARD_WIDTH;
+    const gap = CATEGORY_CARD_GAP;
+    const n = categoryCarouselIndex.value;
+    return {
+        transform: `translateX(${-n * (cardW + gap)}px)`,
+    };
+});
+
+const categoryCenterIndex = computed(() => {
+    const n = categoryCarouselIndex.value;
+    const len = categories.value.length;
+    const centerOffset = Math.floor(CATEGORY_CARDS_PER_ROW / 2);
+    return Math.min(len - 1, n + centerOffset);
+});
+let categoryCarouselIntervalId = null;
+watch(
+    categories,
+    (val) => {
+        const len = val?.length ?? 0;
+        if (len > 0 && categoryCarouselIndex.value >= len)
+            categoryCarouselIndex.value = len - 1;
+    },
+    { deep: true },
+);
 
 const featuredCreators = ref([]);
 const featuredStudios = ref([]);
@@ -2536,14 +2636,41 @@ onMounted(() => {
     document
         .querySelectorAll(".animate-on-scroll")
         .forEach((el) => observer.observe(el));
+    categoryCarouselIntervalId = setInterval(() => {
+        categoryCarouselNext();
+    }, 4000);
 });
 
 onBeforeUnmount(() => {
     document.removeEventListener("click", onNavUserMenuClickOutside);
+    if (categoryCarouselIntervalId) clearInterval(categoryCarouselIntervalId);
 });
 </script>
 
 <style scoped>
+.category-carousel {
+    min-height: 280px;
+}
+.category-carousel-track {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    max-width: 100%;
+}
+.category-carousel-inner {
+    will-change: transform;
+}
+@media (min-width: 768px) {
+    .category-carousel {
+        min-height: 320px;
+    }
+}
+@media (min-width: 1024px) {
+    .category-carousel {
+        min-height: 360px;
+    }
+}
+
 .partners-marquee-track {
     mask-image: linear-gradient(
         to right,
