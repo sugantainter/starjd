@@ -1,5 +1,5 @@
 <template>
-  <aside class="w-full shrink-0 rounded-xl border border-[#e2e8f0] bg-white p-4 lg:w-64">
+  <aside class="w-full shrink-0 rounded-xl border border-[#e2e8f0] bg-white p-4 shadow-sm lg:w-72 lg:border-[#d1d5db] lg:bg-white lg:p-5 lg:shadow-md lg:ring-1 lg:ring-[#e5e7eb] lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
     <h3 class="font-semibold text-[#1a1a1a]">Filters</h3>
 
     <div class="mt-4">

@@ -123,6 +123,7 @@ const bookingStart = ref('09:00');
 const bookingEnd = ref('10:00');
 const priceBreakdown = ref(null);
 const bookingInProgress = ref(false);
+const couponCode = ref('');
 
 const similarStudios = computed(() => studio.value?.similar_studios ?? []);
 

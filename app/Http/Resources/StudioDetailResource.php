@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Str;
 
 class StudioDetailResource extends JsonResource
 {
@@ -17,11 +18,14 @@ class StudioDetailResource extends JsonResource
         $mainImage = $this->resource->images()->where('is_primary', true)->first()
             ?? $this->resource->images()->orderBy('sort_order')->first();
 
+        $rawDescription = $this->resource->description ?? '';
+        $decodedDescription = $rawDescription !== '' ? html_entity_decode($rawDescription) : null;
+
         $data = [
             'id' => $this->resource->id,
             'slug' => $this->resource->slug,
             'name' => $this->resource->name,
-            'description' => $this->resource->description,
+            'description' => $decodedDescription,
             'main_image' => $mainImage ? '/storage/' . ltrim($mainImage->image, '/') : null,
             'price_per_hour' => $this->resource->price_per_hour ? (float) $this->resource->price_per_hour : null,
             'price_per_day' => $this->resource->price_per_day ? (float) $this->resource->price_per_day : null,

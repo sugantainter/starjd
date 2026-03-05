@@ -1,5 +1,5 @@
 <template>
-  <div v-if="profile" class="mx-auto max-w-4xl px-4 py-8">
+  <div v-if="profile" class="mx-auto max-w-6xl px-4 pt-8 pb-20 md:pb-24">
     <div class="rounded-2xl border border-[#e2e8f0] bg-white p-8 shadow-sm">
       <div class="flex flex-col gap-6 sm:flex-row sm:items-start">
         <div class="h-24 w-24 shrink-0 rounded-full overflow-hidden border-2 border-[#e2e8f0] bg-[#f1f5f9] flex items-center justify-center">
@@ -21,13 +21,13 @@
                 :href="s.profile_url || '#'"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="inline-flex items-center gap-3 rounded-xl border border-[#e2e8f0] bg-white px-4 py-3 text-left shadow-sm transition hover:border-[#e63946]/40 hover:shadow-md"
+                class="inline-flex items-center gap-3 rounded-xl border border-[#e2e8f0] bg-white px-4 py-3 text-left shadow-sm transition hover:border-[#fc4402]/40 hover:shadow-md"
               >
                 <SocialPlatformIcon :platform="s.platform" :size="36" />
                 <div>
                   <span class="block font-medium text-[#1a1a1a]">{{ platformName(s.platform) }}</span>
                   <span v-if="s.username" class="block text-sm text-[#64748b]">@{{ s.username }}</span>
-                  <span v-if="s.followers_count" class="block text-xs font-medium text-[#e63946]">{{ formatFollowers(s.followers_count) }} followers</span>
+                  <span v-if="s.followers_count" class="block text-xs font-medium text-[#fc4402]">{{ formatFollowers(s.followers_count) }} followers</span>
                 </div>
               </a>
             </div>
@@ -52,13 +52,13 @@
           <div class="flex flex-wrap items-center gap-2">
             <span
               v-if="pkg.package_category || pkg.category"
-              class="rounded-full bg-[#e63946]/10 px-2.5 py-0.5 text-xs font-medium text-[#c1121f]"
+              class="rounded-full bg-[#fc4402]/10 px-2.5 py-0.5 text-xs font-medium text-[#e63d02]"
             >
               {{ pkg.package_category?.name || pkg.category }}
             </span>
           </div>
           <h3 class="mt-2 font-semibold text-[#1a1a1a]">{{ pkg.name }}</h3>
-          <div class="mt-1 text-2xl font-bold text-[#e63946]">₹{{ formatPrice(pkg.price) }}</div>
+          <div class="mt-1 text-2xl font-bold text-[#fc4402]">₹{{ formatPrice(pkg.price) }}</div>
           <div v-if="pkg.items?.length" class="mt-3 rounded-lg bg-[#f8fafc] px-4 py-3 text-sm">
             <table class="w-full text-left text-[#64748b]">
               <thead>
@@ -81,7 +81,7 @@
           </div>
           <p v-if="pkg.description" class="mt-3 text-sm text-[#64748b]">{{ pkg.description }}</p>
           <p v-if="pkg.deliverables" class="mt-1 text-xs text-[#94a3b8]">Deliverables: {{ pkg.deliverables }}</p>
-          <button v-if="isBrand" type="button" class="mt-4 cursor-link rounded-lg bg-[#e63946] px-4 py-2 text-sm font-medium text-white hover:bg-[#c1121f]" @click="openCollab(pkg)">Collaborate</button>
+          <button v-if="isBrand" type="button" class="mt-4 cursor-link rounded-lg bg-[#fc4402] px-4 py-2 text-sm font-medium text-white hover:bg-[#e63d02]" @click="openCollab(pkg)">Collaborate</button>
         </div>
       </div>
       <p v-if="isBrand && !packages.length" class="mt-4 text-[#64748b]">No packages listed. Contact the creator directly.</p>
@@ -97,28 +97,28 @@
           </div>
           <div>
             <label class="mb-1 block text-sm font-medium">Amount (₹)</label>
-            <input v-model.number="collabForm.amount" type="number" step="0.01" min="0" required class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" />
+            <input v-model.number="collabForm.amount" type="number" step="0.01" min="0" required class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#fc4402] focus:outline-none focus:ring-1 focus:ring-[#fc4402]" />
           </div>
           <div>
             <label class="mb-1 block text-sm font-medium">Coupon code (optional)</label>
-            <input v-model="collabForm.coupon_code" type="text" placeholder="e.g. SAVE20" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" />
+            <input v-model="collabForm.coupon_code" type="text" placeholder="e.g. SAVE20" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#fc4402] focus:outline-none focus:ring-1 focus:ring-[#fc4402]" />
           </div>
           <div>
             <label class="mb-1 block text-sm font-medium">Notes (optional)</label>
-            <textarea v-model="collabForm.brand_notes" rows="3" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]"></textarea>
+            <textarea v-model="collabForm.brand_notes" rows="3" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#fc4402] focus:outline-none focus:ring-1 focus:ring-[#fc4402]"></textarea>
           </div>
           <div v-if="platformFee" class="rounded-lg bg-[#f8fafc] px-4 py-2 text-sm text-[#64748b]">Platform fee (10%): ₹{{ platformFee }} · Total: ₹{{ collabForm.amount }}</div>
           <div v-if="error" class="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-800">{{ error }}</div>
           <div class="flex gap-2 pt-2">
-            <button type="submit" :disabled="loadingCollab" class="cursor-link rounded-xl bg-[#e63946] px-4 py-2 text-white hover:bg-[#c1121f] disabled:opacity-50">Send request</button>
+            <button type="submit" :disabled="loadingCollab" class="cursor-link rounded-xl bg-[#fc4402] px-4 py-2 text-white hover:bg-[#e63d02] disabled:opacity-50">Send request</button>
             <button type="button" class="cursor-link rounded-xl border px-4 py-2 hover:bg-[#f1f5f9]" @click="showModal = false">Cancel</button>
           </div>
         </form>
       </div>
     </div>
   </div>
-  <div v-else-if="!loading" class="mx-auto max-w-4xl px-4 py-12 text-center text-[#64748b]">Creator not found.</div>
-  <div v-else class="mx-auto max-w-4xl px-4 py-12 text-center text-[#64748b]">Loading…</div>
+  <div v-else-if="!loading" class="mx-auto max-w-4xl px-4 pt-12 pb-20 md:pb-24 text-center text-[#64748b]">Creator not found.</div>
+  <div v-else class="mx-auto max-w-4xl px-4 pt-12 pb-20 md:pb-24 text-center text-[#64748b]">Loading…</div>
 </template>
 
 <script setup>
