@@ -72,6 +72,7 @@ Route::get('pages/{slug}', [PageController::class, 'show']);
 Route::post('login',                        [AuthController::class, 'login']);
 Route::post('logout',                       [AuthController::class, 'logout']);
 Route::post('auth/{provider}/token',        [SocialAuthController::class, 'apiCallback']);
+Route::post('mobile-register',              [AuthController::class, 'mobileRegister']);
 Route::post('register',                     [AuthController::class, 'register']);
 Route::post('register/creator',             [AuthController::class, 'registerCreator']);
 Route::post('register/brand',               [AuthController::class, 'registerBrand']);

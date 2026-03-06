@@ -205,6 +205,38 @@ class AuthController extends Controller
     }
 
     /**
+     * Mobile registration: auto-verifies and auto-logs in the user without assigning a role, 
+     * forcing them to explicitly select a role at the RoleSelectionScreen in the app.
+     */
+    public function mobileRegister(Request $request): JsonResponse
+    {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', 'min:6'],
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        // Auto-verify email for the mobile app, as there is currently no OTP screen implemented
+        $user->markEmailAsVerified();
+
+        Auth::login($user, true);
+        $request->session()->regenerate();
+        $request->session()->save();
+
+        return response()->json([
+            'success' => true,
+            'is_new_user' => true,
+            'user' => $this->userPayload($user),
+        ], 201);
+    }
+
+    /**
      * Forgot password: send reset link.
      */
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
