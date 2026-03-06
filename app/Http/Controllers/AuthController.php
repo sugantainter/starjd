@@ -482,6 +482,7 @@ class AuthController extends Controller
             'roles' => $roles,
             'creator_profile' => $user->creatorProfile,
             'brand_profile' => $user->brandProfile,
+            'has_paid_access' => \App\Models\AccessPayment::hasPaidAccess($user),
         ];
     }
 }
