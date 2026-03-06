@@ -31,5 +31,25 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
+            \Illuminate\Support\Facades\Log::warning('Unauthenticated API Access Attempt', [
+                'url' => $request->fullUrl(),
+                'method' => $request->method(),
+                'headers' => $request->headers->all(),
+                'cookies' => $request->cookies->all(),
+                'has_session' => $request->hasSession(),
+                'session_id' => $request->hasSession() ? $request->session()->getId() : null,
+            ]);
+
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Unauthenticated.',
+                    'debug_info' => [
+                        'cookies_received' => $request->cookies->keys(),
+                        'has_session' => $request->hasSession(),
+                        'headers' => $request->headers->all(),
+                    ]
+                ], 401);
+            }
+        });
     })->create();
