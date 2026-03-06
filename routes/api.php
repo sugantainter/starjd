@@ -72,7 +72,6 @@ Route::get('pages/{slug}', [PageController::class, 'show']);
 Route::post('login',                        [AuthController::class, 'login']);
 Route::post('logout',                       [AuthController::class, 'logout']);
 Route::post('auth/{provider}/token',        [SocialAuthController::class, 'apiCallback']);
-Route::post('mobile-register',              [AuthController::class, 'mobileRegister']);
 Route::post('register',                     [AuthController::class, 'register']);
 Route::post('register/creator',             [AuthController::class, 'registerCreator']);
 Route::post('register/brand',               [AuthController::class, 'registerBrand']);
@@ -86,11 +85,26 @@ Route::post('verify-email-otp',             [AuthController::class, 'verifyOtp']
 Route::post('resend-otp',                   [AuthController::class, 'resendOtp']);
 Route::post('contact',                      [ContactController::class, 'store']);
 
-// ── Messages / Chat (Auth required) ─────────────────────────────────────────
-Route::middleware(['auth:web'])->group(function () {
-    Route::post('set-role',              [AuthController::class, 'setRole']);
-    Route::post('update-fcm-token',      [AuthController::class, 'updateFcmToken']);
-    Route::get('conversations',             [MessageController::class, 'index']);
-    Route::get('messages/{userId}',         [MessageController::class, 'show']);
-    Route::post('messages',                 [MessageController::class, 'store']);
+// ── Messages / Chat & Mobile App Stateful Endpoints ──────────────────────
+// Important: 'web' middleware is required here so Laravel starts a session and
+// sets the authentication cookie, which the Flutter app depends on.
+Route::middleware('web')->group(function () {
+    // Generate session
+    Route::post('mobile-register', [AuthController::class, 'mobileRegister']);
+
+    // Following routes require the session cookie
+    Route::middleware('auth:web')->group(function () {
+        Route::post('set-role', [AuthController::class, 'setRole']);
+        Route::post('update-fcm-token', [AuthController::class, 'updateFcmToken']);
+        
+        // Chat
+        Route::get('conversations', [MessageController::class, 'index']);
+        Route::get('messages/{userId}', [MessageController::class, 'show']);
+        Route::post('messages', [MessageController::class, 'store']);
+        
+        // Onboarding / Profile updates that skip the strict 'paid' middleware found in web.php
+        // These are accessed natively via the Flutter mobile app API endpoints.
+        Route::post('creator/profile', [\App\Http\Controllers\Creator\CreatorProfileController::class, 'update']);
+        Route::post('brand/profile', [\App\Http\Controllers\Brand\BrandProfileController::class, 'update']);
+    });
 });
