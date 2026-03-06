@@ -358,8 +358,8 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid role specified.'], 400);
         }
 
-        // Remove existing primary role
-        DB::table('role_user')
+        // Remove existing primary role (pivot table is user_roles per migration)
+        DB::table('user_roles')
             ->where('user_id', $user->id)
             ->where('is_primary', true)
             ->delete();

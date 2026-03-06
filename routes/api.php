@@ -85,11 +85,12 @@ Route::post('verify-email-otp',             [AuthController::class, 'verifyOtp']
 Route::post('resend-otp',                   [AuthController::class, 'resendOtp']);
 Route::post('contact',                      [ContactController::class, 'store']);
 
-// ── Mobile App Stateful Endpoints ──────────────────────────────────────────
+// ── Mobile App Stateful Endpoints (session cookies required) ─────────────────
 Route::middleware('web')->group(function () {
     Route::post('mobile-register', [AuthController::class, 'mobileRegister']);
 
     Route::middleware('auth:web')->group(function () {
+        Route::get('me', [AuthController::class, 'me']);
         Route::post('set-role', [AuthController::class, 'setRole']);
         Route::post('update-fcm-token', [AuthController::class, 'updateFcmToken']);
         
