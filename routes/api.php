@@ -107,6 +107,7 @@ Route::middleware('web')->group(function () {
         Route::middleware(['creator', 'paid'])->prefix('creator')->group(function () {
             Route::get('dashboard', [\App\Http\Controllers\Creator\CreatorController::class, 'dashboard']);
             Route::get('packages', [\App\Http\Controllers\Creator\CreatorPackageController::class, 'index']);
+            Route::get('packages/categories', [\App\Http\Controllers\Creator\CreatorPackageController::class, 'categories']);
             Route::post('packages', [\App\Http\Controllers\Creator\CreatorPackageController::class, 'store']);
             Route::put('packages/{package}', [\App\Http\Controllers\Creator\CreatorPackageController::class, 'update']);
             Route::delete('packages/{package}', [\App\Http\Controllers\Creator\CreatorPackageController::class, 'destroy']);
