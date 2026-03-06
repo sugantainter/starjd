@@ -99,7 +99,7 @@ Route::middleware('web')->group(function () {
         Route::post('messages', [MessageController::class, 'store']);
         
         // Onboarding / Profile updates that skip the strict 'paid' middleware found in web.php
-        Route::post('creator/profile', [\App\Http\Controllers\Creator\CreatorProfileController::class, 'update']);
-        Route::post('brand/profile', [\App\Http\Controllers\Brand\BrandProfileController::class, 'update']);
+        Route::post('creator/onboarding', [\App\Http\Controllers\Creator\CreatorProfileController::class, 'update']);
+        Route::post('brand/onboarding', [\App\Http\Controllers\Brand\BrandProfileController::class, 'update']);
     });
 });
