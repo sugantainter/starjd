@@ -26,6 +26,8 @@ class BrandProfileController extends Controller
             'company_name' => ['nullable', 'string', 'max:255'],
             'website' => ['nullable', 'string', 'url', 'max:255'],
             'bio' => ['nullable', 'string', 'max:2000'],
+            'industry' => ['nullable', 'string', 'max:255'],
+            'hq_location' => ['nullable', 'string', 'max:255'],
         ];
 
         if ($request->hasFile('logo')) {
@@ -39,7 +41,7 @@ class BrandProfileController extends Controller
             $profile = $request->user()->brandProfile()->create([]);
         }
 
-        $data = $request->only(['company_name', 'website', 'bio']);
+        $data = $request->only(['company_name', 'website', 'bio', 'industry', 'hq_location']);
 
         if ($request->hasFile('logo')) {
             if ($profile->logo) {

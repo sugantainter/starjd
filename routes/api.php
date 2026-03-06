@@ -99,8 +99,23 @@ Route::middleware('web')->group(function () {
         Route::get('messages/{userId}', [MessageController::class, 'show']);
         Route::post('messages', [MessageController::class, 'store']);
         
-        // Onboarding / Profile updates that skip the strict 'paid' middleware found in web.php
+        // Onboarding / Profile updates
         Route::post('creator/onboarding', [\App\Http\Controllers\Creator\CreatorProfileController::class, 'update']);
         Route::post('brand/onboarding', [\App\Http\Controllers\Brand\BrandProfileController::class, 'update']);
+
+        // Dashboard Data (Mirroring web routes but for API)
+        Route::middleware(['creator', 'paid'])->prefix('creator')->group(function () {
+            Route::get('dashboard', [\App\Http\Controllers\Creator\CreatorController::class, 'dashboard']);
+            Route::get('packages', [\App\Http\Controllers\Creator\CreatorPackageController::class, 'index']);
+            Route::post('packages', [\App\Http\Controllers\Creator\CreatorPackageController::class, 'store']);
+            Route::put('packages/{package}', [\App\Http\Controllers\Creator\CreatorPackageController::class, 'update']);
+            Route::delete('packages/{package}', [\App\Http\Controllers\Creator\CreatorPackageController::class, 'destroy']);
+            Route::get('image-posts', [\App\Http\Controllers\Creator\CreatorImagePostController::class, 'index']);
+            Route::post('image-posts', [\App\Http\Controllers\Creator\CreatorImagePostController::class, 'store']);
+        });
+
+        Route::middleware(['brand', 'paid'])->prefix('brand')->group(function () {
+            Route::get('dashboard', [\App\Http\Controllers\Brand\BrandController::class, 'dashboard']);
+        });
     });
 });
