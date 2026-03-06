@@ -44,11 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
                     'message' => 'Unauthenticated.',
-                    'debug_info' => [
-                        'cookies_received' => $request->cookies->keys(),
-                        'has_session' => $request->hasSession(),
-                        'headers' => $request->headers->all(),
-                    ]
+                    'hint' => 'Ensure you send the session cookie (starjd-session) from your login/verify response on every API request, including the first one (e.g. set-role).',
                 ], 401);
             }
         });
