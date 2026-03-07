@@ -46,6 +46,7 @@ use App\Http\Controllers\Creator\CreatorImagePostController;
 use App\Http\Controllers\Creator\CreatorFeaturedController;
 use App\Http\Controllers\Creator\CreatorWalletController;
 use App\Http\Controllers\CreatorOptionsController;
+use App\Http\Controllers\Brand\BrandCampaignApplicationController;
 use App\Http\Controllers\Brand\BrandCampaignController;
 use App\Http\Controllers\Brand\BrandController as BrandDashboardController;
 use App\Http\Controllers\Brand\BrandProfileController;
@@ -177,6 +178,7 @@ Route::prefix('api')->group(function () {
         Route::post('campaigns', [BrandCampaignController::class, 'store']);
         Route::put('campaigns/{campaign}', [BrandCampaignController::class, 'update']);
         Route::patch('campaigns/{campaign}', [BrandCampaignController::class, 'update']);
+        Route::patch('campaign-applications/{campaign_application}', [BrandCampaignApplicationController::class, 'update']);
     });
 
     Route::middleware(['auth:web', 'verified', 'agency'])->prefix('agency')->group(function () {

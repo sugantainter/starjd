@@ -96,11 +96,37 @@
                       View profile
                     </router-link>
                     <router-link
-                      :to="{ name: 'brand-messages' }"
-                      class="inline-flex items-center text-sm text-[#3b82f6] hover:underline"
+                      v-if="app.creator?.id"
+                      :to="{ name: 'brand-messages', query: { user: app.creator.id } }"
+                      class="mr-2 inline-flex items-center text-sm text-[#3b82f6] hover:underline"
                     >
                       Message
                     </router-link>
+                    <template v-if="app.status === 'pending'">
+                      <button
+                        type="button"
+                        class="mr-2 inline-flex items-center text-sm font-medium text-[#059669] hover:underline disabled:opacity-50"
+                        :disabled="applicationActionLoading === app.id"
+                        @click="approveApplication(app)"
+                      >
+                        {{ applicationActionLoading === app.id ? '…' : 'Approve' }}
+                      </button>
+                      <button
+                        type="button"
+                        class="mr-2 inline-flex items-center text-sm text-[#dc2626] hover:underline disabled:opacity-50"
+                        :disabled="applicationActionLoading === app.id"
+                        @click="rejectApplication(app)"
+                      >
+                        Reject
+                      </button>
+                      <button
+                        type="button"
+                        class="inline-flex items-center text-sm font-medium text-[#e63946] hover:underline"
+                        @click="openCollaborateModal(app)"
+                      >
+                        Collaborate
+                      </button>
+                    </template>
                   </td>
                 </tr>
               </tbody>
@@ -113,17 +139,70 @@
       <p class="text-[#64748b]">Campaign not found.</p>
       <router-link to="/brand/post-campaign" class="mt-2 inline-block text-[#e63946] hover:underline">Back to Post Campaign</router-link>
     </div>
+
+    <!-- Collaborate modal -->
+    <div v-if="showCollabModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="showCollabModal = false">
+      <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-lg">
+        <h2 class="text-lg font-semibold text-[#1a1a1a]">Send collaboration request</h2>
+        <p class="mt-1 text-sm text-[#64748b]">Send a formal collaboration offer to {{ selectedAppForCollab?.creator?.name || 'creator' }}. They can accept in their Collaborations.</p>
+        <form class="mt-4 space-y-4" @submit.prevent="submitCollaboration">
+          <div>
+            <label class="mb-1 block text-sm font-medium text-[#475569]">Amount (₹)</label>
+            <input
+              v-model.number="collabForm.amount"
+              type="number"
+              min="1"
+              step="100"
+              required
+              class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 text-[#1a1a1a] focus:border-[#e63946] focus:outline-none focus:ring-2 focus:ring-[#e63946]/20"
+            />
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-[#475569]">Notes (optional)</label>
+            <textarea
+              v-model="collabForm.brand_notes"
+              rows="3"
+              class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 text-[#1a1a1a] focus:border-[#e63946] focus:outline-none focus:ring-2 focus:ring-[#e63946]/20"
+              placeholder="Deliverables, timeline, or instructions..."
+            />
+          </div>
+          <p v-if="collabError" class="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">{{ collabError }}</p>
+          <div class="flex gap-2 pt-2">
+            <button
+              type="submit"
+              :disabled="collabLoading"
+              class="cursor-link rounded-xl bg-[#e63946] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#c1121f] disabled:opacity-50"
+            >
+              {{ collabLoading ? 'Sending…' : 'Send request' }}
+            </button>
+            <button
+              type="button"
+              class="cursor-link rounded-xl border border-[#e2e8f0] px-4 py-2.5 text-sm hover:bg-[#f1f5f9]"
+              @click="showCollabModal = false"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, reactive, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 
 const route = useRoute();
 const campaign = ref(null);
 const loading = ref(true);
+const applicationActionLoading = ref(null);
+const showCollabModal = ref(false);
+const selectedAppForCollab = ref(null);
+const collabForm = reactive({ amount: 0, brand_notes: '' });
+const collabError = ref('');
+const collabLoading = ref(false);
 
 function typeLabel(type) {
   const map = { instagram: 'Instagram', tiktok: 'TikTok', ugc: 'UGC', youtube: 'YouTube' };
@@ -185,6 +264,71 @@ async function loadCampaign() {
     campaign.value = null;
   } finally {
     loading.value = false;
+  }
+}
+
+async function approveApplication(app) {
+  applicationActionLoading.value = app.id;
+  try {
+    await axios.patch('/api/brand/campaign-applications/' + app.id, { status: 'approved' }, { withCredentials: true });
+    await loadCampaign();
+  } catch (e) {
+    alert(e.response?.data?.message || 'Failed to approve.');
+  } finally {
+    applicationActionLoading.value = null;
+  }
+}
+
+async function rejectApplication(app) {
+  if (!confirm('Reject this application? The creator will no longer be marked as pending.')) return;
+  applicationActionLoading.value = app.id;
+  try {
+    await axios.patch('/api/brand/campaign-applications/' + app.id, { status: 'rejected' }, { withCredentials: true });
+    await loadCampaign();
+  } catch (e) {
+    alert(e.response?.data?.message || 'Failed to reject.');
+  } finally {
+    applicationActionLoading.value = null;
+  }
+}
+
+function openCollaborateModal(app) {
+  selectedAppForCollab.value = app;
+  collabForm.amount = app.quoted_amount > 0 ? Number(app.quoted_amount) : '';
+  collabForm.brand_notes = '';
+  collabError.value = '';
+  showCollabModal.value = true;
+}
+
+async function submitCollaboration() {
+  const app = selectedAppForCollab.value;
+  if (!app?.creator?.id) return;
+  const amount = Number(collabForm.amount);
+  if (!amount || amount < 1) {
+    collabError.value = 'Enter a valid amount (₹1 or more).';
+    return;
+  }
+  collabError.value = '';
+  collabLoading.value = true;
+  try {
+    await axios.post(
+      '/api/collaborations',
+      {
+        creator_id: app.creator.id,
+        amount,
+        brand_notes: collabForm.brand_notes || null,
+      },
+      { withCredentials: true }
+    );
+    await axios.patch('/api/brand/campaign-applications/' + app.id, { status: 'approved' }, { withCredentials: true });
+    await loadCampaign();
+    showCollabModal.value = false;
+    selectedAppForCollab.value = null;
+    alert('Collaboration request sent. The creator can accept it in their Collaborations.');
+  } catch (e) {
+    collabError.value = e.response?.data?.message || 'Failed to send collaboration request.';
+  } finally {
+    collabLoading.value = false;
   }
 }
 
