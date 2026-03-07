@@ -52,7 +52,7 @@
             >
               <div
                 class="max-w-[80%] rounded-2xl px-4 py-2.5 text-sm"
-                :class="msg.isMe ? 'bg-[#e63946] text-white' : 'bg-[#f1f5f9] text-[#1a1a1a]"
+                :class="msg.isMe ? 'bg-red-500 text-white' : 'bg-slate-100 text-slate-900'"
               >
                 <p class="whitespace-pre-wrap">{{ msg.text }}</p>
                 <p class="mt-1 text-xs opacity-80">{{ msg.time }}</p>
