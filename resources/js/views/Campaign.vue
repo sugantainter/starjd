@@ -89,29 +89,27 @@
             type="button"
             class="category-carousel-arrow absolute left-0 z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#fc4402] text-white shadow-md transition hover:bg-[#e63d02] md:left-2 md:h-12 md:w-12"
             aria-label="Previous category"
-            @click="categoryCarouselPrev()"
+            @click.stop="categoryCarouselPrev"
           >
             <svg class="h-5 w-5 md:h-6 md:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <div
-            class="category-carousel-track overflow-hidden px-4 py-4 md:px-6 md:py-5"
-          >
+          <div class="category-carousel-track overflow-hidden px-4 py-4 md:px-6 md:py-5">
             <div
-              class="category-carousel-inner flex items-stretch gap-3 transition-transform duration-500 ease-out md:gap-4"
+              class="category-carousel-inner flex items-stretch justify-start gap-4 transition-transform duration-300 ease-out"
               :style="categoryCarouselTrackStyle"
             >
               <router-link
                 v-for="(cat, i) in categories"
                 :key="cat.name"
                 :to="'/campaigns?niche=' + encodeURIComponent(cat.name)"
-                class="category-carousel-card flex shrink-0 cursor-pointer flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-500"
-                :class="i === categoryCenterIndex ? 'category-carousel-card--center border-[#fc4402] shadow-md ring-2 ring-[#fc4402]/20' : 'border-[#e5e7eb] hover:border-[#fc4402]/50'"
+                class="category-carousel-card flex shrink-0 cursor-pointer flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300"
+                :class="i === categoryActiveIndex ? 'category-carousel-card--center border-[#fc4402] shadow-md ring-2 ring-[#fc4402]/20' : 'border-[#e5e7eb] hover:border-[#fc4402]/50'"
                 :style="{
                   width: 'var(--category-card-w)',
-                  opacity: i === categoryCenterIndex ? 1 : 0.4,
-                  transform: i === categoryCenterIndex ? 'scale(1.1)' : 'scale(1)',
+                  opacity: i === categoryActiveIndex ? 1 : 0.7,
+                  transform: i === categoryActiveIndex ? 'scale(1.05)' : 'scale(1)',
                   transformOrigin: 'center center',
                 }"
               >
@@ -138,22 +136,23 @@
             type="button"
             class="category-carousel-arrow absolute right-0 z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#fc4402] text-white shadow-md transition hover:bg-[#e63d02] md:right-2 md:h-12 md:w-12"
             aria-label="Next category"
-            @click="categoryCarouselNext()"
+            @click.stop="categoryCarouselNext"
           >
             <svg class="h-5 w-5 md:h-6 md:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>
-        <div v-if="!categoriesLoading && categories.length" class="mt-6 flex justify-center gap-2">
+        <div v-if="!categoriesLoading && categories.length" class="mt-6 flex flex-wrap justify-center gap-2">
           <button
-            v-for="(cat, i) in categories"
+            v-for="(cat, index) in categories"
             :key="'dot-' + cat.name"
             type="button"
-            class="h-2 w-2 rounded-full transition-all md:h-2.5 md:w-2.5"
-            :class="i === categoryCenterIndex ? 'scale-125 bg-[#fc4402]' : 'bg-[#e5e7eb] hover:bg-[#d1d5db]'"
+            class="h-2.5 w-2.5 rounded-full transition-all hover:opacity-90 md:h-3 md:w-3"
+            :class="index === categoryActiveIndex ? 'scale-125 bg-[#fc4402] ring-2 ring-[#fc4402]/40' : 'bg-[#e5e7eb] hover:bg-[#cbd5e1]'"
             :aria-label="'Go to ' + cat.name"
-            @click="categoryCarouselGoTo(i)"
+            :aria-current="index === categoryActiveIndex ? 'true' : undefined"
+            @click.stop="setCategorySlide(index)"
           />
         </div>
       </div>
@@ -361,7 +360,7 @@
   </div>
 </template>
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import axios from 'axios';
 
 // Services vertical tabs: 6 items; left 3, right 3; click to show details
@@ -465,46 +464,40 @@ const heroVideoColumns = [
   ],
 ];
 
-// Explore by Category (dynamic from API; click goes to /campaigns?niche=name)
+// Explore by Category — single source of truth: categoryActiveIndex (0 = first item)
 const categories = ref([]);
 const categoriesLoading = ref(true);
-// Carousel: currentSlide = which category is focused (0 = first). Always start at 0 when categories load.
-const categoryCurrentSlide = ref(0);
+const categoryActiveIndex = ref(0);
 const CATEGORY_CARD_WIDTH = 230;
 const CATEGORY_CARD_GAP = 16;
 const CATEGORY_CARDS_VISIBLE = 4;
+
 const categoryCarouselTrackStyle = computed(() => {
   const len = categories.value.length;
   if (len === 0) return { transform: 'translateX(0)' };
-  const cardW = CATEGORY_CARD_WIDTH;
-  const gap = CATEGORY_CARD_GAP;
-  const maxScroll = Math.max(0, len - CATEGORY_CARDS_VISIBLE);
-  // scrollIndex = leftmost visible card. Keep focused card in view; for first card use 0 so it's at start.
-  const scrollIndex = Math.max(0, Math.min(categoryCurrentSlide.value, maxScroll));
-  return { transform: `translateX(${-scrollIndex * (cardW + gap)}px)` };
+  const step = CATEGORY_CARD_WIDTH + CATEGORY_CARD_GAP;
+  const maxScrollIndex = Math.max(0, len - CATEGORY_CARDS_VISIBLE);
+  const scrollIndex = Math.min(categoryActiveIndex.value, maxScrollIndex);
+  return { transform: `translateX(${-scrollIndex * step}px)` };
 });
-const categoryCenterIndex = computed(() => categoryCurrentSlide.value);
-function categoryCarouselNext() {
+
+function setCategorySlide(index) {
   const len = categories.value.length;
-  if (len <= 0) return;
-  categoryCurrentSlide.value = Math.min(len - 1, categoryCurrentSlide.value + 1);
+  if (len === 0) return;
+  const i = Number(index);
+  if (Number.isNaN(i) || i < 0) return;
+  categoryActiveIndex.value = Math.min(i, len - 1);
 }
+
 function categoryCarouselPrev() {
-  const len = categories.value.length;
-  if (len <= 0) return;
-  categoryCurrentSlide.value = Math.max(0, categoryCurrentSlide.value - 1);
+  if (categories.value.length === 0) return;
+  categoryActiveIndex.value = Math.max(0, categoryActiveIndex.value - 1);
 }
-function categoryCarouselGoTo(i) {
-  const len = categories.value.length;
-  if (len <= 0) return;
-  categoryCurrentSlide.value = Math.max(0, Math.min(len - 1, i));
+
+function categoryCarouselNext() {
+  if (categories.value.length === 0) return;
+  categoryActiveIndex.value = Math.min(categories.value.length - 1, categoryActiveIndex.value + 1);
 }
-watch(categories, (val) => {
-  const len = val?.length ?? 0;
-  if (len > 0) {
-    categoryCurrentSlide.value = 0;
-  }
-}, { deep: true });
 
 // Creators in India: cards move (2nd→1st, 3rd→2nd, …)
 const creatorsImages = [
@@ -559,7 +552,6 @@ function advanceCreatorsCarousel() {
   }, CREATORS_MOVE_MS + 40);
 }
 
-let categoryCarouselIntervalId = null;
 let creatorsIndiaIntervalId = null;
 // SEO: title, description, canonical, JSON-LD for campaign landing
 const SITE_URL = typeof window !== 'undefined' ? (window.location.origin || 'https://www.starjd.com') : 'https://www.starjd.com';
@@ -600,18 +592,14 @@ onMounted(async () => {
   try {
     const res = await axios.get('/api/campaigns/categories');
     categories.value = res.data.categories ?? [];
-    categoryCurrentSlide.value = 0;
+    categoryActiveIndex.value = 0;
   } catch (_) {
     categories.value = [];
   } finally {
     categoriesLoading.value = false;
   }
-  if (categories.value.length > 1) {
-    categoryCarouselIntervalId = setInterval(() => categoryCarouselNext(), 4000);
-  }
 });
 onBeforeUnmount(() => {
-  if (categoryCarouselIntervalId) clearInterval(categoryCarouselIntervalId);
   if (creatorsIndiaIntervalId) clearInterval(creatorsIndiaIntervalId);
 });
 
