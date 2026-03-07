@@ -93,8 +93,7 @@ class StudioOwnerStudioController extends Controller
             'price_per_hour' => ['nullable', 'numeric', 'min:0'],
             'price_per_day' => ['nullable', 'numeric', 'min:0'],
             'cancellation_policy' => ['nullable', 'string', 'in:flexible,moderate,strict'],
-            'amenity_ids' => ['nullable', 'array'],
-            'amenity_ids.*' => ['integer', 'exists:amenities,id'],
+            'amenity_ids' => ['nullable'],
         ]);
 
         $user = $request->user();
@@ -168,8 +167,7 @@ class StudioOwnerStudioController extends Controller
             'price_per_day' => ['nullable', 'numeric', 'min:0'],
             'cancellation_policy' => ['nullable', 'string', 'in:flexible,moderate,strict'],
             'status' => ['sometimes', 'string', 'in:draft,active,inactive,suspended'],
-            'amenity_ids' => ['nullable', 'array'],
-            'amenity_ids.*' => ['integer', 'exists:amenities,id'],
+            'amenity_ids' => ['nullable'],
         ]);
 
         $data = $request->only([
