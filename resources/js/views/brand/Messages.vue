@@ -82,9 +82,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
+
+const POLL_THREAD_MS = 3000;
+const POLL_LIST_MS = 5000;
 
 const route = useRoute();
 const conversations = ref([]);
@@ -96,16 +99,18 @@ const loadingThread = ref(false);
 const newMessage = ref('');
 const sending = ref(false);
 const threadEl = ref(null);
+let pollListTimer = null;
+let pollThreadTimer = null;
 
-async function loadConversations() {
-  loadingList.value = true;
+async function loadConversations(showLoading = true) {
+  if (showLoading) loadingList.value = true;
   try {
     const res = await axios.get('/api/messages', { withCredentials: true });
     conversations.value = res.data ?? [];
   } catch (_) {
     conversations.value = [];
   } finally {
-    loadingList.value = false;
+    if (showLoading) loadingList.value = false;
   }
 }
 
@@ -113,17 +118,19 @@ function selectUser(userId) {
   selectedUserId.value = userId;
   const conv = conversations.value.find((c) => c.id === userId);
   selectedUserName.value = conv?.name ?? '';
+  startThreadPolling();
   loadThread();
 }
 
-async function loadThread() {
+async function loadThread(showLoading = true) {
   if (!selectedUserId.value) return;
-  loadingThread.value = true;
-  messages.value = [];
+  if (showLoading) loadingThread.value = true;
+  const prevLength = messages.value.length;
   try {
     const res = await axios.get('/api/messages/' + selectedUserId.value, { withCredentials: true });
-    messages.value = res.data ?? [];
-    nextTickScroll();
+    const next = res.data ?? [];
+    messages.value = next;
+    if (next.length > prevLength) nextTickScroll();
   } catch (_) {
     messages.value = [];
   } finally {
@@ -135,6 +142,21 @@ function nextTickScroll() {
   setTimeout(() => {
     if (threadEl.value) threadEl.value.scrollTop = threadEl.value.scrollHeight;
   }, 50);
+}
+
+function startThreadPolling() {
+  if (pollThreadTimer) clearInterval(pollThreadTimer);
+  pollThreadTimer = setInterval(() => {
+    if (!selectedUserId.value) return;
+    loadThread(false);
+  }, POLL_THREAD_MS);
+}
+
+function startListPolling() {
+  if (pollListTimer) clearInterval(pollListTimer);
+  pollListTimer = setInterval(() => {
+    loadConversations(false);
+  }, POLL_LIST_MS);
 }
 
 async function sendMessage() {
@@ -150,7 +172,7 @@ async function sendMessage() {
     messages.value.push(res.data);
     newMessage.value = '';
     nextTickScroll();
-    await loadConversations();
+    await loadConversations(false);
   } catch (_) {}
   finally {
     sending.value = false;
@@ -159,6 +181,7 @@ async function sendMessage() {
 
 onMounted(async () => {
   await loadConversations();
+  startListPolling();
   const withUser = route.query.user || route.query.with;
   if (withUser) {
     const id = Number(withUser);
@@ -166,10 +189,16 @@ onMounted(async () => {
       selectedUserId.value = id;
       selectedUserName.value = route.query.name || 'Creator';
       loadThread();
+      startThreadPolling();
     } else if (id) {
       selectUser(id);
     }
   }
+});
+
+onBeforeUnmount(() => {
+  if (pollListTimer) clearInterval(pollListTimer);
+  if (pollThreadTimer) clearInterval(pollThreadTimer);
 });
 
 watch(() => route.query.user, (v) => {
