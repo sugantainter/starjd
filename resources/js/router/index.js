@@ -54,6 +54,7 @@ const routes = [
       { path: 'dashboard', name: 'brand-dashboard', component: () => import('../views/brand/Dashboard.vue') },
       { path: 'profile', name: 'brand-profile', component: () => import('../views/brand/Profile.vue') },
       { path: 'creators', name: 'brand-creators', component: () => import('../views/brand/DiscoverCreators.vue') },
+      { path: 'post-campaign', name: 'brand-post-campaign', component: () => import('../views/brand/PostCampaign.vue') },
       { path: 'collaborations', name: 'brand-collaborations', component: () => import('../views/brand/Collaborations.vue') },
     ],
   },
