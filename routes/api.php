@@ -113,6 +113,10 @@ Route::middleware('web')->group(function () {
             Route::delete('packages/{package}', [\App\Http\Controllers\Creator\CreatorPackageController::class, 'destroy']);
             Route::get('image-posts', [\App\Http\Controllers\Creator\CreatorImagePostController::class, 'index']);
             Route::post('image-posts', [\App\Http\Controllers\Creator\CreatorImagePostController::class, 'store']);
+            
+            Route::get('social-accounts', [\App\Http\Controllers\Creator\CreatorSocialAccountController::class, 'index']);
+            Route::post('social-accounts/sync', [\App\Http\Controllers\Creator\CreatorSocialAccountController::class, 'sync']);
+            Route::delete('social-accounts/{platform}', [\App\Http\Controllers\Creator\CreatorSocialAccountController::class, 'disconnect']);
         });
 
         Route::middleware(['brand', 'paid'])->prefix('brand')->group(function () {
