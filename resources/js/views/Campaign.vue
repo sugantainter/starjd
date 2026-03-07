@@ -468,17 +468,7 @@ const heroVideoColumns = [
 // Explore by Category (dynamic from API; click goes to /campaigns?niche=name)
 const categories = ref([]);
 const categoriesLoading = ref(true);
-onMounted(async () => {
-  try {
-    const res = await axios.get('/api/campaigns/categories');
-    categories.value = res.data.categories ?? [];
-  } catch (_) {
-    categories.value = [];
-  } finally {
-    categoriesLoading.value = false;
-  }
-});
-// Carousel: currentSlide = which category is focused (0 = first). Starts at 0 so first category is highlighted.
+// Carousel: currentSlide = which category is focused (0 = first). Always start at 0 when categories load.
 const categoryCurrentSlide = ref(0);
 const CATEGORY_CARD_WIDTH = 230;
 const CATEGORY_CARD_GAP = 16;
@@ -488,9 +478,9 @@ const categoryCarouselTrackStyle = computed(() => {
   if (len === 0) return { transform: 'translateX(0)' };
   const cardW = CATEGORY_CARD_WIDTH;
   const gap = CATEGORY_CARD_GAP;
-  const centerOffset = Math.floor(CATEGORY_CARDS_VISIBLE / 2);
   const maxScroll = Math.max(0, len - CATEGORY_CARDS_VISIBLE);
-  const scrollIndex = Math.max(0, Math.min(categoryCurrentSlide.value - centerOffset, maxScroll));
+  // scrollIndex = leftmost visible card. Keep focused card in view; for first card use 0 so it's at start.
+  const scrollIndex = Math.max(0, Math.min(categoryCurrentSlide.value, maxScroll));
   return { transform: `translateX(${-scrollIndex * (cardW + gap)}px)` };
 });
 const categoryCenterIndex = computed(() => categoryCurrentSlide.value);
@@ -511,8 +501,9 @@ function categoryCarouselGoTo(i) {
 }
 watch(categories, (val) => {
   const len = val?.length ?? 0;
-  if (len > 0 && categoryCurrentSlide.value >= len) categoryCurrentSlide.value = 0;
-  if (len > 0 && categoryCurrentSlide.value < 0) categoryCurrentSlide.value = 0;
+  if (len > 0) {
+    categoryCurrentSlide.value = 0;
+  }
 }, { deep: true });
 
 // Creators in India: cards move (2nd→1st, 3rd→2nd, …)
@@ -574,7 +565,7 @@ let creatorsIndiaIntervalId = null;
 const SITE_URL = typeof window !== 'undefined' ? (window.location.origin || 'https://www.starjd.com') : 'https://www.starjd.com';
 const SEO_TITLE = 'Influencer Marketing Campaigns | Connect with Creators | StarJD';
 const SEO_DESCRIPTION = 'Discover and join influencer marketing campaigns. Brands post campaigns; creators apply and collaborate. Explore Instagram, TikTok, YouTube & UGC campaigns across India and globally.';
-onMounted(() => {
+onMounted(async () => {
   document.title = SEO_TITLE;
   let metaDesc = document.querySelector('meta[name="description"]');
   if (!metaDesc) {
@@ -605,8 +596,19 @@ onMounted(() => {
   scriptLd.type = 'application/ld+json';
   scriptLd.textContent = JSON.stringify(jsonLd);
   document.head.appendChild(scriptLd);
-  categoryCarouselIntervalId = setInterval(() => categoryCarouselNext(), 4000);
   creatorsIndiaIntervalId = setInterval(advanceCreatorsCarousel, CREATORS_INTERVAL_MS);
+  try {
+    const res = await axios.get('/api/campaigns/categories');
+    categories.value = res.data.categories ?? [];
+    categoryCurrentSlide.value = 0;
+  } catch (_) {
+    categories.value = [];
+  } finally {
+    categoriesLoading.value = false;
+  }
+  if (categories.value.length > 1) {
+    categoryCarouselIntervalId = setInterval(() => categoryCarouselNext(), 4000);
+  }
 });
 onBeforeUnmount(() => {
   if (categoryCarouselIntervalId) clearInterval(categoryCarouselIntervalId);
