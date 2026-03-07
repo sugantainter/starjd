@@ -44,6 +44,7 @@ const routes = [
       { path: 'profile', name: 'creator-profile', component: () => import('../views/creator/Profile.vue') },
       { path: 'packages', name: 'creator-packages', component: () => import('../views/creator/Packages.vue') },
       { path: 'social', name: 'creator-social', component: () => import('../views/creator/SocialAccounts.vue') },
+      { path: 'campaign-applications', name: 'creator-campaign-applications', component: () => import('../views/creator/CampaignApplications.vue') },
       { path: 'collaborations', name: 'creator-collaborations', component: () => import('../views/creator/Collaborations.vue') },
       { path: 'messages', name: 'creator-messages', component: () => import('../views/creator/Messages.vue') },
       { path: 'featured', name: 'creator-featured', component: () => import('../views/creator/Featured.vue') },

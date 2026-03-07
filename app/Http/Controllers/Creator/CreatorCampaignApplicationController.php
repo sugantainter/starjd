@@ -17,7 +17,7 @@ class CreatorCampaignApplicationController extends Controller
     {
         $applications = $request->user()
             ->campaignApplications()
-            ->with(['campaign:id,title,budget,status,brand_id'])
+            ->with(['campaign:id,title,slug,status,campaign_type,brand_id'])
             ->orderByDesc('created_at')
             ->paginate((int) $request->input('per_page', 15));
 
