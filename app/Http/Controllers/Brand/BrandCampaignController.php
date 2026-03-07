@@ -87,6 +87,49 @@ class BrandCampaignController extends Controller
     }
 
     /**
+     * Show a single campaign with its applications (for the brand owner).
+     */
+    public function show(Request $request, Campaign $campaign): JsonResponse
+    {
+        if ($campaign->brand_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        $campaign->load([
+            'applications' => function ($q) {
+                $q->orderByDesc('created_at');
+            },
+            'applications.creator:id,name',
+            'applications.creator.creatorProfile:id,user_id,slug',
+        ]);
+
+        $data = $campaign->only([
+            'id', 'campaign_type', 'title', 'slug', 'description', 'deliverables',
+            'budget', 'status', 'starts_at', 'ends_at', 'max_applications', 'targeting', 'created_at',
+        ]);
+        $data['applications'] = $campaign->applications->map(function ($app) {
+            $creator = $app->creator;
+            $profile = $creator?->creatorProfile;
+            return [
+                'id' => $app->id,
+                'cover_message' => $app->cover_message,
+                'quoted_amount' => $app->quoted_amount ? (float) $app->quoted_amount : null,
+                'status' => $app->status,
+                'brand_notes' => $app->brand_notes,
+                'responded_at' => $app->responded_at?->toIso8601String(),
+                'created_at' => $app->created_at->toIso8601String(),
+                'creator' => $creator ? [
+                    'id' => $creator->id,
+                    'name' => $creator->name,
+                    'profile_slug' => $profile?->slug,
+                ] : null,
+            ];
+        });
+
+        return response()->json($data);
+    }
+
+    /**
      * Update campaign (e.g. set status to open to accept applications).
      */
     public function update(Request $request, Campaign $campaign): JsonResponse

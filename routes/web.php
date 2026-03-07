@@ -173,6 +173,7 @@ Route::prefix('api')->group(function () {
         Route::get('profile', [BrandProfileController::class, 'show']);
         Route::put('profile', [BrandProfileController::class, 'update']);
         Route::get('campaigns', [BrandCampaignController::class, 'index']);
+        Route::get('campaigns/{campaign}', [BrandCampaignController::class, 'show']);
         Route::post('campaigns', [BrandCampaignController::class, 'store']);
         Route::put('campaigns/{campaign}', [BrandCampaignController::class, 'update']);
         Route::patch('campaigns/{campaign}', [BrandCampaignController::class, 'update']);

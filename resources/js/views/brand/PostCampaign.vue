@@ -66,10 +66,10 @@
                 <td class="px-5 py-4 text-[#64748b]">{{ formatDate(c.created_at) }}</td>
                 <td class="px-5 py-4 text-right">
                   <router-link
-                    :to="'/campaigns/' + (c.slug || c.id)"
+                    :to="{ name: 'brand-campaign-detail', params: { id: c.id } }"
                     class="mr-2 inline-flex items-center text-[#e63946] hover:underline"
                   >
-                    View
+                    View applications
                   </router-link>
                   <button
                     v-if="c.status === 'draft'"

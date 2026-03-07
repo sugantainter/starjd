@@ -59,6 +59,7 @@ const routes = [
       { path: 'profile', name: 'brand-profile', component: () => import('../views/brand/Profile.vue') },
       { path: 'creators', name: 'brand-creators', component: () => import('../views/brand/DiscoverCreators.vue') },
       { path: 'post-campaign', name: 'brand-post-campaign', component: () => import('../views/brand/PostCampaign.vue') },
+      { path: 'campaigns/:id', name: 'brand-campaign-detail', component: () => import('../views/brand/CampaignDetail.vue') },
       { path: 'collaborations', name: 'brand-collaborations', component: () => import('../views/brand/Collaborations.vue') },
       { path: 'messages', name: 'brand-messages', component: () => import('../views/brand/Messages.vue') },
     ],
