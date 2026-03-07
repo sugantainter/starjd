@@ -478,41 +478,41 @@ onMounted(async () => {
     categoriesLoading.value = false;
   }
 });
-const categoryCarouselIndex = ref(0);
-const CATEGORY_CARD_WIDTH = 220;
+// Carousel: currentSlide = which category is focused (0 = first). Starts at 0 so first category is highlighted.
+const categoryCurrentSlide = ref(0);
+const CATEGORY_CARD_WIDTH = 230;
 const CATEGORY_CARD_GAP = 16;
-const CATEGORY_CARDS_PER_ROW = 4;
-const categoryCarouselViewportWidth =
-  CATEGORY_CARDS_PER_ROW * CATEGORY_CARD_WIDTH + (CATEGORY_CARDS_PER_ROW - 1) * CATEGORY_CARD_GAP;
+const CATEGORY_CARDS_VISIBLE = 4;
 const categoryCarouselTrackStyle = computed(() => {
+  const len = categories.value.length;
+  if (len === 0) return { transform: 'translateX(0)' };
   const cardW = CATEGORY_CARD_WIDTH;
   const gap = CATEGORY_CARD_GAP;
-  const n = categoryCarouselIndex.value;
-  return { transform: `translateX(${-n * (cardW + gap)}px)` };
+  const centerOffset = Math.floor(CATEGORY_CARDS_VISIBLE / 2);
+  const maxScroll = Math.max(0, len - CATEGORY_CARDS_VISIBLE);
+  const scrollIndex = Math.max(0, Math.min(categoryCurrentSlide.value - centerOffset, maxScroll));
+  return { transform: `translateX(${-scrollIndex * (cardW + gap)}px)` };
 });
-const categoryCenterIndex = computed(() => {
-  const n = categoryCarouselIndex.value;
-  const len = categories.value.length;
-  const centerOffset = Math.floor(CATEGORY_CARDS_PER_ROW / 2);
-  return Math.min(len - 1, n + centerOffset);
-});
+const categoryCenterIndex = computed(() => categoryCurrentSlide.value);
 function categoryCarouselNext() {
-  categoryCarouselIndex.value =
-    (categoryCarouselIndex.value + 1) % Math.max(1, categories.value.length);
+  const len = categories.value.length;
+  if (len <= 0) return;
+  categoryCurrentSlide.value = Math.min(len - 1, categoryCurrentSlide.value + 1);
 }
 function categoryCarouselPrev() {
-  categoryCarouselIndex.value =
-    (categoryCarouselIndex.value - 1 + categories.value.length) % Math.max(1, categories.value.length);
+  const len = categories.value.length;
+  if (len <= 0) return;
+  categoryCurrentSlide.value = Math.max(0, categoryCurrentSlide.value - 1);
 }
 function categoryCarouselGoTo(i) {
-  const centerOffset = Math.floor(CATEGORY_CARDS_PER_ROW / 2);
   const len = categories.value.length;
-  const targetScroll = Math.max(0, Math.min(len - CATEGORY_CARDS_PER_ROW, i - centerOffset));
-  categoryCarouselIndex.value = targetScroll;
+  if (len <= 0) return;
+  categoryCurrentSlide.value = Math.max(0, Math.min(len - 1, i));
 }
 watch(categories, (val) => {
   const len = val?.length ?? 0;
-  if (len > 0 && categoryCarouselIndex.value >= len) categoryCarouselIndex.value = len - 1;
+  if (len > 0 && categoryCurrentSlide.value >= len) categoryCurrentSlide.value = 0;
+  if (len > 0 && categoryCurrentSlide.value < 0) categoryCurrentSlide.value = 0;
 }, { deep: true });
 
 // Creators in India: cards move (2nd→1st, 3rd→2nd, …)
