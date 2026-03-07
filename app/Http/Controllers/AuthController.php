@@ -412,6 +412,40 @@ class AuthController extends Controller
         return response()->json(['message' => 'Verification code sent to your email.']);
     }
 
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
+        $request->validate([
+            'name' => ['sometimes', 'string', 'max:255'],
+            'avatar' => ['nullable', 'image', 'max:2048'], // 2MB limit
+        ]);
+
+        if ($request->has('name')) {
+            $user->name = $request->name;
+        }
+
+        if ($request->hasFile('avatar')) {
+            // Delete old avatar if it exists locally
+            if ($user->avatar && !str_starts_with($user->avatar, 'http')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->avatar);
+            }
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar = $path;
+        }
+
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile updated successfully.',
+            'user' => $this->userPayload($user->fresh()),
+        ]);
+    }
+
     private function sendOtpToUser(User $user): void
     {
         $otp = (string) random_int(100000, 999999);
@@ -476,6 +510,7 @@ class AuthController extends Controller
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
+            'avatar_url' => $user->avatar_url,
             'email_verified_at' => $user->email_verified_at?->toIso8601String(),
             'role' => $user->role,
             'primary_role' => $primary ? ['id' => $primary->id, 'name' => $primary->name, 'slug' => $primary->slug] : null,

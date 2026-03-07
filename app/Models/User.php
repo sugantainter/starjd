@@ -22,6 +22,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'fcm_token',
+        'avatar',
     ];
 
     /**
@@ -138,5 +139,16 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getRoleAttribute(): ?string
     {
         return $this->primaryRole()?->slug;
+    }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if ($this->avatar) {
+            if (str_starts_with($this->avatar, 'http')) {
+                return $this->avatar;
+            }
+            return '/storage/' . ltrim($this->avatar, '/');
+        }
+        return null;
     }
 }
