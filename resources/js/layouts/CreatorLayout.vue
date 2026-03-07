@@ -13,6 +13,7 @@
           <router-link to="/creator/packages" class="block rounded-lg px-3 py-2 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#10b981]/10 !text-[#10b981]">Packages</router-link>
           <router-link to="/creator/social" class="block rounded-lg px-3 py-2 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#10b981]/10 !text-[#10b981]">Social Accounts</router-link>
           <router-link to="/creator/collaborations" class="block rounded-lg px-3 py-2 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#10b981]/10 !text-[#10b981]">Collaborations</router-link>
+          <router-link to="/creator/messages" class="block rounded-lg px-3 py-2 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#10b981]/10 !text-[#10b981]">Messages</router-link>
           <router-link to="/creator/featured" class="block rounded-lg px-3 py-2 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#10b981]/10 !text-[#10b981]">Featured</router-link>
         </nav>
         <div class="mt-auto pt-6">

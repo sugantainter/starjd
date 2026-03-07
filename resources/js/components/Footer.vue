@@ -109,6 +109,7 @@
             <li><router-link to="/about" class="transition hover:text-[#fc4402]">About Us</router-link></li>
             <li><router-link to="/contact" class="transition hover:text-[#fc4402]">Contact Us</router-link></li>
             <li><router-link to="/creators" class="transition hover:text-[#fc4402]">Discover Creators</router-link></li>
+            <li><router-link to="/campaigns" class="transition hover:text-[#fc4402]">Explore Campaigns</router-link></li>
             <li><router-link to="/videos" class="transition hover:text-[#fc4402]">Videos</router-link></li>
           </ul>
         </div>

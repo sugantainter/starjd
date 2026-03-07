@@ -94,7 +94,9 @@ class MessageController extends Controller
     {
         $request->validate([
             'receiver_id' => 'required|exists:users,id',
-            'body' => 'required|string',
+            'body' => 'required|string|max:5000',
+            'thread_type' => 'nullable|string|in:campaign,booking,general',
+            'thread_id' => 'nullable|integer|min:1',
         ]);
 
         $sender = Auth::user();
@@ -103,6 +105,8 @@ class MessageController extends Controller
             'sender_id' => $sender->id,
             'receiver_id' => $request->receiver_id,
             'body' => $request->body,
+            'thread_type' => $request->thread_type,
+            'thread_id' => $request->thread_id,
         ]);
 
         // Send Push Notification

@@ -85,4 +85,24 @@ class BrandCampaignController extends Controller
             'campaign' => $campaign->only('id', 'campaign_type', 'title', 'slug', 'status', 'targeting', 'max_applications'),
         ], 201);
     }
+
+    /**
+     * Update campaign (e.g. set status to open to accept applications).
+     */
+    public function update(Request $request, Campaign $campaign): JsonResponse
+    {
+        if ($campaign->brand_id !== $request->user()->id) {
+            abort(403);
+        }
+        $validated = $request->validate([
+            'status' => 'sometimes|string|in:draft,open,in_progress,completed,cancelled',
+            'title' => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
+            'budget' => 'sometimes|numeric|min:0',
+            'starts_at' => 'nullable|date',
+            'ends_at' => 'nullable|date|after_or_equal:starts_at',
+        ]);
+        $campaign->update($validated);
+        return response()->json(['message' => 'Campaign updated.', 'campaign' => $campaign->fresh()]);
+    }
 }

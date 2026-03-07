@@ -13,6 +13,7 @@
           <router-link to="/brand/creators" class="block rounded-lg px-3 py-2 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#e63946]/10 !text-[#e63946]">Discover Creators</router-link>
           <router-link to="/brand/post-campaign" class="block rounded-lg px-3 py-2 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#e63946]/10 !text-[#e63946]">Post Campaign</router-link>
           <router-link to="/brand/collaborations" class="block rounded-lg px-3 py-2 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#e63946]/10 !text-[#e63946]">Collaborations</router-link>
+          <router-link to="/brand/messages" class="block rounded-lg px-3 py-2 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#e63946]/10 !text-[#e63946]">Messages</router-link>
         </nav>
         <div class="mt-auto pt-6">
           <p class="mb-2 px-3 text-xs text-[#94a3b8]">StarJD powered by Suganta International</p>

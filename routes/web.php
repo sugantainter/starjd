@@ -110,6 +110,9 @@ Route::prefix('api')->group(function () {
     Route::get('studios', [StudioPublicController::class, 'index']);
     Route::get('studios/categories', [StudioPublicController::class, 'categories']);
     Route::get('studios/{slugOrId}', [StudioPublicController::class, 'show']);
+    Route::get('campaigns', [\App\Http\Controllers\Api\CampaignPublicController::class, 'index']);
+    Route::get('campaigns/filters', [\App\Http\Controllers\Api\CampaignPublicController::class, 'filters']);
+    Route::get('campaigns/slug/{slug}', [\App\Http\Controllers\Api\CampaignPublicController::class, 'show']);
     Route::get('bookings/calculate', [BookingController::class, 'calculate']);
     Route::get('amenities', fn () => response()->json(\App\Models\Amenity::active()->orderBy('sort_order')->orderBy('name')->get(['id', 'name', 'slug', 'icon'])));
     Route::get('services', [ServiceController::class, 'index']);
@@ -133,6 +136,9 @@ Route::prefix('api')->group(function () {
         Route::post('payment/pay', [AccessPaymentController::class, 'pay']);
         Route::get('collaborations', [CollaborationController::class, 'index']);
         Route::post('collaborations', [CollaborationController::class, 'store']);
+        Route::get('messages', [\App\Http\Controllers\Api\MessageController::class, 'index']);
+        Route::get('messages/{otherUserId}', [\App\Http\Controllers\Api\MessageController::class, 'show']);
+        Route::post('messages', [\App\Http\Controllers\Api\MessageController::class, 'store']);
         Route::post('collaborations/{collaboration}/accept', [CollaborationController::class, 'accept']);
         Route::post('collaborations/{collaboration}/pay', [CollaborationController::class, 'pay']);
         Route::post('payment/payu/create', [PayUController::class, 'create']);
@@ -167,6 +173,8 @@ Route::prefix('api')->group(function () {
         Route::put('profile', [BrandProfileController::class, 'update']);
         Route::get('campaigns', [BrandCampaignController::class, 'index']);
         Route::post('campaigns', [BrandCampaignController::class, 'store']);
+        Route::put('campaigns/{campaign}', [BrandCampaignController::class, 'update']);
+        Route::patch('campaigns/{campaign}', [BrandCampaignController::class, 'update']);
     });
 
     Route::middleware(['auth:web', 'verified', 'agency'])->prefix('agency')->group(function () {

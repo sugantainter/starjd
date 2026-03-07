@@ -1,23 +1,28 @@
 <template>
   <div class="min-h-screen">
-    <!-- Hero: dark blue, left = headline + description + CTA, right = vertical scrolling video cards + brand badges (image jesa) -->
-    <section class="campaign-hero relative overflow-hidden border-b border-[#1e3a5f] bg-[#0f172a] px-4">
+    <!-- SEO: canonical is set in onMounted; ensure one main h1 per page -->
+    <section class="campaign-hero relative overflow-hidden border-b border-[#1e3a5f] bg-[#0f172a] px-4" aria-label="Influencer marketing campaigns hero">
       <div class="relative mx-auto max-w-6xl">
         <div class="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
           <!-- Left: content -->
           <div class="order-2 max-w-xl text-center lg:order-1 lg:text-left">
             <h1 class="text-3xl font-bold leading-tight text-white sm:text-4xl md:text-[2.5rem] lg:text-[2.75rem]">
-              Powerful Influencer <br />
-              <span class="text-[#fef08a]">Marketing</span> Campaigns
+              Powerful Influencer <span class="text-[#fef08a]">Marketing</span> Campaigns
             </h1>
             <p class="mt-5 text-base leading-relaxed text-white/90 sm:text-lg">
               StarJD delivers impactful influencer marketing campaigns that help brands connect with their target audience. By collaborating with top influencers, we create authentic content that drives engagement and effectively markets your products or services, ensuring maximum reach and brand impact.
             </p>
             <router-link
-              to="/login"
-              class="mt-8 inline-flex items-center justify-center rounded-xl bg-[#fc4402] px-8 py-3.5 text-base font-semibold text-white transition hover:bg-[#0046d2]"
+              to="/campaigns"
+              class="mt-6 inline-flex items-center justify-center rounded-xl bg-[#fc4402] px-8 py-3.5 text-base font-semibold text-white transition hover:bg-[#0046d2]"
             >
-              Post a Campaign
+              Explore Open Campaigns
+            </router-link>
+            <router-link
+              to="/login"
+              class="mt-4 inline-flex items-center justify-center rounded-xl border border-white/30 bg-transparent px-8 py-3.5 text-base font-semibold text-white transition hover:bg-white/10"
+            >
+              Post a Campaign (Brands)
             </router-link>
           </div>
           <!-- Right: 4 columns – col1 & col3 video scroll UP, col2 & col4 video scroll DOWN -->
@@ -554,7 +559,41 @@ function advanceCreatorsCarousel() {
 
 let categoryCarouselIntervalId = null;
 let creatorsIndiaIntervalId = null;
+// SEO: title, description, canonical, JSON-LD for campaign landing
+const SITE_URL = typeof window !== 'undefined' ? (window.location.origin || 'https://www.starjd.com') : 'https://www.starjd.com';
+const SEO_TITLE = 'Influencer Marketing Campaigns | Connect with Creators | StarJD';
+const SEO_DESCRIPTION = 'Discover and join influencer marketing campaigns. Brands post campaigns; creators apply and collaborate. Explore Instagram, TikTok, YouTube & UGC campaigns across India and globally.';
 onMounted(() => {
+  document.title = SEO_TITLE;
+  let metaDesc = document.querySelector('meta[name="description"]');
+  if (!metaDesc) {
+    metaDesc = document.createElement('meta');
+    metaDesc.name = 'description';
+    document.head.appendChild(metaDesc);
+  }
+  metaDesc.setAttribute('content', SEO_DESCRIPTION);
+  let canonical = document.querySelector('link[rel="canonical"]');
+  if (!canonical) {
+    canonical = document.createElement('link');
+    canonical.rel = 'canonical';
+    document.head.appendChild(canonical);
+  }
+  canonical.href = `${SITE_URL}/campaign-landing`;
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: SEO_TITLE,
+    description: SEO_DESCRIPTION,
+    url: `${SITE_URL}/campaign-landing`,
+    publisher: { '@type': 'Organization', name: 'StarJD', url: SITE_URL },
+  };
+  let scriptLd = document.getElementById('campaign-landing-jsonld');
+  if (scriptLd) scriptLd.remove();
+  scriptLd = document.createElement('script');
+  scriptLd.id = 'campaign-landing-jsonld';
+  scriptLd.type = 'application/ld+json';
+  scriptLd.textContent = JSON.stringify(jsonLd);
+  document.head.appendChild(scriptLd);
   categoryCarouselIntervalId = setInterval(() => categoryCarouselNext(), 4000);
   creatorsIndiaIntervalId = setInterval(advanceCreatorsCarousel, CREATORS_INTERVAL_MS);
 });
