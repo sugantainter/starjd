@@ -75,9 +75,13 @@
           Explore by Category
         </h2>
         <p class="section-subtitle mb-10 text-[#6b7280] md:mb-12">
-          Find creators in your niche.
+          Browse campaigns by category. Click to see open campaigns in that niche.
         </p>
+        <div v-if="categoriesLoading" class="flex justify-center py-12">
+          <div class="h-10 w-10 animate-spin rounded-full border-2 border-[#fc4402] border-t-transparent" />
+        </div>
         <div
+          v-else
           class="category-carousel relative mx-auto flex items-center justify-center"
           style="--category-card-w: 230px; --category-card-gap: 16px;"
         >
@@ -98,9 +102,10 @@
               class="category-carousel-inner flex items-stretch gap-3 transition-transform duration-500 ease-out md:gap-4"
               :style="categoryCarouselTrackStyle"
             >
-              <div
+              <router-link
                 v-for="(cat, i) in categories"
                 :key="cat.name"
+                :to="'/campaigns?niche=' + encodeURIComponent(cat.name)"
                 class="category-carousel-card flex shrink-0 cursor-pointer flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-500"
                 :class="i === categoryCenterIndex ? 'category-carousel-card--center border-[#fc4402] shadow-md ring-2 ring-[#fc4402]/20' : 'border-[#e5e7eb] hover:border-[#fc4402]/50'"
                 :style="{
@@ -109,7 +114,6 @@
                   transform: i === categoryCenterIndex ? 'scale(1.1)' : 'scale(1)',
                   transformOrigin: 'center center',
                 }"
-                @click="categoryCarouselGoTo(i)"
               >
                 <div class="relative aspect-[3/4] w-full overflow-hidden">
                   <img
@@ -120,14 +124,14 @@
                   <span
                     class="absolute right-2 top-2 rounded-full bg-[#fc4402] px-2 py-0.5 text-[10px] font-semibold uppercase text-white"
                   >
-                    Categories
+                    Campaigns
                   </span>
                 </div>
                 <div class="flex flex-1 flex-col justify-center border-t border-[#e5e7eb] bg-white p-3">
                   <h3 class="font-semibold text-[#1a1a1a]">{{ cat.name }}</h3>
-                  <p class="mt-0.5 text-xs text-[#6b7280]">{{ cat.count }} creators</p>
+                  <p class="mt-0.5 text-xs text-[#6b7280]">{{ cat.count }}</p>
                 </div>
-              </div>
+              </router-link>
             </div>
           </div>
           <button
@@ -141,7 +145,7 @@
             </svg>
           </button>
         </div>
-        <div class="mt-6 flex justify-center gap-2">
+        <div v-if="!categoriesLoading && categories.length" class="mt-6 flex justify-center gap-2">
           <button
             v-for="(cat, i) in categories"
             :key="'dot-' + cat.name"
@@ -358,6 +362,7 @@
 </template>
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
+import axios from 'axios';
 
 // Services vertical tabs: 6 items; left 3, right 3; click to show details
 const servicesTabs = [
@@ -460,13 +465,19 @@ const heroVideoColumns = [
   ],
 ];
 
-// Explore by Category (same as home)
-const categories = ref([
-  { name: 'Fashion', count: '1.2k', image: 'https://picsum.photos/seed/fashion/400/500' },
-  { name: 'Beauty', count: '890', image: 'https://picsum.photos/seed/beauty/400/500' },
-  { name: 'Tech', count: '650', image: 'https://picsum.photos/seed/tech/400/500' },
-  { name: 'Travel', count: '720', image: 'https://picsum.photos/seed/travel/400/500' },
-]);
+// Explore by Category (dynamic from API; click goes to /campaigns?niche=name)
+const categories = ref([]);
+const categoriesLoading = ref(true);
+onMounted(async () => {
+  try {
+    const res = await axios.get('/api/campaigns/categories');
+    categories.value = res.data.categories ?? [];
+  } catch (_) {
+    categories.value = [];
+  } finally {
+    categoriesLoading.value = false;
+  }
+});
 const categoryCarouselIndex = ref(0);
 const CATEGORY_CARD_WIDTH = 220;
 const CATEGORY_CARD_GAP = 16;
@@ -578,19 +589,19 @@ onMounted(() => {
     canonical.rel = 'canonical';
     document.head.appendChild(canonical);
   }
-  canonical.href = `${SITE_URL}/campaign-landing`;
+  canonical.href = `${SITE_URL}/campaign`;
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
     name: SEO_TITLE,
     description: SEO_DESCRIPTION,
-    url: `${SITE_URL}/campaign-landing`,
+    url: `${SITE_URL}/campaign`,
     publisher: { '@type': 'Organization', name: 'StarJD', url: SITE_URL },
   };
-  let scriptLd = document.getElementById('campaign-landing-jsonld');
+  let scriptLd = document.getElementById('campaign-page-jsonld');
   if (scriptLd) scriptLd.remove();
   scriptLd = document.createElement('script');
-  scriptLd.id = 'campaign-landing-jsonld';
+  scriptLd.id = 'campaign-page-jsonld';
   scriptLd.type = 'application/ld+json';
   scriptLd.textContent = JSON.stringify(jsonLd);
   document.head.appendChild(scriptLd);

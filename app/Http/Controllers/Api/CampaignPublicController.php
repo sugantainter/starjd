@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Campaign;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class CampaignPublicController extends Controller
 {
@@ -118,5 +120,41 @@ class CampaignPublicController extends Controller
             'niches' => $niches,
             'countries' => $countries,
         ]);
+    }
+
+    /**
+     * Categories for campaign home (dynamic from DB; used for Explore by Category with link to listing).
+     */
+    public function categories(): JsonResponse
+    {
+        $items = [];
+        if (Schema::hasTable('categories')) {
+            $rows = DB::table('categories')->orderBy('sort_order')->orderBy('name')->get(['name', 'slug', 'image', 'count_display']);
+            $items = $rows->map(function ($row) {
+                $imageUrl = $row->image
+                    ? (str_starts_with($row->image, 'http') ? $row->image : asset('storage/' . $row->image))
+                    : null;
+                return [
+                    'name' => $row->name,
+                    'slug' => $row->slug,
+                    'image' => $imageUrl,
+                    'image_url' => $imageUrl,
+                    'count' => $row->count_display ?? 'Explore',
+                ];
+            })->toArray();
+        }
+        if (empty($items)) {
+            $fallback = config('creator.categories', ['Fashion', 'Beauty', 'Tech', 'Travel', 'Lifestyle', 'Fitness']);
+            $items = array_values(array_map(function ($name, $i) {
+                return [
+                    'name' => $name,
+                    'slug' => \Str::slug($name),
+                    'image' => 'https://picsum.photos/seed/' . ($i + 1) . '/400/500',
+                    'image_url' => 'https://picsum.photos/seed/' . ($i + 1) . '/400/500',
+                    'count' => 'Explore',
+                ];
+            }, $fallback, array_keys($fallback)));
+        }
+        return response()->json(['categories' => $items]);
     }
 }

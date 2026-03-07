@@ -111,6 +111,7 @@ Route::prefix('api')->group(function () {
     Route::get('studios/categories', [StudioPublicController::class, 'categories']);
     Route::get('studios/{slugOrId}', [StudioPublicController::class, 'show']);
     Route::get('campaigns', [\App\Http\Controllers\Api\CampaignPublicController::class, 'index']);
+    Route::get('campaigns/categories', [\App\Http\Controllers\Api\CampaignPublicController::class, 'categories']);
     Route::get('campaigns/filters', [\App\Http\Controllers\Api\CampaignPublicController::class, 'filters']);
     Route::get('campaigns/slug/{slug}', [\App\Http\Controllers\Api\CampaignPublicController::class, 'show']);
     Route::get('bookings/calculate', [BookingController::class, 'calculate']);

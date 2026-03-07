@@ -95,7 +95,7 @@
     </div>
     <div v-else-if="!list.length" class="mt-10 rounded-2xl border border-[#e2e8f0] bg-[#f8fafc] p-12 text-center">
       <p class="text-[#64748b]">No open campaigns match your filters.</p>
-      <router-link to="/campaign-landing" class="mt-4 inline-block text-[#e63946] font-medium hover:underline">Learn about campaigns</router-link>
+      <router-link to="/campaign" class="mt-4 inline-block text-[#e63946] font-medium hover:underline">Campaign home</router-link>
     </div>
     <div v-else class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       <article
@@ -152,9 +152,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import axios from 'axios';
 
+const route = useRoute();
 const list = ref([]);
 const loading = ref(false);
 const currentPage = ref(1);
@@ -168,6 +170,12 @@ const filters = reactive({
   budget_min: '',
   budget_max: '',
 });
+
+function applyQueryToFilters() {
+  if (route.query.niche != null) filters.niche = route.query.niche;
+  if (route.query.country != null) filters.country = route.query.country;
+  if (route.query.campaign_type != null) filters.campaign_type = route.query.campaign_type;
+}
 
 function typeLabel(type) {
   const map = { instagram: 'Instagram', tiktok: 'TikTok', ugc: 'UGC', youtube: 'YouTube' };
@@ -222,7 +230,13 @@ async function load(page = 1) {
 }
 
 onMounted(() => {
+  applyQueryToFilters();
   loadFilters();
   load(1);
 });
+
+watch(() => route.query, () => {
+  applyQueryToFilters();
+  load(1);
+}, { deep: true });
 </script>

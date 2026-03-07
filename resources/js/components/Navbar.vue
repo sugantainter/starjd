@@ -139,9 +139,7 @@
               </div>
             </Transition>
           </div>
-          <router-link to="/campaign-landing" class="text-sm font-semibold transition hover:text-[#fc4402]">Campaign</router-link>
-          <router-link to="/campaigns" class="text-sm font-semibold transition hover:text-[#fc4402]">Explore Campaigns</router-link>
-
+          <router-link to="/campaign" class="text-sm font-semibold transition hover:text-[#fc4402]">Campaigns</router-link>
                     <div
                         ref="servicesRef"
                         class="relative"
