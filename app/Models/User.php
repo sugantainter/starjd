@@ -97,6 +97,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(CampaignApplication::class, 'creator_id');
     }
 
+    public function campaignsAsBrand(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Campaign::class, 'brand_id');
+    }
+
     public function studios(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Studio::class);

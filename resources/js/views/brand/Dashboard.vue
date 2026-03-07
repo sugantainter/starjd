@@ -1,7 +1,12 @@
 <template>
   <div>
-    <h1 class="text-2xl font-bold text-[#1a1a1a]">Dashboard</h1>
-    <p class="mt-1 text-[#64748b]">Welcome back, {{ data?.user?.name }}.</p>
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-[#1a1a1a]">Dashboard</h1>
+        <p class="mt-1 text-[#64748b]">Welcome back, {{ data?.user?.name }}.</p>
+      </div>
+      <PostCampaignFlow @created="onCampaignCreated" />
+    </div>
     <div class="mt-6 grid gap-4 sm:grid-cols-2">
       <div class="rounded-xl border border-[#e2e8f0] bg-white p-4">
         <div class="text-sm text-[#64748b]">Collaborations</div>
@@ -24,6 +29,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import PostCampaignFlow from '../../components/brand/PostCampaignFlow.vue';
 
 const data = ref(null);
 
@@ -31,4 +37,13 @@ onMounted(async () => {
   const res = await axios.get('/api/brand/dashboard', { withCredentials: true });
   data.value = res.data;
 });
+
+function onCampaignCreated() {
+  // Optionally refresh dashboard or campaigns list
+  if (data.value) {
+    axios.get('/api/brand/dashboard', { withCredentials: true }).then((r) => {
+      data.value = r.data;
+    });
+  }
+}
 </script>

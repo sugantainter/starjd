@@ -10,6 +10,7 @@ class Campaign extends Model
 {
     protected $fillable = [
         'brand_id',
+        'campaign_type',
         'title',
         'slug',
         'description',
@@ -19,6 +20,7 @@ class Campaign extends Model
         'starts_at',
         'ends_at',
         'max_applications',
+        'targeting',
     ];
 
     protected function casts(): array
@@ -27,6 +29,7 @@ class Campaign extends Model
             'budget' => 'decimal:2',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
+            'targeting' => 'array',
         ];
     }
 
