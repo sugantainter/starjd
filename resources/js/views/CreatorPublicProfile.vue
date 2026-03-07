@@ -37,10 +37,23 @@
     </div>
     <div v-if="portfolio.length" class="mt-8">
       <h2 class="text-xl font-semibold text-[#1a1a1a]">Portfolio</h2>
-      <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-        <div v-for="post in portfolio" :key="post.id" class="aspect-square rounded-xl overflow-hidden border border-[#e2e8f0] bg-[#f1f5f9]">
-          <img :src="post.image" :alt="post.caption" class="h-full w-full object-cover" />
-          <p v-if="post.caption" class="p-2 text-xs text-[#64748b] truncate">{{ post.caption }}</p>
+      <div
+        class="mt-4 grid gap-4"
+        :class="portfolio.length <= 2 ? 'grid-cols-1 sm:grid-cols-2 max-w-3xl' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'"
+      >
+        <div
+          v-for="post in portfolio"
+          :key="post.id"
+          class="group relative overflow-hidden rounded-xl border border-[#e2e8f0] bg-[#f1f5f9] shadow-sm transition hover:shadow-md"
+        >
+          <div class="aspect-[4/5] overflow-hidden">
+            <img
+              :src="post.image"
+              :alt="post.caption || 'Portfolio'"
+              class="h-full w-full object-cover object-center transition duration-300 group-hover:scale-[1.02]"
+            />
+          </div>
+          <p v-if="post.caption" class="p-3 text-xs text-[#64748b] line-clamp-2">{{ post.caption }}</p>
         </div>
       </div>
     </div>
