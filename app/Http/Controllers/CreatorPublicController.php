@@ -16,7 +16,16 @@ class CreatorPublicController extends Controller
         $query = CreatorProfile::query()
             ->with('user.socialAccounts')
             ->withAvg(['reviews as average_rating' => fn ($q) => $q->where('status', 'approved')], 'rating')
-            ->where('is_public', true);
+            ->where('is_public', true)
+            ->whereNotNull('slug')
+            ->where('slug', '!=', '')
+            ->where(function ($q) {
+                $q->where(function ($q2) {
+                    $q2->whereNotNull('tagline')->where('tagline', '!=', '');
+                })->orWhere(function ($q2) {
+                    $q2->whereNotNull('bio')->where('bio', '!=', '');
+                });
+            });
 
         if ($request->filled('category')) {
             $query->where('category', $request->category);

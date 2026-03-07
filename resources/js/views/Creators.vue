@@ -26,7 +26,7 @@
     </div>
     <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       <router-link
-        v-for="p in list"
+        v-for="p in listWithSlug"
         :key="p.id"
         :to="'/creators/' + p.slug"
         class="group flex flex-col overflow-hidden rounded-2xl border border-[#e2e8f0] bg-white shadow-sm transition hover:border-[#fc4402]/30 hover:shadow-md"
@@ -54,12 +54,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 
 const route = useRoute();
 const list = ref([]);
+const listWithSlug = computed(() => (list.value || []).filter((p) => p.slug));
 const search = ref('');
 const loading = ref(false);
 const filterOptions = reactive({ categories: [], genders: {}, languages: [], platforms: {} });
