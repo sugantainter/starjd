@@ -8,6 +8,8 @@ use App\Models\StudioCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Models\StudioImage;
+use Illuminate\Support\Facades\Storage;
 
 class StudioOwnerStudioController extends Controller
 {
@@ -121,8 +123,25 @@ class StudioOwnerStudioController extends Controller
             'status' => 'draft',
         ]);
 
-        if ($request->filled('amenity_ids') && is_array($request->amenity_ids)) {
-            $studio->amenities()->sync(array_map('intval', $request->amenity_ids));
+        $amenityIds = $request->input('amenity_ids');
+        if ($amenityIds) {
+            if (is_string($amenityIds)) {
+                $amenityIds = explode(',', $amenityIds);
+            }
+            $studio->amenities()->sync(array_map('intval', $amenityIds));
+        }
+
+        // Handle Image Uploads
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $index => $file) {
+                $path = $file->store('studios/' . $studio->id, 'public');
+                StudioImage::create([
+                    'studio_id' => $studio->id,
+                    'image' => $path,
+                    'is_primary' => $index === 0,
+                    'sort_order' => $index,
+                ]);
+            }
         }
         $studio->load(['category:id,name,slug', 'amenities:id,name,slug']);
         return response()->json($studio, 201);
@@ -163,8 +182,26 @@ class StudioOwnerStudioController extends Controller
         }
         $studio->update($data);
 
-        if (array_key_exists('amenity_ids', $request->all())) {
-            $studio->amenities()->sync($request->amenity_ids ? array_map('intval', $request->amenity_ids) : []);
+        $amenityIds = $request->input('amenity_ids');
+        if ($amenityIds !== null) {
+            if (is_string($amenityIds)) {
+                $amenityIds = !empty($amenityIds) ? explode(',', $amenityIds) : [];
+            }
+            $studio->amenities()->sync(array_map('intval', $amenityIds));
+        }
+
+        // Handle Image Uploads (add new ones)
+        if ($request->hasFile('images')) {
+            $lastOrder = $studio->images()->max('sort_order') ?? -1;
+            foreach ($request->file('images') as $file) {
+                $path = $file->store('studios/' . $studio->id, 'public');
+                StudioImage::create([
+                    'studio_id' => $studio->id,
+                    'image' => $path,
+                    'is_primary' => $studio->images()->count() === 0,
+                    'sort_order' => ++$lastOrder,
+                ]);
+            }
         }
         $studio->load(['category:id,name,slug', 'amenities:id,name,slug']);
         return response()->json($studio);

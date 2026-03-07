@@ -187,7 +187,7 @@ Route::prefix('api')->group(function () {
 
     // Studio owner: allow access without email verification (avoid redirect loop; show verify banner in UI if needed)
     Route::middleware(['auth:web', 'studio_owner'])->prefix('studio')->group(function () {
-        Route::get('dashboard', fn () => response()->json(['message' => 'Studio dashboard', 'user' => request()->user()->only('id', 'name', 'email')]));
+        Route::get('dashboard', [\App\Http\Controllers\StudioOwner\StudioOwnerController::class, 'dashboard']);
     });
     Route::middleware(['auth:web', 'studio_owner'])->prefix('studio-owner')->group(function () {
         Route::get('studios', [StudioOwnerStudioController::class, 'index']);

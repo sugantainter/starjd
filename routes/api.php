@@ -122,5 +122,20 @@ Route::middleware('web')->group(function () {
         Route::middleware(['brand', 'paid'])->prefix('brand')->group(function () {
             Route::get('dashboard', [\App\Http\Controllers\Brand\BrandController::class, 'dashboard']);
         });
+
+        Route::middleware(['studio_owner'])->prefix('studio-owner')->group(function () {
+            Route::get('dashboard', [\App\Http\Controllers\StudioOwner\StudioOwnerController::class, 'dashboard']);
+            Route::get('studios', [\App\Http\Controllers\StudioOwner\StudioOwnerStudioController::class, 'index']);
+            Route::get('studios/{studio}', [\App\Http\Controllers\StudioOwner\StudioOwnerStudioController::class, 'show']);
+            Route::post('studios', [\App\Http\Controllers\StudioOwner\StudioOwnerStudioController::class, 'store']);
+            Route::put('studios/{studio}', [\App\Http\Controllers\StudioOwner\StudioOwnerStudioController::class, 'update']);
+            Route::delete('studios/{studio}', [\App\Http\Controllers\StudioOwner\StudioOwnerStudioController::class, 'destroy']);
+            Route::get('bookings', [\App\Http\Controllers\StudioOwner\StudioOwnerBookingController::class, 'index']);
+            
+            Route::get('studios/{studio}/availability', [\App\Http\Controllers\StudioOwner\StudioOwnerAvailabilityController::class, 'index']);
+            Route::post('studios/{studio}/availability', [\App\Http\Controllers\StudioOwner\StudioOwnerAvailabilityController::class, 'store']);
+            Route::put('availability-slots/{availability_slot}', [\App\Http\Controllers\StudioOwner\StudioOwnerAvailabilityController::class, 'update']);
+            Route::delete('availability-slots/{availability_slot}', [\App\Http\Controllers\StudioOwner\StudioOwnerAvailabilityController::class, 'destroy']);
+        });
     });
 });
