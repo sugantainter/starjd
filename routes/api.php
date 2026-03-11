@@ -122,6 +122,11 @@ Route::middleware('web')->group(function () {
 
         Route::middleware(['brand', 'paid'])->prefix('brand')->group(function () {
             Route::get('dashboard', [\App\Http\Controllers\Brand\BrandController::class, 'dashboard']);
+            Route::get('campaigns', [\App\Http\Controllers\Brand\BrandCampaignController::class, 'index']);
+            Route::get('campaigns/{campaign}', [\App\Http\Controllers\Brand\BrandCampaignController::class, 'show']);
+            Route::post('campaigns', [\App\Http\Controllers\Brand\BrandCampaignController::class, 'store']);
+            Route::put('campaigns/{campaign}', [\App\Http\Controllers\Brand\BrandCampaignController::class, 'update']);
+            Route::patch('campaign-applications/{campaign_application}', [\App\Http\Controllers\Brand\BrandCampaignApplicationController::class, 'update']);
         });
 
         Route::middleware(['studio_owner'])->prefix('studio-owner')->group(function () {

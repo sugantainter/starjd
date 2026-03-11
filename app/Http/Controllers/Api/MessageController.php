@@ -124,7 +124,9 @@ class MessageController extends Controller
                     ->withData([
                         'type' => 'chat',
                         'sender_id' => (string)$sender->id,
+                        'sender_name' => $sender->name,
                         'message_id' => (string)$message->id,
+                        'body' => $message->body,
                     ]);
 
                 $messaging->send($fcmMessage);
