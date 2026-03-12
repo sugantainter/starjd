@@ -91,6 +91,7 @@ Route::middleware('web')->group(function () {
 
     Route::middleware('auth:web')->group(function () {
         Route::get('me', [AuthController::class, 'me']);
+        Route::delete('account', [AuthController::class, 'deleteAccount']);
         Route::post('update-profile', [AuthController::class, 'updateProfile']);
         Route::post('set-role', [AuthController::class, 'setRole']);
         Route::post('update-fcm-token', [AuthController::class, 'updateFcmToken']);

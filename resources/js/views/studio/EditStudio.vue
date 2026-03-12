@@ -68,6 +68,30 @@
           </div>
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
+              <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Latitude (for map)</label>
+              <input v-model.number="form.latitude" type="number" step="any" class="w-full rounded-xl border border-[#e5e7eb] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" placeholder="e.g. 28.6139" />
+              <p class="mt-0.5 text-xs text-[#64748b]">Optional. Used to show this studio on the Studios map.</p>
+            </div>
+            <div>
+              <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Longitude (for map)</label>
+              <input v-model.number="form.longitude" type="number" step="any" class="w-full rounded-xl border border-[#e5e7eb] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" placeholder="e.g. 77.2090" />
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              :disabled="locationLoading"
+              class="inline-flex items-center gap-2 rounded-xl border border-[#e2e8f0] px-4 py-2 text-sm font-medium text-[#1a1a1a] transition hover:border-[#0ea5e9] hover:bg-[#f0f9ff] hover:text-[#0369a1] disabled:opacity-50"
+              @click="useMyLocation"
+            >
+              <svg v-if="locationLoading" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              <svg v-else class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              {{ locationLoading ? 'Getting location…' : 'Use my location' }}
+            </button>
+            <p v-if="locationError" class="text-sm text-red-600">{{ locationError }}</p>
+          </div>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
               <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Price per hour (₹)</label>
               <input v-model.number="form.price_per_hour" type="number" min="0" step="0.01" class="w-full rounded-xl border border-[#e5e7eb] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" />
             </div>
@@ -171,11 +195,15 @@ const form = reactive({
   city: '',
   state: '',
   pincode: '',
+  latitude: null,
+  longitude: null,
   price_per_hour: null,
   price_per_day: null,
 });
 const basicError = ref('');
 const savingBasic = ref(false);
+const locationLoading = ref(false);
+const locationError = ref('');
 
 const images = ref([]);
 const uploadError = ref('');
@@ -211,6 +239,8 @@ async function loadStudio() {
     form.city = studio.value.city ?? '';
     form.state = studio.value.state ?? '';
     form.pincode = studio.value.pincode ?? '';
+    form.latitude = studio.value.latitude ?? null;
+    form.longitude = studio.value.longitude ?? null;
     form.price_per_hour = studio.value.price_per_hour ?? null;
     form.price_per_day = studio.value.price_per_day ?? null;
   } catch {
@@ -250,6 +280,29 @@ watch(studio, (s) => {
 }, { immediate: true });
 watch(() => route.hash, () => nextTick(scrollToSection));
 
+function useMyLocation() {
+  if (!navigator.geolocation) {
+    locationError.value = 'Geolocation is not supported by your browser.';
+    return;
+  }
+  locationError.value = '';
+  locationLoading.value = true;
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      form.latitude = Math.round(pos.coords.latitude * 1e6) / 1e6;
+      form.longitude = Math.round(pos.coords.longitude * 1e6) / 1e6;
+      locationLoading.value = false;
+    },
+    (err) => {
+      locationLoading.value = false;
+      if (err.code === 1) locationError.value = 'Location permission denied.';
+      else if (err.code === 2) locationError.value = 'Location unavailable.';
+      else locationError.value = 'Could not get your location.';
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+}
+
 async function saveBasic() {
   savingBasic.value = true;
   basicError.value = '';
@@ -264,6 +317,8 @@ async function saveBasic() {
       city: form.city || null,
       state: form.state || null,
       pincode: form.pincode || null,
+      latitude: form.latitude != null && form.latitude !== '' ? Number(form.latitude) : null,
+      longitude: form.longitude != null && form.longitude !== '' ? Number(form.longitude) : null,
       price_per_hour: form.price_per_hour ?? null,
       price_per_day: form.price_per_day ?? null,
     }, { headers: { 'X-CSRF-TOKEN': getToken() }, withCredentials: true });

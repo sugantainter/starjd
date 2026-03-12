@@ -68,6 +68,45 @@ class AuthController extends Controller
         return response()->json($this->userPayload($user->load('roles')));
     }
 
+    /**
+     * Permanently delete the currently authenticated user's account.
+     */
+    public function deleteAccount(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
+        $userId = $user->id;
+        $requestedEmail = $request->header('X-Delete-Email');
+        $reason = $request->header('X-Delete-Reason');
+
+        \Log::info('Account deletion requested', [
+            'user_id' => $userId,
+            'user_email' => $user->email,
+            'requested_email' => $requestedEmail,
+            'reason' => $reason,
+        ]);
+
+        // Log the user out and invalidate the current session before deleting.
+        try {
+            Auth::guard('web')->logout();
+            $request->session()->flush();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        DB::transaction(function () use ($userId) {
+            User::whereKey($userId)->delete();
+        });
+
+        return response()->json(['message' => 'Account deleted successfully.']);
+    }
+
     public function logout(Request $request): JsonResponse
     {
         try {
