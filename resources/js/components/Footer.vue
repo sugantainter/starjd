@@ -143,6 +143,7 @@
           <ul class="mt-4 space-y-2.5 text-sm">
             <li><router-link to="/privacy" class="transition hover:text-[#fc4402]">Privacy Policy</router-link></li>
             <li><router-link to="/terms" class="transition hover:text-[#fc4402]">Terms of Service</router-link></li>
+            <li><router-link to="/child-safety" class="transition hover:text-[#fc4402]">Child Safety</router-link></li>
             <li><router-link to="/contact" class="transition hover:text-[#fc4402]">Contact</router-link></li>
           </ul>
         </div>
@@ -173,6 +174,7 @@
           <router-link to="/contact" class="transition hover:text-[#fc4402]">Contact</router-link>
           <router-link to="/privacy" class="transition hover:text-[#fc4402]">Privacy</router-link>
           <router-link to="/terms" class="transition hover:text-[#fc4402]">Terms</router-link>
+          <router-link to="/child-safety" class="transition hover:text-[#fc4402]">Child Safety</router-link>
         </div>
       </div>
     </div>
