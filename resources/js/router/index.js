@@ -34,6 +34,7 @@ const routes = [
   { path: '/verify-email', component: AppLayout, children: [ { path: '', name: 'verify-email', component: () => import('../views/VerifyEmail.vue') } ] },
   { path: '/forgot-password', component: AppLayout, children: [ { path: '', name: 'forgot-password', component: () => import('../views/ForgotPassword.vue') } ] },
   { path: '/reset-password', component: AppLayout, children: [ { path: '', name: 'reset-password', component: () => import('../views/ResetPassword.vue') } ] },
+  { path: '/account/delete', component: AppLayout, children: [ { path: '', name: 'delete-account', component: () => import('../views/DeleteAccount.vue') } ] },
   {
     path: '/creator',
     component: CreatorLayout,

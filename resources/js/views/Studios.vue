@@ -90,10 +90,27 @@
       <div class="min-w-0 flex-1">
         <div
           v-if="mapVisible"
-          class="mb-4 rounded-2xl border border-dashed border-[#cbd5f5] bg-[#eff6ff] p-6 text-center text-sm text-[#1d4ed8] sm:p-8"
+          class="relative mb-4 overflow-hidden rounded-2xl border border-[#e2e8f0] bg-[#f1f5f9]"
+          style="min-height: 420px;"
         >
-          Map view is enabled. Integrate your preferred map provider (Google Maps, Mapbox, etc.) here to show studios by
-          location.
+          <div ref="mapContainer" class="h-full min-h-[420px] w-full rounded-2xl"></div>
+          <button
+            type="button"
+            :disabled="myLocationLoading"
+            class="absolute right-3 top-3 z-[1000] flex items-center gap-2 rounded-xl border border-[#e2e8f0] bg-white px-3 py-2 text-sm font-medium text-[#1a1a1a] shadow-md transition hover:border-[#0ea5e9] hover:bg-[#f0f9ff] hover:text-[#0369a1] disabled:opacity-60"
+            title="Center on my location"
+            @click="centerOnMyLocation"
+          >
+            <svg v-if="myLocationLoading" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <svg v-else class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            {{ myLocationLoading ? 'Getting…' : 'My location' }}
+          </button>
+          <p
+            v-if="studiosWithCoords.length === 0 && !loading"
+            class="absolute inset-0 flex items-center justify-center bg-[#f8fafc]/90 text-sm text-[#64748b]"
+          >
+            No studios with location on this page. Add latitude/longitude to studios to see them on the map.
+          </p>
         </div>
         <div
           v-else
@@ -144,9 +161,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue';
+import { ref, reactive, onMounted, watch, computed, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import StudioCard from '../components/studio/StudioCard.vue';
 import FilterSidebar from '../components/studio/FilterSidebar.vue';
 
@@ -155,12 +174,24 @@ const list = ref([]);
 const loading = ref(false);
 const showFilters = ref(false);
 const mapVisible = ref(false);
+const mapContainer = ref(null);
+const mapInstance = ref(null);
+const markersLayer = ref(null);
+const myLocationMarker = ref(null);
+const myLocationLoading = ref(false);
 const categories = ref([]);
 const amenities = ref([]);
 const sort = ref('newest');
 const currentPage = ref(1);
 const lastPage = ref(1);
 const total = ref(0);
+
+const studiosWithCoords = computed(() =>
+  list.value.filter((s) => s.latitude != null && s.longitude != null && !Number.isNaN(s.latitude) && !Number.isNaN(s.longitude))
+);
+
+const defaultCenter = [20.5937, 78.9629];
+const defaultZoom = 5;
 
 const filters = reactive({
   category: '',
@@ -208,6 +239,107 @@ async function load(page = 1) {
   }
 }
 
+function initMap() {
+  if (!mapContainer.value || mapInstance.value) return;
+  const map = L.map(mapContainer.value, {
+    center: defaultCenter,
+    zoom: defaultZoom,
+    scrollWheelZoom: true,
+  });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  }).addTo(map);
+  mapInstance.value = map;
+  markersLayer.value = L.layerGroup().addTo(map);
+  updateMapMarkers();
+}
+
+function updateMapMarkers() {
+  const map = mapInstance.value;
+  const layer = markersLayer.value;
+  if (!map || !layer) return;
+  layer.clearLayers();
+  const studios = studiosWithCoords.value;
+  if (studios.length === 0) return;
+  const bounds = [];
+  const icon = L.divIcon({
+    className: 'studio-marker',
+    html: '<span style="background:#e63946;width:14px;height:14px;border-radius:50%;display:block;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3)"></span>',
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+  });
+  studios.forEach((s) => {
+    const lat = Number(s.latitude);
+    const lng = Number(s.longitude);
+    const marker = L.marker([lat, lng], { icon }).addTo(layer);
+    const url = '/studios/' + (s.slug || s.id);
+    const name = (s.name || 'Studio').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const price = s.price_per_hour != null ? `₹${s.price_per_hour}/hr` : s.price_per_day != null ? `₹${s.price_per_day}/day` : '';
+    marker.bindPopup(
+      `<div class="min-w-[160px]"><a href="${url}" class="font-semibold text-[#1a1a1a] hover:text-[#e63946]">${name}</a>${s.city ? `<p class="mt-0.5 text-xs text-[#64748b]">${String(s.city).replace(/</g, '&lt;')}</p>` : ''}${price ? `<p class="mt-1 text-sm font-medium text-[#e63946]">${price}</p>` : ''}<a href="${url}" class="mt-2 inline-block text-sm text-[#e63946] hover:underline">View details →</a></div>`,
+      { maxWidth: 280 }
+    );
+    bounds.push([lat, lng]);
+  });
+  if (bounds.length === 1) {
+    map.setView(bounds[0], 12);
+  } else if (bounds.length > 1) {
+    map.fitBounds(bounds, { padding: [24, 24], maxZoom: 14 });
+  }
+}
+
+function removeMap() {
+  if (myLocationMarker.value) {
+    mapInstance.value?.removeLayer(myLocationMarker.value);
+    myLocationMarker.value = null;
+  }
+  if (mapInstance.value) {
+    mapInstance.value.remove();
+    mapInstance.value = null;
+    markersLayer.value = null;
+  }
+}
+
+function centerOnMyLocation() {
+  if (!navigator.geolocation || !mapInstance.value) return;
+  myLocationLoading.value = true;
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      myLocationLoading.value = false;
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      mapInstance.value.setView([lat, lng], 14);
+      if (myLocationMarker.value) mapInstance.value.removeLayer(myLocationMarker.value);
+      const blueIcon = L.divIcon({
+        className: 'my-location-marker',
+        html: '<span style="background:#0ea5e9;width:16px;height:16px;border-radius:50%;display:block;border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3)"></span>',
+        iconSize: [16, 16],
+        iconAnchor: [8, 8],
+      });
+      myLocationMarker.value = L.marker([lat, lng], { icon: blueIcon }).addTo(mapInstance.value);
+      myLocationMarker.value.bindTooltip('You are here', { permanent: false, direction: 'top' });
+    },
+    () => {
+      myLocationLoading.value = false;
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+}
+
+watch(mapVisible, (visible) => {
+  if (visible) {
+    nextTick(() => {
+      initMap();
+    });
+  } else {
+    removeMap();
+  }
+});
+
+watch(studiosWithCoords, () => {
+  if (mapVisible.value && mapInstance.value) updateMapMarkers();
+}, { deep: true });
+
 onMounted(async () => {
   const [catRes, amRes] = await Promise.all([
     axios.get('/api/studios/categories'),
@@ -221,3 +353,11 @@ onMounted(async () => {
 watch([sort], () => load(1));
 watch(() => route.query, () => load(route.query.page ? Number(route.query.page) : 1), { deep: true });
 </script>
+
+<style scoped>
+:deep(.studio-marker),
+:deep(.my-location-marker) {
+  background: transparent !important;
+  border: none !important;
+}
+</style>
