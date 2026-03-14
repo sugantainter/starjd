@@ -95,7 +95,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import axios from 'axios';
 
 const tickets = ref([]);
@@ -105,6 +105,7 @@ const loading = ref(true);
 const sending = ref(false);
 const replyText = ref('');
 const messageBox = ref(null);
+let pollingInterval = null;
 
 function formatDate(s) {
   if (!s) return '—';
@@ -123,24 +124,39 @@ function statusClass(s) {
   return 'bg-gray-100 text-gray-700';
 }
 
-async function loadTickets() {
-  loading.value = true;
+async function loadTickets(background = false) {
+  if (!background) loading.value = true;
   try {
     const r = await axios.get('/api/admin/support/tickets');
     tickets.value = r.data;
   } finally {
-    loading.value = false;
+    if (!background) loading.value = false;
   }
 }
 
 async function selectTicket(ticket) {
   selectedTicket.value = ticket;
+  await loadMessages();
+}
+
+async function loadMessages(background = false) {
+  if (!selectedTicket.value) return;
   try {
-    const r = await axios.get(`/api/admin/support/tickets/${ticket.id}`);
-    messages.value = r.data.messages;
-    scrollToBottom();
+    const r = await axios.get(`/api/admin/support/tickets/${selectedTicket.value.id}`);
+    const newMessages = r.data.messages;
+    
+    if (newMessages.length !== messages.value.length) {
+      messages.value = newMessages;
+      scrollToBottom();
+    }
+    
+    // Update local ticket status in list if changed
+    const index = tickets.value.findIndex(t => t.id === selectedTicket.value.id);
+    if (index !== -1) {
+      tickets.value[index].status = r.data.status;
+    }
   } catch (e) {
-    alert('Error loading messages');
+    console.error('Error loading messages', e);
   }
 }
 
@@ -163,6 +179,7 @@ async function sendReply() {
     messages.value.push(r.data);
     replyText.value = '';
     scrollToBottom();
+    loadTickets(true);
   } catch (e) {
     alert('Error sending reply');
   } finally {
@@ -178,5 +195,21 @@ function scrollToBottom() {
   });
 }
 
-onMounted(loadTickets);
+function startPolling() {
+  pollingInterval = setInterval(() => {
+    loadTickets(true);
+    if (selectedTicket.value) {
+      loadMessages(true);
+    }
+  }, 5000);
+}
+
+onMounted(() => {
+  loadTickets();
+  startPolling();
+});
+
+onUnmounted(() => {
+  if (pollingInterval) clearInterval(pollingInterval);
+});
 </script>
