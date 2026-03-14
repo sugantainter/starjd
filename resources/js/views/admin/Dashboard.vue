@@ -20,6 +20,11 @@
       <section>
         <h2 class="mb-3 text-sm font-semibold uppercase tracking-wider text-[#94a3b8]">Content &amp; CMS</h2>
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <router-link to="/admin/legal-pages" class="group rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-sm transition hover:border-[#e63946]/30 hover:shadow-md">
+            <p class="text-sm font-medium text-[#64748b]">Legal Pages</p>
+            <p class="mt-1 text-2xl font-bold text-[#1a1a1a]">3</p>
+            <p class="mt-0.5 text-xs text-[#94a3b8]">Terms, privacy, cookies</p>
+          </router-link>
           <router-link to="/admin/pages" class="group rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-sm transition hover:border-[#e63946]/30 hover:shadow-md">
             <p class="text-sm font-medium text-[#64748b]">Pages</p>
             <p class="mt-1 text-2xl font-bold text-[#1a1a1a]">{{ stats.pages ?? 0 }}</p>

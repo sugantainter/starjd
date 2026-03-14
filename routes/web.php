@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FaqController as AdminFaqController;
 use App\Http\Controllers\Admin\PageController as AdminPageController;
+use App\Http\Controllers\Admin\LegalPageController as AdminLegalPageController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Admin\StateController as AdminStateController;
 use App\Http\Controllers\Admin\StepController as AdminStepController;
@@ -228,6 +229,8 @@ Route::prefix('api')->group(function () {
         Route::apiResource('states', AdminStateController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('cities', AdminCityController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('pages', AdminPageController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::get('legal-pages', [AdminLegalPageController::class, 'index']);
+        Route::put('legal-pages/{slug}', [AdminLegalPageController::class, 'update']);
         Route::get('studio-owners', [AdminStudioController::class, 'studioOwners']);
         Route::get('studios', [AdminStudioController::class, 'index']);
         Route::post('studios', [AdminStudioController::class, 'store']);

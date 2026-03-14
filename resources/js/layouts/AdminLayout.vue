@@ -26,6 +26,10 @@
               <svg class="h-4 w-4 transition-transform" :class="{ 'rotate-180': navOpen.content }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
             </button>
             <div v-show="navOpen.content" class="mt-0.5 space-y-0.5">
+              <router-link to="/admin/legal-pages" class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#e63946]/10 !text-[#e63946]">
+                <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 .552-.448 1-1 1s-1-.448-1-1 .448-1 1-1 1 .448 1 1zm0 0V8m8 4c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8z" /></svg>
+                Legal Pages
+              </router-link>
               <router-link to="/admin/pages" class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#e63946]/10 !text-[#e63946]">
                 <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                 Pages
@@ -162,7 +166,7 @@ onMounted(async () => {
 });
 
 watch(() => route.path, (path) => {
-  if (path.startsWith('/admin/pages') || path.startsWith('/admin/posts') || path.startsWith('/admin/videos')) navOpen.content = true;
+  if (path.startsWith('/admin/legal-pages') || path.startsWith('/admin/pages') || path.startsWith('/admin/posts') || path.startsWith('/admin/videos')) navOpen.content = true;
   if (path.startsWith('/admin/states') || path.startsWith('/admin/cities')) navOpen.locations = true;
   if (path.startsWith('/admin/categories') || path.startsWith('/admin/hero') || path.startsWith('/admin/testimonials') || path.startsWith('/admin/faqs') || path.startsWith('/admin/steps') || path.startsWith('/admin/partners') || path.startsWith('/admin/services')) navOpen.site = true;
   if (path.startsWith('/admin/studios')) navOpen.studios = true;
