@@ -22,7 +22,10 @@ class SupportAdminController extends Controller
 
     public function show(SupportTicket $ticket): JsonResponse
     {
-        return response()->json($ticket->load(['user:id,name,email', 'messages.user:id,name,avatar_url']));
+        $ticket->load(['user:id,name,email', 'messages.user:id,name']);
+        $ticket->messages->each(fn ($message) => $message->user?->append('avatar_url'));
+
+        return response()->json($ticket);
     }
 
     public function reply(Request $request, SupportTicket $ticket): JsonResponse
@@ -46,7 +49,10 @@ class SupportAdminController extends Controller
         }
         $ticket->save();
 
-        return response()->json($message->load('user:id,name,avatar_url'));
+        $message->load('user:id,name');
+        $message->user?->append('avatar_url');
+
+        return response()->json($message);
     }
 
     public function updateStatus(Request $request, SupportTicket $ticket): JsonResponse

@@ -56,7 +56,10 @@ class SupportController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        return response()->json($ticket->load(['messages.user:id,name,avatar_url']));
+        $ticket->load(['messages.user:id,name']);
+        $ticket->messages->each(fn ($message) => $message->user?->append('avatar_url'));
+
+        return response()->json($ticket);
     }
 
     public function sendMessage(Request $request, SupportTicket $ticket): JsonResponse
@@ -78,6 +81,9 @@ class SupportController extends Controller
 
         $ticket->touch(); // update updated_at
 
-        return response()->json($message->load('user:id,name,avatar_url'));
+        $message->load('user:id,name');
+        $message->user?->append('avatar_url');
+
+        return response()->json($message);
     }
 }
