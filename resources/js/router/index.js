@@ -109,7 +109,9 @@ const routes = [
       { path: 'studios/new', name: 'admin-studios-new', component: () => import('../views/admin/AddStudio.vue') },
       { path: 'studios/:id/edit', name: 'admin-studios-edit', component: () => import('../views/admin/EditStudio.vue') },
       { path: 'coupons', name: 'admin-coupons', component: () => import('../views/admin/Coupons.vue') },
+      { path: 'support', name: 'admin-support', component: () => import('../views/admin/Support.vue') },
     ],
+
   },
 ];
 

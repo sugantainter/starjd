@@ -13,7 +13,10 @@ use App\Http\Controllers\StudioPublicController;
 use App\Http\Controllers\CreatorPublicController;
 use App\Http\Controllers\CreatorOptionsController;
 use App\Http\Controllers\Api\MessageController;
+use App\Http\Controllers\Api\SupportController;
+use App\Http\Controllers\Admin\FaqController;
 use Illuminate\Support\Facades\Route;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -24,6 +27,8 @@ use Illuminate\Support\Facades\Route;
 
 // App config
 Route::get('/app/config', [AppConfigController::class, 'config']);
+Route::get('/faqs', [FaqController::class, 'index']);
+
 
 // ── Public content ─────────────────────────────────────────────────────────
 Route::get('sections',              [SectionsController::class, 'index']);
@@ -100,6 +105,13 @@ Route::middleware('web')->group(function () {
         Route::get('conversations', [MessageController::class, 'index']);
         Route::get('messages/{userId}', [MessageController::class, 'show']);
         Route::post('messages', [MessageController::class, 'store']);
+        
+        // Support Tickets
+        Route::get('support/tickets', [SupportController::class, 'index']);
+        Route::post('support/tickets', [SupportController::class, 'store']);
+        Route::get('support/tickets/{ticket}', [SupportController::class, 'show']);
+        Route::post('support/tickets/{ticket}/messages', [SupportController::class, 'sendMessage']);
+
         
         // Onboarding / Profile updates
         Route::post('creator/onboarding', [\App\Http\Controllers\Creator\CreatorProfileController::class, 'update']);

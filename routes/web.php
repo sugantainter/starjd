@@ -23,6 +23,8 @@ use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialControll
 use App\Http\Controllers\Admin\HeroController as AdminHeroController;
 use App\Http\Controllers\Admin\PartnerController as AdminPartnerController;
 use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
+use App\Http\Controllers\Admin\SupportAdminController;
+
 use App\Http\Controllers\Api\AppConfigController;
 use App\Http\Controllers\Api\PageController as ApiPageController;
 use App\Http\Controllers\Api\PostController;
@@ -234,6 +236,13 @@ Route::prefix('api')->group(function () {
         Route::apiResource('studio-categories', AdminStudioCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('amenities', AdminAmenityController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('coupons', AdminCouponController::class)->only(['index', 'store', 'update', 'destroy']);
+        
+        // Support Tickets
+        Route::get('support/tickets', [SupportAdminController::class, 'index']);
+        Route::get('support/tickets/{ticket}', [SupportAdminController::class, 'show']);
+        Route::post('support/tickets/{ticket}/reply', [SupportAdminController::class, 'reply']);
+        Route::patch('support/tickets/{ticket}/status', [SupportAdminController::class, 'updateStatus']);
+
     });
 });
 
