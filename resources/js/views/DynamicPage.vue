@@ -43,7 +43,7 @@ const renderedContent = computed(() => {
 });
 
 async function loadPage() {
-  const slug = route.params.slug;
+  const slug = route.meta?.pageSlug || route.params.slug;
   if (!slug) {
     loading.value = false;
     return;
@@ -66,5 +66,5 @@ async function loadPage() {
 }
 
 onMounted(loadPage);
-watch(() => [route.params.slug, route.query.state_slug, route.query.city_slug], loadPage);
+watch(() => [route.meta?.pageSlug, route.params.slug, route.query.state_slug, route.query.city_slug], loadPage);
 </script>

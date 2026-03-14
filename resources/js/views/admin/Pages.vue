@@ -2,7 +2,7 @@
   <div>
     <AdminPageHeader
       title="Pages"
-      description="Dynamic CMS pages. Create global pages or location-specific (state/city) pages."
+      description="Dynamic CMS pages. Create global pages or location-specific (state/city) pages, including legal pages for website and mobile."
       :breadcrumbs="[{ label: 'Content & CMS', path: '/admin' }, { label: 'Pages', path: '/admin/pages' }]"
     >
       <template #actions>
@@ -44,6 +44,14 @@
         <option value="">By city…</option>
         <option v-for="c in cities" :key="c.id" :value="c.id">{{ c.name }}, {{ c.state?.name }}</option>
       </select>
+    </div>
+
+    <div class="mb-4 rounded-xl border border-[#fde68a] bg-[#fffbeb] px-4 py-3 text-sm text-[#92400e] shadow-sm">
+      Legal page slugs used by website and mobile:
+      <span class="font-mono">privacy</span>,
+      <span class="font-mono">terms</span>,
+      <span class="font-mono">cookie-policy</span>.
+      Publish global pages with these exact slugs to update legal content everywhere.
     </div>
 
     <div v-if="loading" class="overflow-hidden rounded-xl border border-[#e2e8f0] bg-white">
