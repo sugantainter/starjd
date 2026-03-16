@@ -27,7 +27,91 @@
           <span>Created {{ formatDate(campaign.created_at) }}</span>
         </div>
         <p v-if="campaign.description" class="mt-4 whitespace-pre-wrap text-[#475569]">{{ campaign.description }}</p>
+        <div v-if="campaign.embed_url" class="mt-4">
+          <div
+            v-if="isYouTube(campaign.embed_url)"
+            class="relative w-full overflow-hidden rounded-xl bg-black pt-[56.25%]"
+          >
+            <iframe
+              class="absolute inset-0 h-full w-full"
+              :src="youtubeEmbedUrl(campaign.embed_url)"
+              title="Campaign video"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+            ></iframe>
+          </div>
+          <div
+            v-else-if="isInstagram(campaign.embed_url)"
+            class="relative w-full overflow-hidden rounded-xl bg-[#f8fafc] pt-[125%]"
+          >
+            <iframe
+              class="absolute inset-0 h-full w-full"
+              :src="instagramEmbedUrl(campaign.embed_url)"
+              title="Instagram post"
+              frameborder="0"
+              scrolling="no"
+              allowtransparency="true"
+            ></iframe>
+          </div>
+          <div v-else class="rounded-xl bg-[#f8fafc] p-4 text-sm text-[#475569]">
+            <p class="mb-2 font-medium text-[#1a1a1a]">Campaign post</p>
+            <a
+              :href="campaign.embed_url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center text-sm font-medium text-[#e63946] hover:underline"
+            >
+              View brand post
+              <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h4m0 0v4m0-4L10 14" />
+              </svg>
+            </a>
+          </div>
+        </div>
         <p v-if="campaign.deliverables" class="mt-3 text-sm text-[#64748b]"><span class="font-medium text-[#1a1a1a]">Deliverables:</span> {{ campaign.deliverables }}</p>
+
+        <!-- Simple edit section for description & embed URL -->
+        <div class="mt-6 border-t border-[#e2e8f0] pt-4">
+          <h2 class="text-sm font-semibold text-[#1a1a1a]">Edit campaign details</h2>
+          <p class="mt-1 text-xs text-[#94a3b8]">Update the description and embedded post/video link for this campaign.</p>
+          <form class="mt-3 space-y-3 max-w-xl" @submit.prevent="saveEdits">
+            <div>
+              <label class="mb-1 block text-xs font-medium text-[#475569]">Campaign description</label>
+              <textarea
+                v-model="editDescription"
+                rows="3"
+                class="w-full rounded-xl border border-[#e2e8f0] px-3 py-2 text-sm text-[#1a1a1a] focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]"
+              />
+            </div>
+            <div>
+              <label class="mb-1 block text-xs font-medium text-[#475569]">Embed post/video link</label>
+              <input
+                v-model="editEmbedUrl"
+                type="url"
+                class="w-full rounded-xl border border-[#e2e8f0] px-3 py-2 text-sm text-[#1a1a1a] focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]"
+                placeholder="Paste Instagram, YouTube or other public post link"
+              />
+            </div>
+            <p v-if="editError" class="text-xs text-red-600">{{ editError }}</p>
+            <div class="flex gap-2">
+              <button
+                type="submit"
+                :disabled="savingEdits"
+                class="rounded-xl bg-[#e63946] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[#c1121f] disabled:opacity-60"
+              >
+                {{ savingEdits ? 'Saving…' : 'Save changes' }}
+              </button>
+              <button
+                type="button"
+                class="rounded-xl border border-[#e2e8f0] px-4 py-2 text-xs font-medium text-[#64748b] hover:bg-[#f1f5f9]"
+                @click="resetEdits"
+              >
+                Reset
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
 
       <!-- Applications -->
@@ -203,6 +287,10 @@ const selectedAppForCollab = ref(null);
 const collabForm = reactive({ amount: 0, brand_notes: '' });
 const collabError = ref('');
 const collabLoading = ref(false);
+const editDescription = ref('');
+const editEmbedUrl = ref('');
+const savingEdits = ref(false);
+const editError = ref('');
 
 function typeLabel(type) {
   const map = { instagram: 'Instagram', tiktok: 'TikTok', ugc: 'UGC', youtube: 'YouTube' };
@@ -253,6 +341,56 @@ function formatDate(iso) {
   return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+function isYouTube(url) {
+  if (!url) return false;
+  return /youtu\.be\/|youtube\.com\/watch\?v=|youtube\.com\/embed\//i.test(url);
+}
+
+function youtubeEmbedUrl(url) {
+  if (!url) return '';
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes('youtu.be')) {
+      const id = u.pathname.replace('/', '');
+      return id ? `https://www.youtube.com/embed/${id}` : '';
+    }
+    if (u.searchParams.get('v')) {
+      const id = u.searchParams.get('v');
+      return `https://www.youtube.com/embed/${id}`;
+    }
+    if (u.pathname.includes('/embed/')) {
+      return url;
+    }
+  } catch {
+    return '';
+  }
+  return '';
+}
+
+function isInstagram(url) {
+  if (!url) return false;
+  return /instagram\.com\/(p|reel|tv)\//i.test(url);
+}
+
+function instagramEmbedUrl(url) {
+  if (!url) return '';
+  try {
+    const u = new URL(url);
+    if (!u.pathname.includes('/embed')) {
+      if (!u.pathname.endsWith('/')) {
+        u.pathname = u.pathname + '/';
+      }
+      u.pathname = u.pathname + 'embed/';
+    }
+    u.searchParams.set('cr', '1');
+    u.searchParams.set('v', '14');
+    u.searchParams.set('wp', '1');
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
 async function loadCampaign() {
   const id = route.params.id;
   if (!id) return;
@@ -260,11 +398,41 @@ async function loadCampaign() {
   try {
     const res = await axios.get('/api/brand/campaigns/' + id, { withCredentials: true });
     campaign.value = res.data;
+    editDescription.value = campaign.value.description || '';
+    editEmbedUrl.value = campaign.value.embed_url || '';
   } catch {
     campaign.value = null;
   } finally {
     loading.value = false;
   }
+}
+
+async function saveEdits() {
+  if (!campaign.value?.id) return;
+  savingEdits.value = true;
+  editError.value = '';
+  try {
+    const res = await axios.patch(
+      '/api/brand/campaigns/' + campaign.value.id,
+      {
+        description: editDescription.value || null,
+        embed_url: editEmbedUrl.value || null,
+      },
+      { withCredentials: true }
+    );
+    campaign.value = res.data.campaign;
+  } catch (e) {
+    editError.value = e.response?.data?.message || 'Failed to save changes.';
+  } finally {
+    savingEdits.value = false;
+  }
+}
+
+function resetEdits() {
+  if (!campaign.value) return;
+  editDescription.value = campaign.value.description || '';
+  editEmbedUrl.value = campaign.value.embed_url || '';
+  editError.value = '';
 }
 
 async function approveApplication(app) {

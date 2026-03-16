@@ -176,6 +176,7 @@ Route::prefix('api')->group(function () {
         Route::get('dashboard', [BrandDashboardController::class, 'dashboard']);
         Route::get('profile', [BrandProfileController::class, 'show']);
         Route::put('profile', [BrandProfileController::class, 'update']);
+        Route::post('profile', [BrandProfileController::class, 'update']); // POST required when uploading logo (PHP does not populate $_FILES for PUT)
         Route::get('campaigns', [BrandCampaignController::class, 'index']);
         Route::get('campaigns/{campaign}', [BrandCampaignController::class, 'show']);
         Route::post('campaigns', [BrandCampaignController::class, 'store']);

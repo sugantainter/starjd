@@ -64,12 +64,12 @@
                   <span v-else class="text-[#94a3b8]">—</span>
                 </td>
                 <td class="px-5 py-4 text-[#64748b]">{{ formatDate(c.created_at) }}</td>
-                <td class="px-5 py-4 text-right">
+                <td class="px-5 py-4 text-right space-x-2">
                   <router-link
                     :to="{ name: 'brand-campaign-detail', params: { id: c.id } }"
-                    class="mr-2 inline-flex items-center text-[#e63946] hover:underline"
+                    class="inline-flex items-center text-[#e63946] hover:underline"
                   >
-                    View applications
+                    View / edit
                   </router-link>
                   <button
                     v-if="c.status === 'draft'"

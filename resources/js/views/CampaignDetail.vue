@@ -25,6 +25,48 @@
           <div v-if="campaign.description" class="mt-6 prose prose-[#475569] max-w-none">
             <p class="whitespace-pre-wrap text-[#475569]">{{ campaign.description }}</p>
           </div>
+          <div v-if="campaign.embed_url" class="mt-6">
+            <div
+              v-if="isYouTube(campaign.embed_url)"
+              class="relative w-full overflow-hidden rounded-xl bg-black pt-[56.25%]"
+            >
+              <iframe
+                class="absolute inset-0 h-full w-full"
+                :src="youtubeEmbedUrl(campaign.embed_url)"
+                title="Campaign video"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen
+              ></iframe>
+            </div>
+            <div
+              v-else-if="isInstagram(campaign.embed_url)"
+              class="relative w-full overflow-hidden rounded-xl bg-[#f8fafc] pt-[125%]"
+            >
+              <iframe
+                class="absolute inset-0 h-full w-full"
+                :src="instagramEmbedUrl(campaign.embed_url)"
+                title="Instagram post"
+                frameborder="0"
+                scrolling="no"
+                allowtransparency="true"
+              ></iframe>
+            </div>
+            <div v-else class="rounded-xl bg-[#f8fafc] p-4 text-sm text-[#475569]">
+              <p class="mb-2 font-medium text-[#1a1a1a]">Campaign post</p>
+              <a
+                :href="campaign.embed_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center text-sm font-medium text-[#e63946] hover:underline"
+              >
+                View brand post
+                <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h4m0 0v4m0-4L10 14" />
+                </svg>
+              </a>
+            </div>
+          </div>
           <div v-if="campaign.deliverables" class="mt-6">
             <h3 class="text-sm font-semibold text-[#1a1a1a]">Deliverables</h3>
             <p class="mt-1 whitespace-pre-wrap text-sm text-[#64748b]">{{ campaign.deliverables }}</p>
@@ -162,6 +204,56 @@ function formatNumber(n) {
 
 function hasTargeting(t) {
   return (t.niches?.length || t.countries?.length || t.languages?.length || t.follower_ranges?.length);
+}
+
+function isYouTube(url) {
+  if (!url) return false;
+  return /youtu\.be\/|youtube\.com\/watch\?v=|youtube\.com\/embed\//i.test(url);
+}
+
+function youtubeEmbedUrl(url) {
+  if (!url) return '';
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes('youtu.be')) {
+      const id = u.pathname.replace('/', '');
+      return id ? `https://www.youtube.com/embed/${id}` : '';
+    }
+    if (u.searchParams.get('v')) {
+      const id = u.searchParams.get('v');
+      return `https://www.youtube.com/embed/${id}`;
+    }
+    if (u.pathname.includes('/embed/')) {
+      return url;
+    }
+  } catch {
+    return '';
+  }
+  return '';
+}
+
+function isInstagram(url) {
+  if (!url) return false;
+  return /instagram\.com\/(p|reel|tv)\//i.test(url);
+}
+
+function instagramEmbedUrl(url) {
+  if (!url) return '';
+  try {
+    const u = new URL(url);
+    if (!u.pathname.includes('/embed')) {
+      if (!u.pathname.endsWith('/')) {
+        u.pathname = u.pathname + '/';
+      }
+      u.pathname = u.pathname + 'embed/';
+    }
+    u.searchParams.set('cr', '1');
+    u.searchParams.set('v', '14');
+    u.searchParams.set('wp', '1');
+    return u.toString();
+  } catch {
+    return url;
+  }
 }
 
 async function loadCampaign() {

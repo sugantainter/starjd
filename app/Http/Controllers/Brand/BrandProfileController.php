@@ -22,6 +22,15 @@ class BrandProfileController extends Controller
 
     public function update(Request $request): JsonResponse
     {
+        // Normalize website so common inputs like "example.com" become valid URLs.
+        if ($request->filled('website')) {
+            $website = trim($request->input('website'));
+            if (! str_starts_with($website, 'http://') && ! str_starts_with($website, 'https://')) {
+                $website = 'https://' . $website;
+            }
+            $request->merge(['website' => $website]);
+        }
+
         $rules = [
             'company_name' => ['nullable', 'string', 'max:255'],
             'website' => ['nullable', 'string', 'url', 'max:255'],
@@ -36,9 +45,10 @@ class BrandProfileController extends Controller
 
         $request->validate($rules);
 
-        $profile = $request->user()->brandProfile;
+        $user = $request->user();
+        $profile = $user->brandProfile;
         if (! $profile) {
-            $profile = $request->user()->brandProfile()->create([]);
+            $profile = $user->brandProfile()->create([]);
         }
 
         $data = $request->only(['company_name', 'website', 'bio', 'industry', 'hq_location']);
@@ -48,13 +58,17 @@ class BrandProfileController extends Controller
                 Storage::disk('public')->delete($profile->logo);
             }
             $path = $request->file('logo')->store(
-                'profiles/logos/' . $request->user()->id,
+                'profiles/logos/' . $user->id,
                 'public'
             );
             $data['logo'] = $path;
         }
 
         $profile->update($data);
-        return response()->json($profile->fresh());
+
+        return response()->json([
+            'message' => 'Brand profile updated successfully.',
+            'profile' => $profile->fresh(),
+        ]);
     }
 }

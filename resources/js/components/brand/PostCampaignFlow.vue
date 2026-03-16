@@ -78,6 +78,25 @@
                 </select>
               </div>
               <div>
+                <label class="mb-1.5 block text-sm font-medium text-[#475569]">Campaign description <span class="text-[#94a3b8]">(optional)</span></label>
+                <textarea
+                  v-model="form.description"
+                  rows="3"
+                  class="w-full rounded-xl border border-[#e2e8f0] px-4 py-2.5 text-sm text-[#1a1a1a] focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]"
+                  placeholder="Describe what this campaign is about and what you expect from creators…"
+                ></textarea>
+              </div>
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-[#475569]">Embed post/video link <span class="text-[#94a3b8]">(optional)</span></label>
+                <input
+                  v-model="form.embed_url"
+                  type="url"
+                  class="w-full rounded-xl border border-[#e2e8f0] px-4 py-2.5 text-sm text-[#1a1a1a] focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]"
+                  placeholder="Paste a YouTube, Instagram, or other public post link"
+                />
+                <p class="mt-1 text-xs text-[#94a3b8]">We will show this post or video on your campaign page where possible.</p>
+              </div>
+              <div>
                 <label class="mb-1.5 block text-sm font-medium text-[#475569]">What niches do you want to target? <span class="text-[#94a3b8]">(optional)</span></label>
                 <select v-model="form.niches" multiple class="w-full rounded-xl border border-[#e2e8f0] px-4 py-2.5 text-[#1a1a1a] focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" style="min-height: 88px">
                   <option v-for="c in filterOptions.categories" :key="c" :value="c">{{ c }}</option>
@@ -254,6 +273,8 @@ const citiesList = ref([]);
 const form = reactive({
   campaign_type: 'instagram',
   influencer_count: 5,
+  description: '',
+  embed_url: '',
   niches: [],
   follower_ranges: [],
   countries: [],
@@ -306,6 +327,8 @@ async function submitTargeting() {
     const payload = {
       campaign_type: form.campaign_type,
       influencer_count: form.influencer_count,
+      description: form.description || null,
+      embed_url: form.embed_url || null,
       niches: Array.isArray(form.niches) ? [...form.niches] : [],
       follower_ranges: Array.isArray(form.follower_ranges) ? [...form.follower_ranges] : [],
       countries: Array.isArray(form.countries) ? [...form.countries] : [],

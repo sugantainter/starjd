@@ -31,6 +31,7 @@ class BrandCampaignController extends Controller
         $validated = $request->validate([
             'campaign_type' => 'required|string|in:instagram,tiktok,ugc,youtube',
             'influencer_count' => 'required|integer|min:1|max:500',
+            'description' => 'nullable|string',
             'niches' => 'nullable|array',
             'niches.*' => 'string|max:100',
             'follower_ranges' => 'nullable|array',
@@ -47,6 +48,7 @@ class BrandCampaignController extends Controller
             'ethnicities.*' => 'string|max:100',
             'languages' => 'nullable|array',
             'languages.*' => 'string|max:100',
+            'embed_url' => 'nullable|string|max:500',
         ]);
 
         $typeLabel = match ($validated['campaign_type']) {
@@ -62,6 +64,7 @@ class BrandCampaignController extends Controller
             'title' => $typeLabel . ' Campaign',
             'slug' => null,
             'status' => 'draft',
+            'description' => $validated['description'] ?? null,
             'max_applications' => $validated['influencer_count'],
             'budget' => 0,
             'targeting' => [
@@ -73,6 +76,7 @@ class BrandCampaignController extends Controller
                 'ages' => $validated['ages'] ?? [],
                 'ethnicities' => $validated['ethnicities'] ?? [],
                 'languages' => $validated['languages'] ?? [],
+                'embed_url' => $validated['embed_url'] ?? null,
             ],
         ]);
 
@@ -107,6 +111,7 @@ class BrandCampaignController extends Controller
             'id', 'campaign_type', 'title', 'slug', 'description', 'deliverables',
             'budget', 'status', 'starts_at', 'ends_at', 'max_applications', 'targeting', 'created_at',
         ]);
+        $data['embed_url'] = $campaign->targeting['embed_url'] ?? null;
         $data['applications'] = $campaign->applications->map(function ($app) {
             $creator = $app->creator;
             $profile = $creator?->creatorProfile;
@@ -144,8 +149,22 @@ class BrandCampaignController extends Controller
             'budget' => 'sometimes|numeric|min:0',
             'starts_at' => 'nullable|date',
             'ends_at' => 'nullable|date|after_or_equal:starts_at',
+            'embed_url' => 'nullable|string|max:500',
         ]);
-        $campaign->update($validated);
+        // Update scalar columns
+        $updateData = collect($validated)->except('embed_url')->toArray();
+        if (!empty($updateData)) {
+            $campaign->update($updateData);
+        }
+
+        // Update embed_url inside targeting JSON
+        if (array_key_exists('embed_url', $validated)) {
+            $targeting = $campaign->targeting ?? [];
+            $targeting['embed_url'] = $validated['embed_url'];
+            $campaign->targeting = $targeting;
+            $campaign->save();
+        }
+
         return response()->json(['message' => 'Campaign updated.', 'campaign' => $campaign->fresh()]);
     }
 }

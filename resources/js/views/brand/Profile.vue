@@ -4,6 +4,7 @@
     <p class="mt-1 text-[#64748b]">Manage your brand profile.</p>
     <form v-if="profile" @submit.prevent="save" class="mt-6 space-y-4 rounded-xl border border-[#e2e8f0] bg-white p-6">
       <div v-if="error" class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">{{ error }}</div>
+      <div v-if="success" class="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{{ success }}</div>
 
       <div class="flex flex-col sm:flex-row items-start gap-6">
         <div class="shrink-0">
@@ -54,14 +55,16 @@ const logoPreview = ref('');
 const logoInput = ref(null);
 const loading = ref(false);
 const error = ref('');
+const success = ref('');
 
 onMounted(async () => {
   const res = await axios.get('/api/brand/profile', { withCredentials: true });
-  profile.value = res.data;
-  logoPreview.value = res.data.logo_url || '';
-  form.company_name = res.data.company_name ?? '';
-  form.website = res.data.website ?? '';
-  form.bio = res.data.bio ?? '';
+  const data = res.data.profile ?? res.data;
+  profile.value = data;
+  logoPreview.value = data.logo_url || '';
+  form.company_name = data.company_name ?? '';
+  form.website = data.website ?? '';
+  form.bio = data.bio ?? '';
 });
 
 function onLogoChange(e) {
@@ -91,27 +94,30 @@ function clearLogo() {
 async function save() {
   loading.value = true;
   error.value = '';
+  success.value = '';
   try {
     if (logoFile.value) {
       const fd = new FormData();
       fd.append('company_name', form.company_name);
       fd.append('website', form.website);
       fd.append('bio', form.bio);
-      fd.append('logo', logoFile.value);
-      const r = await axios.put('/api/brand/profile', fd, {
+      fd.append('logo', logoFile.value, logoFile.value.name || 'logo');
+      const r = await axios.post('/api/brand/profile', fd, {
         withCredentials: true,
         headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
       });
-      profile.value = r.data;
-      logoPreview.value = r.data.logo_url || '';
+      const data = r.data.profile ?? r.data;
+      profile.value = data;
+      logoPreview.value = data.logo_url || '';
       logoFile.value = null;
       if (logoInput.value) logoInput.value.value = '';
     } else {
-      await axios.put('/api/brand/profile', form, { withCredentials: true });
-      const r = await axios.get('/api/brand/profile', { withCredentials: true });
-      profile.value = r.data;
-      logoPreview.value = r.data.logo_url || '';
+      const r = await axios.put('/api/brand/profile', form, { withCredentials: true });
+      const data = r.data.profile ?? r.data;
+      profile.value = data;
+      logoPreview.value = data.logo_url || '';
     }
+    success.value = 'Profile saved successfully.';
   } catch (e) {
     const msg = e.response?.data?.errors?.logo?.[0] || e.response?.data?.message || 'Failed to save.';
     error.value = typeof msg === 'string' ? msg : 'Failed to save.';
