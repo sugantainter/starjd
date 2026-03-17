@@ -223,16 +223,6 @@
           <router-link to="/pricing" class="text-sm font-semibold transition hover:text-[#fc4402]">Pricing</router-link>
           <router-link to="/brand-landing" class="text-sm font-semibold transition hover:text-[#fc4402]">For Brands</router-link>
           <router-link to="/creator-landing" class="text-sm font-semibold transition hover:text-[#fc4402]">For Creators</router-link>
-                    <router-link
-                        to="/about"
-                        class="text-sm font-semibold transition hover:text-[#fc4402]"
-                        >About</router-link
-                    >
-                    <router-link
-                        to="/contact"
-                        class="text-sm font-semibold transition hover:text-[#fc4402]"
-                        >Contact</router-link
-                    >
 
                     <template v-if="displayUser">
                         <div class="relative" ref="userMenuRef">
@@ -399,18 +389,6 @@
                             class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
                             @click="navMobileOpen = false"
                             >Home</router-link
-                        >
-                        <router-link
-                            to="/about"
-                            class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
-                            @click="navMobileOpen = false"
-                            >About</router-link
-                        >
-                        <router-link
-                            to="/contact"
-                            class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
-                            @click="navMobileOpen = false"
-                            >Contact</router-link
                         >
                         <router-link
                             to="/campaign"
