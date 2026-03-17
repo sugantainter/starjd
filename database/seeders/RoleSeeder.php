@@ -19,6 +19,7 @@ class RoleSeeder extends Seeder
             ['name' => 'Agency', 'slug' => 'agency', 'description' => 'Agency managing creators'],
             ['name' => 'Studio Owner', 'slug' => 'studio_owner', 'description' => 'Studio listing owner'],
             ['name' => 'Customer', 'slug' => 'customer', 'description' => 'End customer / booker'],
+            ['name' => 'Professional', 'slug' => 'professional', 'description' => 'Service provider / agency professional'],
         ];
 
         foreach ($roles as $role) {

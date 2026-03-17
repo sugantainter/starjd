@@ -46,11 +46,23 @@
         <input v-model="form.slug" type="text" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#10b981] focus:outline-none focus:ring-1 focus:ring-[#10b981]" />
       </div>
       <div>
-        <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Tagline</label>
+        <div class="flex items-center justify-between mb-1">
+          <label class="block text-sm font-medium text-[#1a1a1a]">Tagline</label>
+          <button type="button" @click="suggestAI('creator_tagline')" :disabled="aiLoading['creator_tagline']" class="text-xs font-semibold text-[#10b981] hover:text-[#059669] flex items-center gap-1 disabled:opacity-50">
+            <span v-if="aiLoading['creator_tagline']" class="h-3 w-3 animate-spin border-2 border-[#10b981] border-t-transparent rounded-full"></span>
+            <span v-else>✨</span> {{ aiLoading['creator_tagline'] ? 'Generating...' : 'Suggest with AI' }}
+          </button>
+        </div>
         <input v-model="form.tagline" type="text" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#10b981] focus:outline-none focus:ring-1 focus:ring-[#10b981]" />
       </div>
       <div>
-        <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Bio</label>
+        <div class="flex items-center justify-between mb-1">
+          <label class="block text-sm font-medium text-[#1a1a1a]">Bio</label>
+          <button type="button" @click="suggestAI('creator_bio')" :disabled="aiLoading['creator_bio']" class="text-xs font-semibold text-[#10b981] hover:text-[#059669] flex items-center gap-1 disabled:opacity-50">
+            <span v-if="aiLoading['creator_bio']" class="h-3 w-3 animate-spin border-2 border-[#10b981] border-t-transparent rounded-full"></span>
+            <span v-else>✨</span> {{ aiLoading['creator_bio'] ? 'Generating...' : 'Suggest with AI' }}
+          </button>
+        </div>
         <textarea v-model="form.bio" rows="4" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#10b981] focus:outline-none focus:ring-1 focus:ring-[#10b981]"></textarea>
       </div>
       <div>
@@ -142,6 +154,27 @@ const showPostModal = ref(false);
 const newPostFile = ref(null);
 const newPostCaption = ref('');
 const postImageInput = ref(null);
+const aiLoading = reactive({});
+
+async function suggestAI(type) {
+  aiLoading[type] = true;
+  try {
+    const context = {
+        name: profile.value?.user?.name,
+        category: form.category,
+        tagline: form.tagline
+    };
+    const res = await axios.post('/api/ai-suggest/generic', { type, context }, { withCredentials: true });
+    if (res.data.suggestion) {
+      if (type === 'creator_tagline') form.tagline = res.data.suggestion;
+      if (type === 'creator_bio') form.bio = res.data.suggestion;
+    }
+  } catch (e) {
+    alert(e.response?.data?.error || 'AI suggestion failed.');
+  } finally {
+    aiLoading[type] = false;
+  }
+}
 
 onMounted(async () => {
   const [profileRes, optionsRes, postsRes] = await Promise.all([

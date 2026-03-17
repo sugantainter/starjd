@@ -39,6 +39,19 @@ class CreatorPublicController extends Controller
         if ($request->filled('min_rate')) {
             $query->where('min_rate', '>=', (float) $request->min_rate);
         }
+        if ($request->filled('location')) {
+            $query->where('location', 'like', "%{$request->location}%");
+        }
+        if ($request->filled('price_range')) {
+            $range = $request->price_range;
+            if (str_contains($range, '+')) {
+                $min = (float) str_replace('+', '', $range);
+                $query->where('min_rate', '>=', $min);
+            } elseif (str_contains($range, '-')) {
+                [$min, $max] = explode('-', $range);
+                $query->whereBetween('min_rate', [(float) $min, (float) $max]);
+            }
+        }
         if ($request->filled('search')) {
             $term = $request->search;
             $query->where(function ($q) use ($term) {

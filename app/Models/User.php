@@ -58,6 +58,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(BrandProfile::class);
     }
 
+    public function professionalProfile(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ProfessionalProfile::class);
+    }
+
     public function packages(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Package::class, 'creator_id');
@@ -111,6 +116,21 @@ class User extends Authenticatable implements MustVerifyEmail
     public function bookings(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Booking::class);
+    }
+
+    public function serviceListings(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ServiceListing::class);
+    }
+
+    public function serviceBookingsAsBuyer(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ServiceBooking::class, 'buyer_id');
+    }
+
+    public function serviceBookingsAsSeller(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ServiceBooking::class, 'seller_id');
     }
 
     /**

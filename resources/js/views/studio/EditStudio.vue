@@ -42,7 +42,13 @@
             </div>
           </div>
           <div>
-            <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Description</label>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-sm font-medium text-[#1a1a1a]">Description</label>
+              <button type="button" @click="suggestAI('studio_description')" :disabled="aiLoading['studio_description']" class="text-xs font-semibold text-[#e63946] hover:text-[#c1121f] flex items-center gap-1 disabled:opacity-50">
+                <span v-if="aiLoading['studio_description']" class="h-3 w-3 animate-spin border-2 border-[#e63946] border-t-transparent rounded-full"></span>
+                <span v-else>✨</span> {{ aiLoading['studio_description'] ? 'Generating...' : 'Suggest with AI' }}
+              </button>
+            </div>
             <RichTextEditor
               v-model="form.description"
               placeholder="Describe your studio. Use the toolbar for bold, italic, lists, and headings."
@@ -204,6 +210,25 @@ const basicError = ref('');
 const savingBasic = ref(false);
 const locationLoading = ref(false);
 const locationError = ref('');
+const aiLoading = reactive({});
+
+async function suggestAI(type) {
+  aiLoading[type] = true;
+  try {
+    const context = {
+        name: form.name,
+        category: categories.value.find(c => c.id === form.category_id)?.name || 'Studio'
+    };
+    const res = await axios.post('/api/ai-suggest/generic', { type, context }, { withCredentials: true });
+    if (res.data.suggestion) {
+      if (type === 'studio_description') form.description = res.data.suggestion;
+    }
+  } catch (e) {
+    alert(e.response?.data?.error || 'AI suggestion failed.');
+  } finally {
+    aiLoading[type] = false;
+  }
+}
 
 const images = ref([]);
 const uploadError = ref('');

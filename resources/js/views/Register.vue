@@ -105,6 +105,15 @@
             </div>
           </div>
           <div class="flex gap-4 rounded-xl border border-[#f1f5f9] bg-[#fafafa] p-4">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f59e0b]/10 text-[#f59e0b]">
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            </div>
+            <div>
+              <h3 class="font-semibold text-[#1a1a1a]">Professional</h3>
+              <p class="mt-1 text-sm text-[#64748b]">Service providers & agencies. List your professional services (Graphic Design, Marketing, etc.), manage bookings & grow your business.</p>
+            </div>
+          </div>
+          <div class="flex gap-4 rounded-xl border border-[#f1f5f9] bg-[#fafafa] p-4">
             <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#8b5cf6]/10 text-[#8b5cf6]">
               <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
             </div>
@@ -143,6 +152,7 @@ const error = ref('');
 const roleOptions = [
   { value: 'creator', label: 'Creator' },
   { value: 'brand', label: 'Brand' },
+  { value: 'professional', label: 'Professional' },
   { value: 'studio_owner', label: 'Studio Owner' },
   { value: 'customer', label: 'Customer' },
 ];
@@ -158,8 +168,8 @@ const facebookRegisterUrl = computed(() => {
 });
 
 onMounted(() => {
-  const type = route.query.type;
-  if (['brand', 'creator', 'studio_owner', 'customer'].includes(type)) form.role = type;
+  const type = route.query.type || route.query.role;
+  if (['brand', 'creator', 'professional', 'studio_owner', 'customer'].includes(type)) form.role = type;
 });
 
 function registerEndpoint() {

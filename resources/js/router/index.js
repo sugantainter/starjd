@@ -25,6 +25,8 @@ const routes = [
   { path: '/videos', component: AppLayout, children: [ { path: '', name: 'videos', component: () => import('../views/Videos.vue') } ] },
   { path: '/services', component: AppLayout, children: [ { path: '', name: 'services', component: () => import('../views/Services.vue') } ] },
   { path: '/services/:slug', component: AppLayout, children: [ { path: '', name: 'service-page', component: () => import('../views/ServicePage.vue') } ] },
+  { path: '/marketplace', component: AppLayout, children: [ { path: '', name: 'marketplace', component: () => import('../views/Marketplace.vue') } ] },
+  { path: '/gigs/:slug', component: AppLayout, children: [ { path: '', name: 'gig-detail', component: () => import('../views/GigDetail.vue') } ] },
   { path: '/page/:slug', component: AppLayout, children: [ { path: '', name: 'dynamic-page', component: () => import('../views/DynamicPage.vue') } ] },
   { path: '/creators', component: AppLayout, children: [ { path: '', name: 'creators', component: () => import('../views/Creators.vue') } ] },
   { path: '/creators/:slug', component: AppLayout, children: [ { path: '', name: 'creator-public', component: () => import('../views/CreatorPublicProfile.vue') } ] },
@@ -112,8 +114,22 @@ const routes = [
       { path: 'studios/:id/edit', name: 'admin-studios-edit', component: () => import('../views/admin/EditStudio.vue') },
       { path: 'coupons', name: 'admin-coupons', component: () => import('../views/admin/Coupons.vue') },
       { path: 'support', name: 'admin-support', component: () => import('../views/admin/Support.vue') },
+      { path: 'ai-usage', name: 'admin-ai-usage', component: () => import('../views/admin/AIUsage.vue') },
     ],
 
+  },
+  {
+    path: '/professional',
+    component: () => import('../layouts/ProfessionalLayout.vue'),
+    children: [
+      { path: '', redirect: '/professional/dashboard' },
+      { path: 'dashboard', name: 'professional-dashboard', component: () => import('../views/professional/Dashboard.vue') },
+      { path: 'profile', name: 'professional-profile', component: () => import('../views/professional/Profile.vue') },
+      { path: 'services', name: 'professional-services', component: () => import('../views/professional/Services.vue') },
+      { path: 'orders', name: 'professional-orders', component: () => import('../views/professional/Dashboard.vue') }, // Reusing for now
+      { path: 'messages', name: 'professional-messages', component: () => import('../views/creator/Messages.vue') }, // Shared messages
+      { path: 'earnings', name: 'professional-earnings', component: () => import('../views/professional/Dashboard.vue') }, // Reusing for now
+    ],
   },
 ];
 

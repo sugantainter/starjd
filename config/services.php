@@ -53,4 +53,13 @@ return [
         'channel_handle' => env('YOUTUBE_CHANNEL_HANDLE', 'StarJDs'),
     ],
 
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'),
+    ],
+
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+    ],
+
+    'ai_daily_limit' => 15, // Max AI requests per professional per day
 ];

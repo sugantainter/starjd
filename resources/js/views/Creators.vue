@@ -64,7 +64,7 @@ const listWithSlug = computed(() => (list.value || []).filter((p) => p.slug));
 const search = ref('');
 const loading = ref(false);
 const filterOptions = reactive({ categories: [], genders: {}, languages: [], platforms: {} });
-const filters = reactive({ category: '', gender: '', language: '', platform: '', min_rate: '' });
+const filters = reactive({ category: '', gender: '', language: '', platform: '', min_rate: '', location: '', price_range: '' });
 
 function applyQueryToFilters() {
   const q = route.query;
@@ -73,6 +73,8 @@ function applyQueryToFilters() {
   if (q.gender != null) filters.gender = q.gender;
   if (q.language != null) filters.language = q.language;
   if (q.platform != null) filters.platform = q.platform;
+  if (q.location != null) filters.location = q.location;
+  if (q.price_range != null) filters.price_range = q.price_range;
   if (q.min_rate != null) filters.min_rate = q.min_rate === '' ? '' : Number(q.min_rate);
 }
 
@@ -97,6 +99,8 @@ function clearFilters() {
   filters.gender = '';
   filters.language = '';
   filters.platform = '';
+  filters.location = '';
+  filters.price_range = '';
   filters.min_rate = '';
   load(1);
 }
@@ -110,6 +114,8 @@ async function load(page = 1) {
     if (filters.gender) params.gender = filters.gender;
     if (filters.language) params.language = filters.language;
     if (filters.platform) params.platform = filters.platform;
+    if (filters.location) params.location = filters.location;
+    if (filters.price_range) params.price_range = filters.price_range;
     if (filters.min_rate !== '' && filters.min_rate != null) params.min_rate = filters.min_rate;
     const res = await axios.get('/api/creators', { params });
     const data = res.data?.data ?? res.data;

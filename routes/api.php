@@ -56,6 +56,11 @@ Route::get('creators',                  [CreatorPublicController::class, 'index'
 Route::get('creators/options/filters',  [CreatorOptionsController::class, 'filters']);
 Route::get('creators/{slug}',           [CreatorPublicController::class, 'show']);
 
+// Professional Services (Gigs) – Public
+Route::get('gigs',                      [\App\Http\Controllers\ProfessionalPublicController::class, 'index']);
+Route::get('gigs/{slug}',               [\App\Http\Controllers\ProfessionalPublicController::class, 'show']);
+Route::get('professionals/{id}',        [\App\Http\Controllers\ProfessionalPublicController::class, 'professionalProfile']);
+
 // Misc lookups
 Route::get('amenities', fn () => response()->json(
     \App\Models\Amenity::active()->orderBy('sort_order')->orderBy('name')->get(['id', 'name', 'slug', 'icon'])
@@ -156,6 +161,21 @@ Route::middleware('web')->group(function () {
             Route::post('studios/{studio}/availability', [\App\Http\Controllers\StudioOwner\StudioOwnerAvailabilityController::class, 'store']);
             Route::put('availability-slots/{availability_slot}', [\App\Http\Controllers\StudioOwner\StudioOwnerAvailabilityController::class, 'update']);
             Route::delete('availability-slots/{availability_slot}', [\App\Http\Controllers\StudioOwner\StudioOwnerAvailabilityController::class, 'destroy']);
+        });
+
+        Route::middleware(['professional'])->prefix('professional')->group(function () {
+            Route::get('dashboard', [\App\Http\Controllers\Professional\ProfessionalController::class, 'dashboard']);
+            Route::post('profile', [\App\Http\Controllers\Professional\ProfessionalController::class, 'updateProfile']);
+            Route::get('categories', [\App\Http\Controllers\Professional\ProfessionalController::class, 'categories']);
+            Route::get('listings', [\App\Http\Controllers\Professional\ProfessionalController::class, 'listings']);
+            Route::post('listings', [\App\Http\Controllers\Professional\ProfessionalController::class, 'storeListing']);
+            Route::post('upload-image', [\App\Http\Controllers\Professional\ProfessionalController::class, 'uploadImage']);
+            Route::post('ai/suggest-title', [\App\Http\Controllers\Professional\AISuggestionController::class, 'suggestTitle']);
+            Route::post('ai/suggest-description', [\App\Http\Controllers\Professional\AISuggestionController::class, 'suggestDescription']);
+            Route::post('ai/suggest-tags', [\App\Http\Controllers\Professional\AISuggestionController::class, 'suggestTags']);
+            Route::post('ai/suggest-pricing', [\App\Http\Controllers\Professional\AISuggestionController::class, 'suggestPricing']);
+            Route::post('ai/suggest-faqs', [\App\Http\Controllers\Professional\AISuggestionController::class, 'suggestFAQs']);
+            Route::get('orders', [\App\Http\Controllers\Professional\ProfessionalController::class, 'orders']);
         });
     });
 });

@@ -129,7 +129,20 @@
                 <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                 Help Desk
               </router-link>
+            </div>
+          </div>
 
+          <!-- System -->
+          <div class="mt-4">
+            <button type="button" class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[#94a3b8]" @click="navOpen.system = !navOpen.system">
+              <span>System</span>
+              <svg class="h-4 w-4 transition-transform" :class="{ 'rotate-180': navOpen.system }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+            </button>
+            <div v-show="navOpen.system" class="mt-0.5 space-y-0.5">
+              <router-link to="/admin/ai-usage" class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#e63946]/10 !text-[#e63946]">
+                <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                AI Usage Monitoring
+              </router-link>
             </div>
           </div>
         </nav>
@@ -153,7 +166,7 @@ import axios from 'axios';
 
 const router = useRouter();
 const route = useRoute();
-const navOpen = reactive({ content: true, locations: true, site: true, studios: true, inbox: true });
+const navOpen = reactive({ content: true, locations: true, site: true, studios: true, inbox: true, system: true });
 
 onMounted(async () => {
   try {
@@ -172,6 +185,7 @@ watch(() => route.path, (path) => {
   if (path.startsWith('/admin/studios')) navOpen.studios = true;
   if (path.startsWith('/admin/coupons')) navOpen.commerce = true;
   if (path.startsWith('/admin/contacts') || path.startsWith('/admin/support')) navOpen.inbox = true;
+  if (path.startsWith('/admin/ai-usage')) navOpen.system = true;
 
 }, { immediate: true });
 

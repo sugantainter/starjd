@@ -98,7 +98,13 @@
           </div>
 
           <div>
-            <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Description</label>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-sm font-medium text-[#1a1a1a]">Description</label>
+              <button type="button" @click="suggestAI('package_description')" :disabled="aiLoading['package_description']" class="text-xs font-semibold text-[#10b981] hover:text-[#059669] flex items-center gap-1 disabled:opacity-50">
+                <span v-if="aiLoading['package_description']" class="h-3 w-3 animate-spin border-2 border-[#10b981] border-t-transparent rounded-full"></span>
+                <span v-else>✨</span> {{ aiLoading['package_description'] ? 'Generating...' : 'Suggest with AI' }}
+              </button>
+            </div>
             <textarea v-model="modal.description" rows="3" placeholder="What's included in this package?" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#10b981] focus:outline-none focus:ring-1 focus:ring-[#10b981]"></textarea>
           </div>
           <div>
@@ -137,6 +143,25 @@ const modal = reactive({
   items: [],
 });
 const error = ref('');
+const aiLoading = reactive({});
+
+async function suggestAI(type) {
+  aiLoading[type] = true;
+  try {
+    const context = {
+        name: modal.name,
+        category: categories.value.find(c => c.id === modal.package_category_id)?.name || 'Creative Service'
+    };
+    const res = await axios.post('/api/ai-suggest/generic', { type, context }, { withCredentials: true });
+    if (res.data.suggestion) {
+      if (type === 'package_description') modal.description = res.data.suggestion;
+    }
+  } catch (e) {
+    alert(e.response?.data?.error || 'AI suggestion failed.');
+  } finally {
+    aiLoading[type] = false;
+  }
+}
 
 const computedItemsTotal = computed(() => {
   return modal.items.reduce((sum, it) => sum + (Number(it.quantity) || 0) * (Number(it.unit_price) || 0), 0);

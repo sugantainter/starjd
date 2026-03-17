@@ -84,7 +84,7 @@
               :aria-expanded="creatorsDropdownOpen"
               @click="creatorsDropdownOpen = !creatorsDropdownOpen"
             >
-              Creators
+              Discover Creators
               <svg class="h-4 w-4 shrink-0 transition-transform" :class="{ 'rotate-180': creatorsDropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
               </svg>
@@ -99,249 +99,130 @@
             >
               <div
                 v-show="creatorsDropdownOpen"
-                class="absolute left-1/2 top-full z-50 mt-2 w-[min(95vw,520px)] -translate-x-1/2 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-xl"
+                class="absolute left-1/2 top-full z-50 mt-2 w-[min(95vw,280px)] -translate-x-1/2 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-xl"
               >
-                <div class="flex min-h-[260px]">
-                  <!-- Left: creator categories -->
-                  <div class="flex flex-1 flex-col border-r border-[#e5e7eb] py-4">
-                    <span class="mb-2 inline-block px-4 text-xs font-semibold uppercase tracking-wide text-[#fc4402]">Discover Creators</span>
-                    <div class="flex flex-col gap-0.5 px-4">
-                      <router-link
-                        v-for="(item, idx) in creatorCategories"
-                        :key="'cat-' + idx"
-                        :to="item.slug ? { path: '/creators', query: { category: item.slug } } : '/creators'"
-                        class="block py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
-                        @click="creatorsDropdownOpen = false"
-                      >
-                        {{ item.name }}
-                      </router-link>
-                    </div>
+                <div class="flex flex-col py-2">
+                  <div class="px-4 py-2 border-b border-[#e5e7eb] mb-1">
+                    <span class="text-xs font-bold uppercase tracking-wider text-[#fc4402]">For Creators</span>
+                    <p class="text-[10px] text-[#6b7280] leading-tight">For influencers and content creators.</p>
                   </div>
-                  <!-- Right: image -->
                   <router-link
-                    to="/creators"
-                    class="flex w-[48%] min-w-[180px] shrink-0 overflow-hidden bg-[#f5f5f4] transition hover:bg-[#eee]"
+                    v-for="(item, idx) in creatorCategoriesExtended"
+                    :key="'cat-' + idx"
+                    :to="item.slug ? { path: '/creators', query: { category: item.slug } } : '/creators'"
+                    class="block px-4 py-2 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
                     @click="creatorsDropdownOpen = false"
                   >
-                    <div class="aspect-[4/5] w-full overflow-hidden bg-[#e5e7eb]">
-                      <img
-                        v-if="creatorsDropdownImage"
-                        :src="creatorsDropdownImage"
-                        alt="Creators"
-                        class="h-full w-full object-cover"
-                      />
-                      <div v-else class="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#fc4402]/15 to-[#1a1a1a]/10">
-                        <span class="text-2xl font-bold text-[#fc4402]/40">StarJD</span>
-                      </div>
-                    </div>
+                    {{ item.name }}
                   </router-link>
                 </div>
               </div>
             </Transition>
           </div>
+
+          <!-- Hire Professionals Dropdown -->
+          <div
+            ref="professionalsRef"
+            class="relative"
+            @mouseenter="professionalsDropdownOpen = true"
+            @mouseleave="professionalsDropdownOpen = false"
+          >
+            <button
+              type="button"
+              class="inline-flex items-center gap-1 text-sm font-semibold transition hover:text-[#fc4402]"
+              :class="{ 'text-[#fc4402]': professionalsDropdownOpen }"
+              aria-haspopup="true"
+              :aria-expanded="professionalsDropdownOpen"
+              @click="professionalsDropdownOpen = !professionalsDropdownOpen"
+            >
+              Hire Professionals
+              <svg class="h-4 w-4 shrink-0 transition-transform" :class="{ 'rotate-180': professionalsDropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <Transition
+              enter-active-class="transition duration-150 ease-out"
+              enter-from-class="opacity-0 translate-y-1"
+              enter-to-class="opacity-100 translate-y-0"
+              leave-active-class="transition duration-100 ease-in"
+              leave-from-class="opacity-100 translate-y-0"
+              leave-to-class="opacity-0 translate-y-1"
+            >
+              <div
+                v-show="professionalsDropdownOpen"
+                class="absolute left-1/2 top-full z-50 mt-2 w-[min(95vw,280px)] -translate-x-1/2 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-xl"
+              >
+                <div class="flex flex-col py-2">
+                  <div class="px-4 py-2 border-b border-[#e5e7eb] mb-1">
+                    <span class="text-xs font-bold uppercase tracking-wider text-[#fc4402]">Service Marketplace</span>
+                    <p class="text-[10px] text-[#6b7280] leading-tight">Find professionals for your project.</p>
+                  </div>
+                  <router-link
+                    v-for="(item, idx) in professionalCategories"
+                    :key="'prof-' + idx"
+                    :to="item.slug ? { name: 'marketplace', query: { category: item.slug } } : '/marketplace'"
+                    class="block px-4 py-2 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
+                    @click="professionalsDropdownOpen = false"
+                  >
+                    {{ item.name }}
+                  </router-link>
+                </div>
+              </div>
+            </Transition>
+          </div>
+
+          <!-- Studios Dropdown -->
+          <div
+            ref="studiosRef"
+            class="relative"
+            @mouseenter="studiosDropdownOpen = true"
+            @mouseleave="studiosDropdownOpen = false"
+          >
+            <button
+              type="button"
+              class="inline-flex items-center gap-1 text-sm font-semibold transition hover:text-[#fc4402]"
+              :class="{ 'text-[#fc4402]': studiosDropdownOpen }"
+              aria-haspopup="true"
+              :aria-expanded="studiosDropdownOpen"
+              @click="studiosDropdownOpen = !studiosDropdownOpen"
+            >
+              Studios
+              <svg class="h-4 w-4 shrink-0 transition-transform" :class="{ 'rotate-180': studiosDropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <Transition
+              enter-active-class="transition duration-150 ease-out"
+              enter-from-class="opacity-0 translate-y-1"
+              enter-to-class="opacity-100 translate-y-0"
+              leave-active-class="transition duration-100 ease-in"
+              leave-from-class="opacity-100 translate-y-0"
+              leave-to-class="opacity-0 translate-y-1"
+            >
+              <div
+                v-show="studiosDropdownOpen"
+                class="absolute left-1/2 top-full z-50 mt-2 w-[min(95vw,250px)] -translate-x-1/2 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-xl"
+              >
+                <div class="flex flex-col py-2">
+                  <router-link
+                    v-for="(item, idx) in studioCategoriesExtended"
+                    :key="'studio-' + idx"
+                    :to="item.slug ? { path: '/studios', query: { category: item.slug } } : '/studios'"
+                    class="block px-4 py-2 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
+                    @click="studiosDropdownOpen = false"
+                  >
+                    {{ item.name }}
+                  </router-link>
+                </div>
+              </div>
+            </Transition>
+          </div>
+
           <router-link to="/campaign" class="text-sm font-semibold transition hover:text-[#fc4402]">Campaigns</router-link>
-                    <div
-                        ref="servicesRef"
-                        class="relative"
-                        @mouseenter="servicesDropdownOpen = true"
-                        @mouseleave="servicesDropdownOpen = false"
-                    >
-                        <button
-                            type="button"
-                            class="inline-flex items-center gap-1 text-sm font-semibold transition hover:text-[#fc4402]"
-                            :class="{ 'text-[#fc4402]': servicesDropdownOpen }"
-                            aria-haspopup="true"
-                            :aria-expanded="servicesDropdownOpen"
-                            @click="
-                                servicesDropdownOpen = !servicesDropdownOpen
-                            "
-                        >
-                            Services
-                            <svg
-                                class="h-4 w-4 shrink-0 transition-transform"
-                                :class="{ 'rotate-180': servicesDropdownOpen }"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                aria-hidden="true"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M19 9l-7 7-7-7"
-                                />
-                            </svg>
-                        </button>
-                        <Transition
-                            enter-active-class="transition duration-150 ease-out"
-                            enter-from-class="opacity-0 translate-y-1"
-                            enter-to-class="opacity-100 translate-y-0"
-                            leave-active-class="transition duration-100 ease-in"
-                            leave-from-class="opacity-100 translate-y-0"
-                            leave-to-class="opacity-0 translate-y-1"
-                        >
-                            <div
-                                v-show="servicesDropdownOpen"
-                                class="absolute left-1/2 top-full z-50 mt-2 w-[min(95vw,600px)] -translate-x-1/2 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-xl"
-                            >
-                                <div class="flex min-h-[280px]">
-                                    <!-- Left column: All Services heading + 5 options -->
-                                    <div
-                                        class="flex flex-1 flex-col border-r border-[#e5e7eb] py-4"
-                                    >
-                                        <span
-                                            class="mb-2 inline-block px-4 text-xs font-semibold uppercase tracking-wide text-[#fc4402]"
-                                            >All Services</span
-                                        >
-                                        <div class="flex flex-col gap-0.5 px-4">
-                                            <router-link
-                                                v-for="(
-                                                    item, idx
-                                                ) in servicesColumn1"
-                                                :key="'c1-' + idx"
-                                                :to="'/services/' + item.slug"
-                                                class="block py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
-                                                @click="
-                                                    servicesDropdownOpen = false
-                                                "
-                                            >
-                                                {{ item.name }}
-                                            </router-link>
-                                        </div>
-                                    </div>
-                                    <!-- Middle column: 4 options -->
-                                    <div
-                                        class="flex flex-1 flex-col border-r border-[#e5e7eb] py-4"
-                                    >
-                                        <div class="flex flex-col gap-0.5 px-4">
-                                            <router-link
-                                                v-for="(
-                                                    item, idx
-                                                ) in servicesColumn2"
-                                                :key="'c2-' + idx"
-                                                :to="'/services/' + item.slug"
-                                                class="block py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
-                                                @click="
-                                                    servicesDropdownOpen = false
-                                                "
-                                            >
-                                                {{ item.name }}
-                                            </router-link>
-                                        </div>
-                                    </div>
-                                    <!-- Right: case study card with image -->
-                                    <router-link
-                                        to="/services"
-                                        class="services-dropdown-card flex w-[52%] min-w-[200px] shrink-0 flex-col overflow-hidden bg-[#f5f5f4] p-4 transition hover:bg-[#eee]"
-                                        @click="servicesDropdownOpen = false"
-                                    >
-                                        <span
-                                            class="mb-2 inline-block text-xs font-semibold uppercase tracking-wide text-[#fc4402]"
-                                            >Case study</span
-                                        >
-                                        <div class="flex flex-1 flex-col">
-                                            <p
-                                                class="text-lg font-bold text-[#1a1a1a]"
-                                            >
-                                                Driving brand love and sales
-                                            </p>
-                                            <p
-                                                class="mt-1.5 text-sm leading-snug text-[#64748b]"
-                                            >
-                                                Learn how we helped brands
-                                                launch creator campaigns with
-                                                millions of impressions.
-                                            </p>
-                                        </div>
-                                        <div
-                                            class="mt-3 aspect-[16/10] overflow-hidden rounded-lg bg-[#e5e7eb]"
-                                        >
-                                            <img
-                                                v-if="servicesDropdownImage"
-                                                :src="servicesDropdownImage"
-                                                alt="Case study"
-                                                class="h-full w-full object-cover"
-                                            />
-                                            <div
-                                                v-else
-                                                class="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#fc4402]/15 to-[#1a1a1a]/10"
-                                            >
-                                                <span
-                                                    class="text-3xl font-bold text-[#fc4402]/40"
-                                                    >StarJD</span
-                                                >
-                                            </div>
-                                        </div>
-                                    </router-link>
-                                </div>
-                            </div>
-                        </Transition>
-                    </div>
-                    <div
-                        ref="ourWorkRef"
-                        class="relative"
-                        @mouseenter="ourWorkDropdownOpen = true"
-                        @mouseleave="ourWorkDropdownOpen = false"
-                    >
-                        <button
-                            type="button"
-                            class="inline-flex items-center gap-1 text-sm font-semibold transition hover:text-[#fc4402]"
-                            :class="{ 'text-[#fc4402]': ourWorkDropdownOpen }"
-                            aria-haspopup="true"
-                            :aria-expanded="ourWorkDropdownOpen"
-                            @click="ourWorkDropdownOpen = !ourWorkDropdownOpen"
-                        >
-                            Our Work
-                            <svg
-                                class="h-4 w-4 shrink-0 transition-transform"
-                                :class="{ 'rotate-180': ourWorkDropdownOpen }"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                aria-hidden="true"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M19 9l-7 7-7-7"
-                                />
-                            </svg>
-                        </button>
-                        <Transition
-                            enter-active-class="transition duration-150 ease-out"
-                            enter-from-class="opacity-0 translate-y-1"
-                            enter-to-class="opacity-100 translate-y-0"
-                            leave-active-class="transition duration-100 ease-in"
-                            leave-from-class="opacity-100 translate-y-0"
-                            leave-to-class="opacity-0 translate-y-1"
-                        >
-                            <div
-                                v-show="ourWorkDropdownOpen"
-                                class="absolute left-1/2 top-full z-50 mt-2 w-48 -translate-x-1/2 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white py-2 shadow-xl"
-                            >
-                                <router-link
-                                    to="/blog"
-                                    class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
-                                    @click="ourWorkDropdownOpen = false"
-                                    >Blog</router-link
-                                >
-                                <router-link
-                                    to="/guide"
-                                    class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
-                                    @click="ourWorkDropdownOpen = false"
-                                    >Guide</router-link
-                                >
-                                <router-link
-                                    to="/videos"
-                                    class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
-                                    @click="ourWorkDropdownOpen = false"
-                                    >Projects</router-link
-                                >
-                            </div>
-                        </Transition>
-                    </div>
+          <router-link to="/how-it-works" class="text-sm font-semibold transition hover:text-[#fc4402]">How It Works</router-link>
+          <router-link to="/pricing" class="text-sm font-semibold transition hover:text-[#fc4402]">Pricing</router-link>
+          <router-link to="/brand-landing" class="text-sm font-semibold transition hover:text-[#fc4402]">For Brands</router-link>
+          <router-link to="/creator-landing" class="text-sm font-semibold transition hover:text-[#fc4402]">For Creators</router-link>
                     <router-link
                         to="/about"
                         class="text-sm font-semibold transition hover:text-[#fc4402]"
@@ -462,6 +343,16 @@
                                             >Agency Dashboard</router-link
                                         >
                                     </template>
+                                    <template
+                                        v-else-if="user.role === 'professional'"
+                                    >
+                                        <router-link
+                                            to="/professional/dashboard"
+                                            class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#f59e0b]/5 hover:text-[#f59e0b]"
+                                            @click="userMenuOpen = false"
+                                            >Professional Dashboard</router-link
+                                        >
+                                    </template>
                                     <div class="border-t border-[#e2e8f0] pt-1">
                                         <button
                                             type="button"
@@ -475,13 +366,16 @@
                             </Transition>
                         </div>
                     </template>
-                    <template v-else>
-                        <router-link
-                            to="/login"
-                            class="rounded-lg bg-[#fc4402] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#e63d02]"
-                            >Login</router-link
-                        >
-                    </template>
+                    <router-link
+                        to="/login"
+                        class="text-sm font-semibold transition hover:text-[#fc4402]"
+                        >Login</router-link
+                    >
+                    <router-link
+                        to="/register"
+                        class="rounded-lg bg-[#fc4402] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#e63d02]"
+                        >Join Free</router-link
+                    >
                 </div>
             </div>
         </nav>
@@ -518,60 +412,76 @@
                             @click="navMobileOpen = false"
                             >Contact</router-link
                         >
+                        <router-link
+                            to="/campaign"
+                            class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
+                            @click="navMobileOpen = false"
+                            >Campaigns</router-link
+                        >
+                        <router-link
+                            to="/how-it-works"
+                            class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
+                            @click="navMobileOpen = false"
+                            >How It Works</router-link
+                        >
+                        <router-link
+                            to="/pricing"
+                            class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
+                            @click="navMobileOpen = false"
+                            >Pricing</router-link
+                        >
+                        <router-link
+                            to="/brand-landing"
+                            class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
+                            @click="navMobileOpen = false"
+                            >For Brands</router-link
+                        >
+                        <router-link
+                            to="/creator-landing"
+                            class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
+                            @click="navMobileOpen = false"
+                            >For Creators</router-link
+                        >
                         <div class="py-1">
                             <p
                                 class="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-[#64748b]"
                             >
-                                Our Work
+                                Discover Creators
                             </p>
                             <router-link
-                                to="/blog"
+                                v-for="(item, idx) in creatorCategoriesExtended"
+                                :key="'mob-cre-' + idx"
+                                :to="item.slug ? { path: '/creators', query: { category: item.slug } } : '/creators'"
                                 class="block rounded-lg px-4 py-2.5 pl-6 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
                                 @click="navMobileOpen = false"
-                                >Blog</router-link
-                            >
-                            <router-link
-                                to="/guide"
-                                class="block rounded-lg px-4 py-2.5 pl-6 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
-                                @click="navMobileOpen = false"
-                                >Guide</router-link
-                            >
-                            <router-link
-                                to="/products"
-                                class="block rounded-lg px-4 py-2.5 pl-6 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
-                                @click="navMobileOpen = false"
-                                >Products</router-link
+                                >{{ item.name }}</router-link
                             >
                         </div>
-                        <router-link
-                            to="/services"
-                            class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
-                            @click="navMobileOpen = false"
-                            >Services</router-link
-                        >
-                        <router-link
-                            to="/videos"
-                            class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
-                            @click="navMobileOpen = false"
-                            >Videos</router-link
-                        >
                         <div class="py-1">
                             <p
                                 class="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-[#64748b]"
                             >
-                                Creators
+                                Hire Professionals
                             </p>
                             <router-link
-                                v-for="(item, idx) in creatorCategories"
-                                :key="'mob-cat-' + idx"
-                                :to="
-                                    item.slug
-                                        ? {
-                                              path: '/creators',
-                                              query: { category: item.slug },
-                                          }
-                                        : '/creators'
-                                "
+                                v-for="(item, idx) in professionalCategories"
+                                :key="'mob-prof-' + idx"
+                                :to="item.slug ? { path: '/services/' + item.slug } : '/services'"
+                                class="block rounded-lg px-4 py-2.5 pl-6 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
+                                @click="navMobileOpen = false"
+                                >{{ item.name }}</router-link
+                            >
+                        </div>
+                        <div class="py-1">
+                            <p
+                                class="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-[#64748b]"
+                            >
+                                Studios
+                            </p>
+                            <router-link
+                                v-for="(item, idx) in studioCategoriesExtended"
+                                :key="'mob-stu-' + idx"
+                                :to="item.slug ? { path: '/studios', query: { category: item.slug } } : '/studios'"
                                 class="block rounded-lg px-4 py-2.5 pl-6 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
                                 @click="navMobileOpen = false"
                                 >{{ item.name }}</router-link
@@ -661,16 +571,10 @@
                                     >Login</router-link
                                 >
                                 <router-link
-                                    to="/creator-landing"
-                                    class="rounded-lg border border-[#10b981] px-4 py-3 text-center text-sm font-medium text-[#10b981] transition hover:bg-[#10b981]/5"
-                                    @click="navMobileOpen = false"
-                                    >Join as Creator</router-link
-                                >
-                                <router-link
-                                    to="/brand-landing"
+                                    to="/register"
                                     class="rounded-lg bg-[#fc4402] px-4 py-3 text-center text-sm font-medium text-white transition hover:bg-[#e63d02]"
                                     @click="navMobileOpen = false"
-                                    >Join as Brand</router-link
+                                    >Join Free</router-link
                                 >
                             </div>
                         </template>
@@ -687,12 +591,39 @@ import { useRoute } from "vue-router";
 import axios from "axios";
 
 const route = useRoute();
+const creatorsDropdownOpen = ref(false);
+const creatorsRef = ref(null);
+const professionalsDropdownOpen = ref(false);
+const professionalsRef = ref(null);
+const studiosDropdownOpen = ref(false);
+const studiosRef = ref(null);
+const servicesDropdownOpen = ref(false);
+const servicesRef = ref(null);
+const ourWorkDropdownOpen = ref(false);
+const ourWorkRef = ref(null);
+const creatorsDropdownImage = ref(
+    "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=500&fit=crop",
+);
+const userMenuOpen = ref(false);
+const userMenuRef = ref(null);
+const navMobileOpen = ref(false);
+const headerRef = ref(null);
+const user = ref(null);
+
+// On login/register pages always show logged-out UI so logout redirect looks correct
+const displayUser = computed(() => {
+    if (route.path === "/login" || route.path === "/register") return null;
+    return user.value;
+});
+
 watch(
     () => route.path,
     () => {
         servicesDropdownOpen.value = false;
         ourWorkDropdownOpen.value = false;
         creatorsDropdownOpen.value = false;
+        professionalsDropdownOpen.value = false;
+        studiosDropdownOpen.value = false;
         navMobileOpen.value = false;
     },
 );
@@ -729,25 +660,32 @@ const servicesColumn2 = computed(() => {
     return fallbackServicesColumn2;
 });
 
-const user = ref(null);
-// On login/register pages always show logged-out UI so logout redirect looks correct
-const displayUser = computed(() => {
-    if (route.path === "/login" || route.path === "/register") return null;
-    return user.value;
-});
-const userMenuOpen = ref(false);
-const userMenuRef = ref(null);
-const navMobileOpen = ref(false);
-const headerRef = ref(null);
-const servicesDropdownOpen = ref(false);
-const servicesRef = ref(null);
-const ourWorkDropdownOpen = ref(false);
-const ourWorkRef = ref(null);
-const creatorsDropdownOpen = ref(false);
-const creatorsRef = ref(null);
-const creatorsDropdownImage = ref(
-    "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=500&fit=crop",
-);
+const creatorCategoriesExtended = [
+    { name: "Influencers", slug: "influencers" },
+    { name: "UGC Creators", slug: "ugc-creators" },
+    { name: "Podcast Hosts", slug: "podcast-hosts" },
+    { name: "Voiceover Artists", slug: "voiceover-artists" },
+    { name: "Short-Form Creators", slug: "short-form-creators" },
+    { name: "YouTube Creators", slug: "youtube-creators" },
+    { name: "Regional Creators", slug: "regional-creators" },
+];
+const professionalCategories = [
+    { name: "Graphic & Video Editors", slug: "graphic-video-editors" },
+    { name: "Photographers & Videographers", slug: "photographers-videographers" },
+    { name: "Social Media Managers", slug: "social-media-managers" },
+    { name: "Script/ Content writers", slug: "content-writers" },
+    { name: "Marketing/ Advertising Agencies", slug: "marketing-agencies" },
+    { name: "Anchors", slug: "anchors" },
+    { name: "Makeup Artists", slug: "makeup-artists" },
+    { name: "Wedding Planners", slug: "wedding-planners" },
+];
+const studioCategoriesExtended = [
+    { name: "Podcast Recording Studios", slug: "podcast-studios" },
+    { name: "Product Photography Studios", slug: "photography-studios" },
+    { name: "Video Production Studios", slug: "video-studios" },
+    { name: "Green Screen Studios", slug: "green-screen-studios" },
+    { name: "Content Creation Studios", slug: "content-studios" },
+];
 const creatorCategories = [
     { name: "Top Creators", slug: "" },
     { name: "Beauty Influencers", slug: "beauty-influencers" },
@@ -792,6 +730,10 @@ function onClickOutside(e) {
         servicesDropdownOpen.value = false;
     if (ourWorkRef.value && !ourWorkRef.value.contains(e.target))
         ourWorkDropdownOpen.value = false;
+    if (professionalsRef.value && !professionalsRef.value.contains(e.target))
+        professionalsDropdownOpen.value = false;
+    if (studiosRef.value && !studiosRef.value.contains(e.target))
+        studiosDropdownOpen.value = false;
     if (creatorsRef.value && !creatorsRef.value.contains(e.target))
         creatorsDropdownOpen.value = false;
     if (

@@ -728,18 +728,48 @@
                             </option>
                         </select>
                     </div>
+                    <div class="min-w-0 sm:w-auto sm:min-w-[130px]">
+                        <label
+                            for="hero-filter-location"
+                            class="mb-1 block text-xs font-medium text-[#6b7280]"
+                            >Location</label
+                        >
+                        <input
+                            id="hero-filter-location"
+                            v-model="heroSearchLocation"
+                            type="text"
+                            placeholder="City, State"
+                            class="w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2.5 text-sm text-[#1a1a1a] placeholder-[#9ca3af] transition hover:border-[#d1d5db] focus:border-[#e63946] focus:outline-none focus:ring-2 focus:ring-[#e63946]/20"
+                        />
+                    </div>
                     <div class="min-w-0 sm:w-auto sm:min-w-[110px]">
                         <label
                             for="hero-filter-minrate"
                             class="mb-1 block text-xs font-medium text-[#6b7280]"
-                            >Min price (₹)</label
+                            >Min Budget (₹)</label
                         >
                         <input
                             id="hero-filter-minrate"
                             v-model.number="heroSearchMinRate"
                             type="number"
                             min="0"
-                            step="100"
+                            step="1000"
+                            placeholder="Any"
+                            class="w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2.5 text-sm text-[#1a1a1a] placeholder-[#9ca3af] transition hover:border-[#d1d5db] focus:border-[#e63946] focus:outline-none focus:ring-2 focus:ring-[#e63946]/20"
+                        />
+                    </div>
+                    <div class="min-w-0 sm:w-auto sm:min-w-[110px]">
+                        <label
+                            for="hero-filter-maxrate"
+                            class="mb-1 block text-xs font-medium text-[#6b7280]"
+                            >Max Budget (₹)</label
+                        >
+                        <input
+                            id="hero-filter-maxrate"
+                            v-model.number="heroSearchMaxRate"
+                            type="number"
+                            min="0"
+                            step="1000"
                             placeholder="Any"
                             class="w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2.5 text-sm text-[#1a1a1a] placeholder-[#9ca3af] transition hover:border-[#d1d5db] focus:border-[#e63946] focus:outline-none focus:ring-2 focus:ring-[#e63946]/20"
                         />
@@ -815,85 +845,67 @@
             </div>
         </section>
 
-        <!-- Choose your path -->
+        <!-- Hire Professionals Grid -->
         <section
-            id="join-creator"
-            class="animate-on-scroll border-y border-[#e5e7eb] bg-white px-4 py-10 md:py-16"
+            id="hire-professionals"
+            class="animate-on-scroll border-y border-[#e5e7eb] bg-[#fafafa] px-4 py-16 md:py-24"
         >
-            <div class="mx-auto max-w-6xl">
-                <h2 class="section-title mb-2 text-2xl font-bold md:text-3xl">
-                    Choose Your Path
-                </h2>
-                <p class="section-subtitle mb-12 text-[#6b7280]">
-                    Whether you create content or need it — we've got you.
-                </p>
-                <div class="grid gap-8 md:grid-cols-2">
+            <div class="mx-auto max-w-7xl">
+                <div class="mb-12 text-center">
+                    <h2 class="section-title mb-4 text-3xl font-extrabold tracking-tight text-[#1a1a1a] md:text-5xl">
+                        Hire Top Professionals
+                    </h2>
+                    <p class="mx-auto max-w-2xl text-lg text-[#6b7280]">
+                        Unlock elite talent for your next project. From cinematic editing to strategic marketing, we connect you with the best in the industry.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     <router-link
-                        to="/creator-landing"
-                        class="cursor-link path-card group relative overflow-hidden rounded-3xl border-2 border-[#e5e7eb] bg-[#fafaf9] transition hover:border-[#10b981] hover:shadow-2xl block"
+                        v-for="service in professionalServices"
+                        :key="service.slug"
+                        :to="{ name: 'marketplace', query: { category: service.slug } }"
+                        class="group relative flex h-[320px] flex-col overflow-hidden rounded-3xl bg-white shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl"
                     >
-                        <div class="relative aspect-[4/3] overflow-hidden">
+                        <!-- Image Container -->
+                        <div class="relative h-full w-full overflow-hidden">
                             <img
-                                src="https://picsum.photos/seed/creator/800/600"
-                                alt="Join as Creator"
-                                class="h-full w-full object-cover transition duration-700 group-hover:scale-110"
+                                :src="service.image"
+                                :alt="service.name"
+                                class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                             />
-                            <div
-                                class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
-                            />
-                            <div
-                                class="absolute bottom-0 left-0 right-0 p-6 text-white"
-                            >
-                                <h3 class="text-2xl font-bold">
-                                    I'm a Creator
+                            <!-- Dark Overlay -->
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent transition-opacity duration-300 group-hover:opacity-80" />
+
+                            <!-- Text Content -->
+                            <div class="absolute bottom-0 left-0 right-0 p-6 text-white transform transition-transform duration-500 group-hover:translate-y-[-8px]">
+                                <h3 class="text-xl font-bold md:text-2xl">
+                                    {{ service.name }}
                                 </h3>
-                                <p class="mt-1 text-white/90">
-                                    Get discovered by brands. Set your rates.
-                                    Get paid securely.
+                                <p class="mt-2 text-sm text-white/80 line-clamp-2 opacity-0 transition-all duration-500 group-hover:opacity-100">
+                                    {{ service.description }}
                                 </p>
+                                <div class="mt-4 flex items-center gap-2 text-sm font-semibold text-[#fc4402] opacity-0 transition-all duration-500 group-hover:opacity-100">
+                                    Find Professionals
+                                    <svg class="h-4 w-4 transform transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                    </svg>
+                                </div>
                             </div>
                         </div>
-                        <div class="p-6">
-                            <span
-                                class="inline-flex items-center gap-2 font-semibold text-[#10b981]"
-                                >Join as Creator →</span
-                            >
-                        </div>
                     </router-link>
-                    <router-link
-                        to="/brand-landing"
-                        class="cursor-link path-card group relative overflow-hidden rounded-3xl border-2 border-[#e5e7eb] bg-[#fafaf9] transition hover:border-[#e63946] hover:shadow-2xl block"
-                    >
-                        <div class="relative aspect-[4/3] overflow-hidden">
-                            <img
-                                src="https://picsum.photos/seed/brand/800/600"
-                                alt="Join as Brand"
-                                class="h-full w-full object-cover transition duration-700 group-hover:scale-110"
-                            />
-                            <div
-                                class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
-                            />
-                            <div
-                                class="absolute bottom-0 left-0 right-0 p-6 text-white"
-                            >
-                                <h3 class="text-2xl font-bold">
-                                    AI‑ready creator campaigns.
-                                    <span class="block text-white/90">Without compromise.</span>
-                                </h3>
-                                <p class="mt-1 text-white/90 text-sm">
-                                    12M+ creators. Brief, discover, approve and measure
-                                    high‑impact influencer campaigns from one modern
-                                    workspace — built for speed and scale.
-                                </p>
-                            </div>
-                        </div>
-                        <div class="p-6">
-                            <span
-                                class="inline-flex items-center gap-2 font-semibold text-[#e63946]"
-                                >Get Started →</span
-                            >
-                        </div>
-                    </router-link>
+                </div>
+
+                <!-- Call to Action for Dynamic Features -->
+                <div class="mt-16 rounded-3xl bg-white p-8 border border-[#e5e7eb] shadow-sm md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
+                    <div class="max-w-xl text-center md:text-left">
+                        <h3 class="text-2xl font-bold text-[#1a1a1a]">List Your Skills or Organization</h3>
+                        <p class="mt-2 text-[#6b7280]">Are you a professional seeking work or an agency looking for clients? Join our marketplace and get discovered by thousands of brands.</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                        <router-link to="/register?role=professional" class="flex h-12 items-center justify-center rounded-full bg-[#1a1a1a] px-8 text-sm font-bold text-white transition hover:bg-[#374151]">Join as Individual</router-link>
+                        <router-link to="/register?role=agency" class="flex h-12 items-center justify-center rounded-full border-2 border-[#1a1a1a] px-8 text-sm font-bold text-[#1a1a1a] transition hover:bg-[#1a1a1a] hover:text-white">Register Agency</router-link>
+                    </div>
                 </div>
             </div>
         </section>
@@ -2134,7 +2146,9 @@ const heroSearchPlatform = ref("");
 const heroSearchCategory = ref("");
 const heroSearchGender = ref("");
 const heroSearchLanguage = ref("");
+const heroSearchLocation = ref("");
 const heroSearchMinRate = ref("");
+const heroSearchMaxRate = ref("");
 const heroFilterOptions = ref({
     categories: [],
     genders: {},
@@ -2173,8 +2187,15 @@ function submitHeroSearch() {
     if (heroSearchCategory.value) q.category = heroSearchCategory.value;
     if (heroSearchGender.value) q.gender = heroSearchGender.value;
     if (heroSearchLanguage.value) q.language = heroSearchLanguage.value;
-    if (heroSearchMinRate.value !== "" && heroSearchMinRate.value != null)
-        q.min_rate = heroSearchMinRate.value;
+    if (heroSearchLocation.value?.trim()) q.location = heroSearchLocation.value.trim();
+    
+    // Construct budget range string for Creators.vue compatibility
+    const min = heroSearchMinRate.value;
+    const max = heroSearchMaxRate.value;
+    if ((min !== "" && min != null) || (max !== "" && max != null)) {
+        q.price_range = `${min || 0}-${max || 100000}`;
+    }
+    
     router.push({ path: "/creators", query: q });
 }
 function clearHeroSearch() {
@@ -2183,7 +2204,9 @@ function clearHeroSearch() {
     heroSearchCategory.value = "";
     heroSearchGender.value = "";
     heroSearchLanguage.value = "";
+    heroSearchLocation.value = "";
     heroSearchMinRate.value = "";
+    heroSearchMaxRate.value = "";
     router.push({ path: "/creators" });
 }
 
@@ -2298,6 +2321,17 @@ const categories = ref([
         image: "https://picsum.photos/seed/travel/400/500",
     },
 ]);
+
+const professionalServices = [
+    { name: "Graphic & Video Editors", slug: "graphic-video-editors", image: "/images/services/graphic_video_editors.png", description: "Expert editors for cinematic results." },
+    { name: "Photographers & Videographers", slug: "photographers-videographers", image: "/images/services/photographers_videographers.png", description: "Capturing moments with precision." },
+    { name: "Social Media Managers", slug: "social-media-managers", image: "/images/services/social_media_managers.png", description: "Grow your online presence." },
+    { name: "Script/ Content writers", slug: "content-writers", image: "/images/services/content_writers.png", description: "Compelling stories and copy." },
+    { name: "Marketing/ Advertising Agencies", slug: "marketing-agencies", image: "/images/services/marketing_agencies.png", description: "Strategic growth for brands." },
+    { name: "Anchors", slug: "anchors", image: "/images/services/anchors.png", description: "Professional hosts for your event." },
+    { name: "Makeup Artists", slug: "makeup-artists", image: "/images/services/makeup_artists.png", description: "Stunning looks for every occasion." },
+    { name: "Wedding Planners", slug: "wedding-planners", image: "/images/services/wedding_planners.png", description: "Dream weddings managed perfectly." },
+];
 
 const categoryCarouselIndex = ref(0);
 function categoryCarouselNext() {

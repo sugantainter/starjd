@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\HeroController as AdminHeroController;
 use App\Http\Controllers\Admin\PartnerController as AdminPartnerController;
 use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
 use App\Http\Controllers\Admin\SupportAdminController;
+use App\Http\Controllers\Admin\AIUsageController as AdminAIUsageController;
 
 use App\Http\Controllers\Api\AppConfigController;
 use App\Http\Controllers\Api\PageController as ApiPageController;
@@ -60,6 +61,7 @@ use App\Http\Controllers\StudioOwner\StudioOwnerStudioController;
 use App\Http\Controllers\StudioOwner\StudioOwnerStudioImageController;
 use App\Http\Controllers\StudioOwner\StudioOwnerAvailabilityController;
 use App\Http\Controllers\SocialAuthController;
+use App\Http\Controllers\Professional\AISuggestionController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
@@ -131,6 +133,9 @@ Route::prefix('api')->group(function () {
 
     Route::middleware(['auth:web'])->group(function () {
         Route::get('me', [AuthController::class, 'me']);
+        Route::post('/ai-suggest/faqs', [AISuggestionController::class, 'generateFAQs']);
+        Route::post('/ai-suggest/pricing', [AISuggestionController::class, 'generatePricing']);
+        Route::post('/ai-suggest/generic', [AISuggestionController::class, 'suggest']);
         Route::get('email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
             ->middleware('signed')
             ->name('verification.verify');
@@ -247,6 +252,10 @@ Route::prefix('api')->group(function () {
         Route::post('support/tickets/{ticket}/reply', [SupportAdminController::class, 'reply']);
         Route::patch('support/tickets/{ticket}/status', [SupportAdminController::class, 'updateStatus']);
 
+        // AI Usage
+        Route::get('ai/usage', [AdminAIUsageController::class, 'index']);
+        Route::get('ai/usage/users', [AdminAIUsageController::class, 'userStats']);
+        Route::get('ai/usage/logs', [AdminAIUsageController::class, 'recentLogs']);
     });
 });
 

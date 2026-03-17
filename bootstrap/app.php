@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'brand' => \App\Http\Middleware\EnsureUserIsBrand::class,
             'agency' => \App\Http\Middleware\EnsureUserIsAgency::class,
             'studio_owner' => \App\Http\Middleware\EnsureUserIsStudioOwner::class,
+            'professional' => \App\Http\Middleware\EnsureUserIsProfessional::class,
             'paid' => \App\Http\Middleware\EnsureCreatorOrBrandHasPaid::class,
         ]);
         // PayU redirects here via POST without a CSRF token; we verify with PayU hash instead

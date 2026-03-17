@@ -78,7 +78,13 @@
                 </select>
               </div>
               <div>
-                <label class="mb-1.5 block text-sm font-medium text-[#475569]">Campaign description <span class="text-[#94a3b8]">(optional)</span></label>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="block text-sm font-medium text-[#475569]">Campaign description <span class="text-[#94a3b8]">(optional)</span></label>
+                  <button type="button" @click="suggestAI('campaign_description')" :disabled="aiLoading['campaign_description']" class="text-xs font-semibold text-[#e63946] hover:text-[#c1121f] flex items-center gap-1 disabled:opacity-50">
+                    <span v-if="aiLoading['campaign_description']" class="h-3 w-3 animate-spin border-2 border-[#e63946] border-t-transparent rounded-full"></span>
+                    <span v-else>✨</span> {{ aiLoading['campaign_description'] ? 'Generating...' : 'Suggest with AI' }}
+                  </button>
+                </div>
                 <textarea
                   v-model="form.description"
                   rows="3"
@@ -244,6 +250,30 @@ const step = ref(0);
 const showAdvanced = ref(false);
 const saving = ref(false);
 const createdCampaign = ref(null);
+const aiLoading = reactive({});
+const brandProfile = ref(null);
+
+async function suggestAI(type) {
+  aiLoading[type] = true;
+  try {
+    if (!brandProfile.value) {
+        const resProfile = await axios.get('/api/brand/profile', { withCredentials: true });
+        brandProfile.value = resProfile.data.profile ?? resProfile.data;
+    }
+    const context = {
+        company_name: brandProfile.value?.company_name,
+        campaign_type: form.campaign_type
+    };
+    const res = await axios.post('/api/ai-suggest/generic', { type, context }, { withCredentials: true });
+    if (res.data.suggestion) {
+      if (type === 'campaign_description') form.description = res.data.suggestion;
+    }
+  } catch (e) {
+    alert(e.response?.data?.error || 'AI suggestion failed.');
+  } finally {
+    aiLoading[type] = false;
+  }
+}
 
 const campaignTypes = [
   { value: 'instagram', label: 'Instagram', icon: '📷' },

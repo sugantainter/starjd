@@ -36,7 +36,13 @@
         <input v-model="form.website" type="url" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" />
       </div>
       <div>
-        <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Bio</label>
+        <div class="flex items-center justify-between mb-1">
+          <label class="block text-sm font-medium text-[#1a1a1a]">Bio</label>
+          <button type="button" @click="suggestAI('brand_bio')" :disabled="aiLoading['brand_bio']" class="text-xs font-semibold text-[#e63946] hover:text-[#c1121f] flex items-center gap-1 disabled:opacity-50">
+            <span v-if="aiLoading['brand_bio']" class="h-3 w-3 animate-spin border-2 border-[#e63946] border-t-transparent rounded-full"></span>
+            <span v-else>✨</span> {{ aiLoading['brand_bio'] ? 'Generating...' : 'Suggest with AI' }}
+          </button>
+        </div>
         <textarea v-model="form.bio" rows="4" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]"></textarea>
       </div>
       <button type="submit" :disabled="loading" class="cursor-link rounded-xl bg-[#e63946] px-6 py-3 font-semibold text-white hover:bg-[#c1121f] disabled:opacity-50">Save</button>
@@ -56,6 +62,24 @@ const logoInput = ref(null);
 const loading = ref(false);
 const error = ref('');
 const success = ref('');
+const aiLoading = reactive({});
+
+async function suggestAI(type) {
+  aiLoading[type] = true;
+  try {
+    const context = {
+        company_name: form.company_name
+    };
+    const res = await axios.post('/api/ai-suggest/generic', { type, context }, { withCredentials: true });
+    if (res.data.suggestion) {
+      if (type === 'brand_bio') form.bio = res.data.suggestion;
+    }
+  } catch (e) {
+    alert(e.response?.data?.error || 'AI suggestion failed.');
+  } finally {
+    aiLoading[type] = false;
+  }
+}
 
 onMounted(async () => {
   const res = await axios.get('/api/brand/profile', { withCredentials: true });
