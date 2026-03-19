@@ -4,29 +4,6 @@
       <h1 class="text-2xl font-bold text-[#1a1a1a] text-center">Welcome back</h1>
       <p class="mt-2 text-center text-[#6b7280]">Sign in to your StarJD account.</p>
 
-      <!-- Role hint (optional – for correct dashboard redirect) -->
-      <div class="mt-6">
-        <p class="mb-3 text-sm font-medium text-[#1a1a1a]">I'm signing in as</p>
-        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <label
-            v-for="opt in roleOptions"
-            :key="opt.value"
-            class="flex cursor-pointer items-center gap-3 rounded-xl border-2 p-4 transition"
-            :class="form.role === opt.value ? 'border-[#e63946] bg-[#e63946]/5' : 'border-[#e5e7eb] bg-white hover:border-[#e63946]/50'"
-          >
-            <input
-              v-model="form.role"
-              type="radio"
-              :value="opt.value"
-              name="login-role"
-              class="h-4 w-4 border-[#e2e8f0] text-[#e63946] focus:ring-[#e63946]"
-            />
-            <span class="font-medium text-[#1a1a1a]">{{ opt.label }}</span>
-          </label>
-        </div>
-        <p class="mt-2 text-xs text-[#64748b]">Select your account type so we can take you to the right dashboard.</p>
-      </div>
-
       <!-- Social login first -->
       <div class="mt-6 rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm">
         <p class="mb-4 text-center text-sm font-medium text-[#64748b]">Continue with</p>
@@ -111,7 +88,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 
@@ -120,18 +97,10 @@ const router = useRouter();
 const form = reactive({
   email: '',
   password: '',
-  role: '',
   remember: false,
 });
 const loading = ref(false);
 const error = ref('');
-
-const roleOptions = [
-  { value: 'creator', label: 'Creator' },
-  { value: 'brand', label: 'Brand' },
-  { value: 'studio_owner', label: 'Studio Owner' },
-  { value: 'customer', label: 'Customer' },
-];
 
 /** Dashboard path by primary role (must match backend AuthController::redirectForUser). */
 function dashboardPathForRole(roleSlug) {
@@ -145,23 +114,14 @@ function dashboardPathForRole(roleSlug) {
   return map[roleSlug] ?? '/';
 }
 
-const googleLoginUrl = computed(() => {
-  const base = `${window.location.origin}/auth/google/redirect`;
-  return form.role ? `${base}?role=${encodeURIComponent(form.role)}` : base;
-});
-
-const facebookLoginUrl = computed(() => {
-  const base = `${window.location.origin}/auth/facebook/redirect`;
-  return form.role ? `${base}?role=${encodeURIComponent(form.role)}` : base;
-});
+const googleLoginUrl = `${window.location.origin}/auth/google/redirect`;
+const facebookLoginUrl = `${window.location.origin}/auth/facebook/redirect`;
 
 onMounted(async () => {
   const e = route.query.error;
   if (e === 'google') error.value = 'Google sign-in was cancelled or failed. Try again or use email.';
   else if (e === 'facebook') error.value = 'Facebook sign-in was cancelled or failed. Try again or use email.';
   else if (e === 'no_email') error.value = 'No email was provided. Try another method.';
-  const type = route.query.type;
-  if (['brand', 'creator', 'studio_owner', 'customer'].includes(type)) form.role = type;
   // If already logged in, redirect: to ?redirect= if present, otherwise to role-based dashboard
   const redirectPath = Array.isArray(route.query.redirect) ? route.query.redirect[0] : route.query.redirect;
   const tryRedirect = async () => {
@@ -193,7 +153,6 @@ async function submit() {
       password: form.password,
       remember: form.remember,
     };
-    if (form.role) payload.role = form.role;
     const res = await axios.post('/api/login', payload, {
       headers: token ? { 'X-CSRF-TOKEN': token } : {},
       withCredentials: true,
