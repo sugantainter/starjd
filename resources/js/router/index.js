@@ -9,6 +9,7 @@ import StudioLayout from '../layouts/StudioLayout.vue';
 const routes = [
   { path: '/', component: AppLayout, children: [ { path: '', name: 'home', component: () => import('../App.vue'), props: { noHeaderFooter: true } } ] },
   { path: '/about', component: AppLayout, children: [ { path: '', name: 'about', component: () => import('../views/About.vue') } ] },
+  { path: '/how-it-works', component: AppLayout, children: [ { path: '', name: 'how-it-works', component: () => import('../views/HowItWorks.vue') } ] },
   { path: '/contact', component: AppLayout, children: [ { path: '', name: 'contact', component: () => import('../views/Contact.vue') } ] },
   { path: '/privacy', alias: '/privacy-policy', component: AppLayout, children: [ { path: '', name: 'privacy', component: () => import('../views/DynamicPage.vue'), meta: { pageSlug: 'privacy' } } ] },
   { path: '/terms', alias: '/terms-and-conditions', component: AppLayout, children: [ { path: '', name: 'terms', component: () => import('../views/DynamicPage.vue'), meta: { pageSlug: 'terms' } } ] },

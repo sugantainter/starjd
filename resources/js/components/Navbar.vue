@@ -68,8 +68,14 @@
                 </button>
         <!-- Desktop nav -->
         <div class="hidden items-center gap-4 md:flex">
-          <router-link to="/" class="text-sm font-semibold transition hover:text-[#fc4402]">Home</router-link>
-          <router-link to="/brand-landing" class="text-sm font-semibold transition hover:text-[#fc4402]">Brands</router-link>
+          <router-link
+            v-for="link in desktopTopLinks"
+            :key="link.to"
+            :to="link.to"
+            class="text-sm font-semibold transition hover:text-[#fc4402]"
+          >
+            {{ link.label }}
+          </router-link>
           <div
             ref="creatorsRef"
             class="relative"
@@ -109,7 +115,7 @@
                   <router-link
                     v-for="(item, idx) in creatorCategoriesExtended"
                     :key="'cat-' + idx"
-                    :to="item.slug ? { path: '/creators', query: { category: item.slug } } : '/creators'"
+                    :to="creatorCategoryTo(item)"
                     class="block px-4 py-2 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
                     @click="creatorsDropdownOpen = false"
                   >
@@ -160,7 +166,7 @@
                   <router-link
                     v-for="(item, idx) in professionalCategories"
                     :key="'prof-' + idx"
-                    :to="item.slug ? { name: 'marketplace', query: { category: item.slug } } : '/marketplace'"
+                    :to="professionalCategoryTo(item)"
                     class="block px-4 py-2 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
                     @click="professionalsDropdownOpen = false"
                   >
@@ -207,7 +213,7 @@
                   <router-link
                     v-for="(item, idx) in studioCategoriesExtended"
                     :key="'studio-' + idx"
-                    :to="item.slug ? { path: '/studios', query: { category: item.slug } } : '/studios'"
+                    :to="studioCategoryTo(item)"
                     class="block px-4 py-2 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
                     @click="studiosDropdownOpen = false"
                   >
@@ -218,11 +224,14 @@
             </Transition>
           </div>
 
-          <router-link to="/campaign" class="text-sm font-semibold transition hover:text-[#fc4402]">Campaigns</router-link>
-          <router-link to="/how-it-works" class="text-sm font-semibold transition hover:text-[#fc4402]">How It Works</router-link>
-          <router-link to="/pricing" class="text-sm font-semibold transition hover:text-[#fc4402]">Pricing</router-link>
-          <router-link to="/brand-landing" class="text-sm font-semibold transition hover:text-[#fc4402]">For Brands</router-link>
-          <router-link to="/creator-landing" class="text-sm font-semibold transition hover:text-[#fc4402]">For Creators</router-link>
+          <router-link
+            v-for="link in desktopBottomLinks"
+            :key="link.to"
+            :to="link.to"
+            class="text-sm font-semibold transition hover:text-[#fc4402]"
+          >
+            {{ link.label }}
+          </router-link>
 
                     <template v-if="displayUser">
                         <div class="relative" ref="userMenuRef">
@@ -289,13 +298,13 @@
                                         "
                                     >
                                         <router-link
-                                            to="/creator/dashboard"
+                                            :to="ROUTE_PATHS.creatorDashboard"
                                             class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#10b981]/5 hover:text-[#10b981]"
                                             @click="userMenuOpen = false"
                                             >Creator Dashboard</router-link
                                         >
                                         <router-link
-                                            to="/creator/profile"
+                                            :to="ROUTE_PATHS.creatorProfile"
                                             class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#10b981]/5 hover:text-[#10b981]"
                                             @click="userMenuOpen = false"
                                             >My Profile</router-link
@@ -303,13 +312,13 @@
                                     </template>
                                     <template v-else-if="user.role === 'brand'">
                                         <router-link
-                                            to="/brand/dashboard"
+                                            :to="ROUTE_PATHS.brandDashboard"
                                             class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
                                             @click="userMenuOpen = false"
                                             >Brand Dashboard</router-link
                                         >
                                         <router-link
-                                            to="/brand/creators"
+                                            :to="ROUTE_PATHS.brandCreators"
                                             class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
                                             @click="userMenuOpen = false"
                                             >Discover Creators</router-link
@@ -317,7 +326,7 @@
                                     </template>
                                     <template v-else-if="user.role === 'admin'">
                                         <router-link
-                                            to="/admin"
+                                            :to="ROUTE_PATHS.admin"
                                             class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#1e293b]/5 hover:text-[#1e293b]"
                                             @click="userMenuOpen = false"
                                             >Admin Panel</router-link
@@ -327,7 +336,7 @@
                                         v-else-if="user.role === 'agency'"
                                     >
                                         <router-link
-                                            to="/agency/dashboard"
+                                            :to="ROUTE_PATHS.agencyDashboard"
                                             class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#7c3aed]/5 hover:text-[#7c3aed]"
                                             @click="userMenuOpen = false"
                                             >Agency Dashboard</router-link
@@ -337,7 +346,7 @@
                                         v-else-if="user.role === 'professional'"
                                     >
                                         <router-link
-                                            to="/professional/dashboard"
+                                            :to="ROUTE_PATHS.professionalDashboard"
                                             class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#f59e0b]/5 hover:text-[#f59e0b]"
                                             @click="userMenuOpen = false"
                                             >Professional Dashboard</router-link
@@ -357,12 +366,12 @@
                         </div>
                     </template>
                     <router-link
-                        to="/login"
+                        :to="ROUTE_PATHS.login"
                         class="text-sm font-semibold transition hover:text-[#fc4402]"
                         >Login</router-link
                     >
                     <router-link
-                        to="/register"
+                        :to="ROUTE_PATHS.register"
                         class="rounded-lg bg-[#fc4402] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#e63d02]"
                         >Join Free</router-link
                     >
@@ -385,41 +394,14 @@
                 <div class="mx-auto max-w-6xl px-4 py-4">
                     <div class="flex flex-col gap-1">
                         <router-link
-                            to="/"
+                            v-for="link in mobileMainLinks"
+                            :key="link.to"
+                            :to="link.to"
                             class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
                             @click="navMobileOpen = false"
-                            >Home</router-link
                         >
-                        <router-link
-                            to="/campaign"
-                            class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
-                            @click="navMobileOpen = false"
-                            >Campaigns</router-link
-                        >
-                        <router-link
-                            to="/how-it-works"
-                            class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
-                            @click="navMobileOpen = false"
-                            >How It Works</router-link
-                        >
-                        <router-link
-                            to="/pricing"
-                            class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
-                            @click="navMobileOpen = false"
-                            >Pricing</router-link
-                        >
-                        <router-link
-                            to="/brand-landing"
-                            class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
-                            @click="navMobileOpen = false"
-                            >For Brands</router-link
-                        >
-                        <router-link
-                            to="/creator-landing"
-                            class="rounded-lg px-4 py-3 text-sm font-medium text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
-                            @click="navMobileOpen = false"
-                            >For Creators</router-link
-                        >
+                            {{ link.label }}
+                        </router-link>
                         <div class="py-1">
                             <p
                                 class="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-[#64748b]"
@@ -429,7 +411,7 @@
                             <router-link
                                 v-for="(item, idx) in creatorCategoriesExtended"
                                 :key="'mob-cre-' + idx"
-                                :to="item.slug ? { path: '/creators', query: { category: item.slug } } : '/creators'"
+                                :to="creatorCategoryTo(item)"
                                 class="block rounded-lg px-4 py-2.5 pl-6 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
                                 @click="navMobileOpen = false"
                                 >{{ item.name }}</router-link
@@ -444,7 +426,7 @@
                             <router-link
                                 v-for="(item, idx) in professionalCategories"
                                 :key="'mob-prof-' + idx"
-                                :to="item.slug ? { path: '/services/' + item.slug } : '/services'"
+                                :to="professionalCategoryTo(item)"
                                 class="block rounded-lg px-4 py-2.5 pl-6 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
                                 @click="navMobileOpen = false"
                                 >{{ item.name }}</router-link
@@ -459,7 +441,7 @@
                             <router-link
                                 v-for="(item, idx) in studioCategoriesExtended"
                                 :key="'mob-stu-' + idx"
-                                :to="item.slug ? { path: '/studios', query: { category: item.slug } } : '/studios'"
+                                :to="studioCategoryTo(item)"
                                 class="block rounded-lg px-4 py-2.5 pl-6 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
                                 @click="navMobileOpen = false"
                                 >{{ item.name }}</router-link
@@ -485,13 +467,13 @@
                                 "
                             >
                                 <router-link
-                                    to="/creator/dashboard"
+                                    :to="ROUTE_PATHS.creatorDashboard"
                                     class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#10b981]/5 hover:text-[#10b981]"
                                     @click="navMobileOpen = false"
                                     >Creator Dashboard</router-link
                                 >
                                 <router-link
-                                    to="/creator/profile"
+                                    :to="ROUTE_PATHS.creatorProfile"
                                     class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#10b981]/5 hover:text-[#10b981]"
                                     @click="navMobileOpen = false"
                                     >My Profile</router-link
@@ -499,13 +481,13 @@
                             </template>
                             <template v-else-if="user.role === 'brand'">
                                 <router-link
-                                    to="/brand/dashboard"
+                                    :to="ROUTE_PATHS.brandDashboard"
                                     class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
                                     @click="navMobileOpen = false"
                                     >Brand Dashboard</router-link
                                 >
                                 <router-link
-                                    to="/brand/creators"
+                                    :to="ROUTE_PATHS.brandCreators"
                                     class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
                                     @click="navMobileOpen = false"
                                     >Discover Creators</router-link
@@ -513,7 +495,7 @@
                             </template>
                             <template v-else-if="user.role === 'admin'">
                                 <router-link
-                                    to="/admin"
+                                    :to="ROUTE_PATHS.admin"
                                     class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#1e293b]/5 hover:text-[#1e293b]"
                                     @click="navMobileOpen = false"
                                     >Admin Panel</router-link
@@ -521,7 +503,7 @@
                             </template>
                             <template v-else-if="user.role === 'agency'">
                                 <router-link
-                                    to="/agency/dashboard"
+                                    :to="ROUTE_PATHS.agencyDashboard"
                                     class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#7c3aed]/5 hover:text-[#7c3aed]"
                                     @click="navMobileOpen = false"
                                     >Agency Dashboard</router-link
@@ -543,13 +525,13 @@
                                 class="mt-2 flex flex-col gap-2 border-t border-[#e5e7eb] pt-3"
                             >
                                 <router-link
-                                    to="/login"
+                                    :to="ROUTE_PATHS.login"
                                     class="rounded-lg border border-[#e5e7eb] px-4 py-3 text-center text-sm font-medium transition hover:border-[#fc4402] hover:text-[#fc4402]"
                                     @click="navMobileOpen = false"
                                     >Login</router-link
                                 >
                                 <router-link
-                                    to="/register"
+                                    :to="ROUTE_PATHS.register"
                                     class="rounded-lg bg-[#fc4402] px-4 py-3 text-center text-sm font-medium text-white transition hover:bg-[#e63d02]"
                                     @click="navMobileOpen = false"
                                     >Join Free</router-link
@@ -605,6 +587,53 @@ watch(
         navMobileOpen.value = false;
     },
 );
+
+// Shared nav link lists to keep the navbar markup lean (desktop + mobile)
+const desktopTopLinks = [{ label: "Home", to: "/" }];
+const desktopBottomLinks = [
+    { label: "Campaigns", to: "/campaign" },
+    { label: "How It Works", to: "/how-it-works" },
+    { label: "Pricing", to: "/pricing" },
+    { label: "For Brands", to: "/brand-landing" },
+    { label: "For Creators", to: "/creator-landing" },
+];
+const mobileMainLinks = [
+    { label: "Home", to: "/" },
+    ...desktopBottomLinks,
+];
+
+// Keep all frequently used routes centralized (used in template directly).
+const ROUTE_PATHS = {
+    home: "/",
+    login: "/login",
+    register: "/register",
+    creatorDashboard: "/creator/dashboard",
+    creatorProfile: "/creator/profile",
+    brandDashboard: "/brand/dashboard",
+    brandCreators: "/brand/creators",
+    admin: "/admin",
+    agencyDashboard: "/agency/dashboard",
+    professionalDashboard: "/professional/dashboard",
+};
+
+function creatorCategoryTo(item) {
+    return item.slug
+        ? { path: "/creators", query: { category: item.slug } }
+        : "/creators";
+}
+
+function professionalCategoryTo(item) {
+    // Keep desktop & mobile consistent (Service Marketplace)
+    return item.slug
+        ? { name: "marketplace", query: { category: item.slug } }
+        : "/marketplace";
+}
+
+function studioCategoryTo(item) {
+    return item.slug
+        ? { path: "/studios", query: { category: item.slug } }
+        : "/studios";
+}
 
 const fallbackServicesColumn1 = [
     { name: "Video Production", slug: "video-production" },
