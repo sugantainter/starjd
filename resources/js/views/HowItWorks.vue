@@ -148,11 +148,11 @@
                                  <div class="flex flex-col gap-6">
                                      <div class="h-14 bg-white rounded-2xl border border-[#e5e7eb] flex items-center px-4 gap-3">
                                          <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11H9v-2h2v2zm0-4H9V5h2v4z"></path></svg></div>
-                                         <span class="text-sm font-bold text-slate-700">Name: Ankit Sharma</span>
+                                         <span class="text-sm font-bold text-slate-700">Name: StarJD</span>
                                      </div>
                                      <div class="h-14 bg-white rounded-2xl border border-[#e5e7eb] flex items-center px-4 gap-3">
                                          <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg></div>
-                                         <span class="text-sm font-bold text-slate-700">Email: ankit@delhistudio.com</span>
+                                         <span class="text-sm font-bold text-slate-700">Email: shine@starjd.com</span>
                                      </div>
                                      <div class="h-14 bg-[#fc4402] rounded-2xl flex items-center justify-center text-white font-black shadow-lg">CONTINUE</div>
                                  </div>
