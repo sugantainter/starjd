@@ -284,28 +284,46 @@ async function suggestFAQsAI() {
         </button>
       </div>
 
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div v-for="listing in listings" :key="listing.id" class="group relative rounded-2xl border border-[#e2e8f0] bg-white overflow-hidden shadow-sm transition hover:shadow-md">
-          <div class="aspect-video bg-[#f8fafc] border-b border-[#f1f5f9] flex items-center justify-center overflow-hidden">
-             <img v-if="listing.gallery?.[0]" :src="listing.gallery[0]" class="w-full h-full object-cover" />
+      <div v-else class="flex flex-col gap-6">
+        <div v-for="listing in listings" :key="listing.id" class="group relative flex flex-col md:flex-row rounded-3xl border border-[#e2e8f0] bg-white overflow-hidden shadow-sm transition hover:shadow-xl hover:border-[#f59e0b]/30">
+          <div class="w-full md:w-64 shrink-0 bg-[#f8fafc] border-b md:border-b-0 md:border-r border-[#f1f5f9] flex items-center justify-center overflow-hidden h-48 md:h-auto">
+             <img v-if="listing.gallery?.[0]" :src="listing.gallery[0]" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
              <svg v-else class="w-12 h-12 text-[#cbd5e1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
           </div>
-          <div class="p-5">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#f1f5f9] text-[#64748b] uppercase tracking-wider">{{ listing.service_category?.name }}</span>
-              <span :class="['px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider', listing.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
-                {{ listing.is_active ? 'Active' : 'Draft' }}
-              </span>
-            </div>
-            <h3 class="font-bold text-[#1a1a1a] line-clamp-2 leading-snug group-hover:text-[#f59e0b] transition-colors">{{ listing.title }}</h3>
-            <div class="mt-4 flex items-center justify-between">
+          <div class="flex-1 p-6 flex flex-col">
+            <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
               <div>
-                <span class="text-xs text-[#94a3b8]">Starting at</span>
-                <div class="font-bold text-[#1a1a1a] text-lg">{{ formatCurrency(listing.pricing_tiers?.[0]?.price) }}</div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-black bg-[#f1f5f9] text-[#64748b] uppercase tracking-wider">{{ listing.service_category?.name }}</span>
+                  <span :class="['px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider', listing.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
+                    {{ listing.is_active ? 'Active' : 'Draft' }}
+                  </span>
+                </div>
+                <h3 class="text-xl font-black text-[#1a1a1a] leading-tight group-hover:text-[#f59e0b] transition-colors">{{ listing.title }}</h3>
               </div>
-              <button @click="openEditor(listing)" class="p-2.5 rounded-lg border border-[#e2e8f0] text-[#64748b] hover:bg-[#f8fafc] hover:text-[#f59e0b] transition-all">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-              </button>
+              <div class="text-right">
+                <span class="text-[10px] font-black text-[#94a3b8] uppercase tracking-widest block mb-1">Starting Price</span>
+                <div class="font-black text-[#1a1a1a] text-2xl">{{ formatCurrency(listing.pricing_tiers?.[0]?.price) }}</div>
+              </div>
+            </div>
+            
+            <div class="mt-auto pt-4 border-t border-[#f1f5f9] flex items-center justify-between">
+              <div class="flex gap-4">
+                 <div class="flex flex-col">
+                    <span class="text-[8px] font-black text-[#94a3b8] uppercase">Created</span>
+                    <span class="text-xs font-bold text-[#1a1a1a]">{{ new Date(listing.created_at).toLocaleDateString() }}</span>
+                 </div>
+                 <div class="flex flex-col">
+                    <span class="text-[8px] font-black text-[#94a3b8] uppercase">Views</span>
+                    <span class="text-xs font-bold text-[#1a1a1a]">{{ listing.views_count || 0 }}</span>
+                 </div>
+              </div>
+              <div class="flex gap-2">
+                <button @click="openEditor(listing)" class="px-5 py-2.5 rounded-xl border border-[#e2e8f0] text-sm font-black text-[#64748b] hover:bg-[#f8fafc] hover:text-[#f59e0b] shadow-sm transition-all flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                  Edit Gig
+                </button>
+              </div>
             </div>
           </div>
         </div>

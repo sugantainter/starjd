@@ -1,159 +1,133 @@
 <template>
-  <div class="mx-auto max-w-7xl px-4 py-6 sm:py-8">
-    <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        <h1 class="text-2xl font-bold tracking-tight text-[#1a1a1a] sm:text-3xl">Studio Marketplace</h1>
-        <p class="mt-1 text-sm text-[#64748b] sm:mt-2 sm:text-base">
-          Book photography, film, podcast, music &amp; event spaces.
+  <div class="mx-auto max-w-7xl px-4 py-12 sm:py-20">
+    <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between mb-12">
+      <div class="max-w-3xl">
+        <h1 class="text-5xl font-black tracking-tight text-[#1a1a1a] mb-4">Studio Marketplace</h1>
+        <p class="text-xl text-[#64748b] leading-relaxed">
+          Book the world's finest photography, film, podcast, and music production spaces. Curated for professionals.
         </p>
       </div>
-      <div class="mt-2 flex items-center gap-2 text-xs text-[#64748b] sm:mt-0 sm:text-sm">
-        <span v-if="!mapVisible" class="hidden sm:inline">Browse curated spaces in a responsive grid.</span>
-        <span v-else class="hidden sm:inline">Pan and zoom the map to explore nearby studios.</span>
-        <span class="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 shadow-sm ring-1 ring-[#e2e8f0]">
-          <span class="h-2 w-2 rounded-full" :class="mapVisible ? 'bg-[#22c55e]' : 'bg-[#e5e7eb]'"></span>
-          <span>{{ total }} studios</span>
-        </span>
+      <div class="flex items-center gap-3">
+        <div class="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 shadow-xl ring-1 ring-[#e2e8f0]">
+          <span class="h-2.5 w-2.5 rounded-full" :class="mapVisible ? 'bg-[#22c55e]' : 'bg-[#e5e7eb]'"></span>
+          <span class="text-sm font-black text-[#1a1a1a]">{{ total }} Studios Available</span>
+        </div>
       </div>
     </div>
 
-    <div class="mt-5 flex flex-col gap-3 rounded-2xl bg-white/80 p-3 shadow-sm ring-1 ring-[#e5e7eb]/60 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-4">
-      <div class="flex flex-wrap items-center gap-2">
+    <!-- Main Toolbar -->
+    <div class="sticky top-4 z-30 mb-10 flex flex-col gap-4 rounded-3xl bg-white/80 backdrop-blur-xl p-4 shadow-2xl border border-white/20 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex flex-wrap items-center gap-3">
         <button
           type="button"
-          class="inline-flex items-center gap-2 rounded-xl border border-[#e2e8f0] px-4 py-2 text-sm font-medium text-[#1f2937] transition hover:border-[#e63946] hover:bg-[#fef2f2] hover:text-[#b91c1c] focus:outline-none focus:ring-2 focus:ring-[#e63946]/20 lg:hidden"
-          :class="showFilters ? 'border-[#e63946] bg-[#e63946] text-white hover:bg-[#b91c1c] hover:text-white' : ''"
+          class="inline-flex items-center gap-2 rounded-2xl border border-[#e2e8f0] px-6 py-3 text-sm font-black text-[#1a1a1a] transition hover:bg-[#e63946] hover:text-white lg:hidden"
+          :class="showFilters ? 'bg-[#e63946] text-white border-none' : 'bg-white'"
           @click="showFilters = !showFilters"
         >
-          <svg
-            class="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M4 6h16M6 12h12M10 18h8"
-            />
-          </svg>
-          <span>Filters</span>
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M6 12h12M10 18h8"/></svg>
+          Filters
         </button>
         <button
           type="button"
-          class="inline-flex items-center gap-2 rounded-xl border border-[#e2e8f0] px-3 py-2 text-sm font-medium text-[#1f2937] transition hover:border-[#0ea5e9] hover:bg-[#f0f9ff] hover:text-[#0369a1]"
+          class="inline-flex items-center gap-2 rounded-2xl border border-[#e2e8f0] bg-white px-6 py-3 text-sm font-black text-[#1a1a1a] transition hover:border-black hover:bg-black hover:text-white shadow-sm"
           @click="mapVisible = !mapVisible"
         >
-          <span class="inline-flex h-2 w-2 rounded-full" :class="mapVisible ? 'bg-[#0ea5e9]' : 'bg-[#e5e7eb]'"></span>
-          <span class="hidden xs:inline">{{ mapVisible ? 'Show list view' : 'Show map view' }}</span>
-          <span class="xs:hidden">{{ mapVisible ? 'List view' : 'Map view' }}</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A2 2 0 013 15.483V8.416a2 2 0 011.553-1.943L9 5m0 15l4.553-2.276A2 2 0 0115 11.237V5.517c0-1.108-.917-2.02-2.028-1.9L9 5m0 15V5"/></svg>
+          {{ mapVisible ? 'Switch to List' : 'Switch to Map' }}
         </button>
       </div>
-      <div class="flex flex-wrap items-center gap-2 sm:justify-end">
-        <select
-          v-model="sort"
-          class="min-w-[180px] rounded-xl border border-[#e2e8f0] bg-white px-3 py-2 text-sm text-[#111827] shadow-sm focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]"
-          @change="load(1)"
-        >
-          <option value="newest">Newest</option>
-          <option value="price_low">Price: Low to High</option>
-          <option value="price_high">Price: High to Low</option>
-          <option value="rating">Rating</option>
-        </select>
-        <span class="text-sm text-[#64748b] sm:pl-1">{{ total }} {{ total === 1 ? 'studio' : 'studios' }}</span>
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="relative">
+          <select
+            v-model="sort"
+            class="min-w-[200px] appearance-none rounded-2xl border border-[#e2e8f0] bg-white px-5 py-3 text-sm font-bold text-[#1a1a1a] shadow-sm focus:outline-none focus:ring-4 focus:ring-black/5"
+            @change="refresh"
+          >
+            <option value="newest">Sort: Newest First</option>
+            <option value="price_low">Price: Low to High</option>
+            <option value="price_high">Price: High to Low</option>
+            <option value="rating">Top Rated</option>
+          </select>
+        </div>
       </div>
     </div>
 
-    <div class="mt-6 flex flex-col gap-6 lg:flex-row lg:items-start">
+    <div class="flex flex-col gap-8 lg:flex-row lg:items-start">
+      <!-- Filter Sidebar -->
       <div
         v-show="showFilters"
-        class="lg:block lg:w-72 lg:flex-none"
+        class="lg:block lg:w-80 lg:flex-none sticky top-28"
         :class="{ 'hidden': !showFilters }"
       >
-        <FilterSidebar
-          :categories="categories"
-          :amenities="amenities"
-          :model="filters"
-          @update:category="filters.category = $event"
-          @update:city="filters.city = $event"
-          @update:min_price="filters.min_price = $event"
-          @update:max_price="filters.max_price = $event"
-          @update:featured="filters.featured = $event"
-          @update:rating="filters.rating = $event"
-          @update:amenities="filters.amenities = $event"
-          @apply="load(1)"
-          @clear="clearFilters(); load(1)"
-        />
+        <div class="rounded-3xl border border-[#e2e8f0] bg-white p-6 shadow-xl">
+          <FilterSidebar
+            :categories="categories"
+            :amenities="amenities"
+            :model="filters"
+            @update:category="filters.category = $event"
+            @update:city="filters.city = $event"
+            @update:min_price="filters.min_price = $event"
+            @update:max_price="filters.max_price = $event"
+            @update:featured="filters.featured = $event"
+            @update:rating="filters.rating = $event"
+            @update:amenities="filters.amenities = $event"
+            @apply="refresh"
+            @clear="clearFilters(); refresh()"
+          />
+        </div>
       </div>
 
       <div class="min-w-0 flex-1">
+        <!-- Map View -->
         <div
           v-if="mapVisible"
-          class="relative mb-4 overflow-hidden rounded-2xl border border-[#e2e8f0] bg-[#f1f5f9]"
-          style="min-height: 420px;"
+          class="relative mb-4 overflow-hidden rounded-3xl border border-[#e2e8f0] bg-[#f1f5f9] shadow-2xl"
+          style="min-height: 600px;"
         >
-          <div ref="mapContainer" class="h-full min-h-[420px] w-full rounded-2xl"></div>
+          <div ref="mapContainer" class="h-full min-h-[600px] w-full rounded-3xl"></div>
           <button
             type="button"
             :disabled="myLocationLoading"
-            class="absolute right-3 top-3 z-[1000] flex items-center gap-2 rounded-xl border border-[#e2e8f0] bg-white px-3 py-2 text-sm font-medium text-[#1a1a1a] shadow-md transition hover:border-[#0ea5e9] hover:bg-[#f0f9ff] hover:text-[#0369a1] disabled:opacity-60"
-            title="Center on my location"
+            class="absolute right-6 top-6 z-[1000] flex items-center gap-2 rounded-2xl border border-[#e2e8f0] bg-white px-5 py-3 text-sm font-black text-[#1a1a1a] shadow-2xl transition hover:bg-black hover:text-white disabled:opacity-60"
             @click="centerOnMyLocation"
           >
-            <svg v-if="myLocationLoading" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-            <svg v-else class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            {{ myLocationLoading ? 'Getting…' : 'My location' }}
+            <svg v-if="myLocationLoading" class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <svg v-else class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            {{ myLocationLoading ? 'Locating...' : 'Near Me' }}
           </button>
-          <p
-            v-if="studiosWithCoords.length === 0 && !loading"
-            class="absolute inset-0 flex items-center justify-center bg-[#f8fafc]/90 text-sm text-[#64748b]"
-          >
-            No studios with location on this page. Add latitude/longitude to studios to see them on the map.
-          </p>
         </div>
+
+        <!-- List View -->
         <div
           v-else
-          class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:gap-6 xl:grid-cols-3"
+          class="flex flex-col gap-8"
         >
           <StudioCard v-for="s in list" :key="s.id" :studio="s" />
         </div>
 
+        <!-- Empty State -->
         <div
           v-if="!list.length && !loading"
-          class="mt-12 rounded-2xl border border-dashed border-[#e2e8f0] bg-white/80 p-8 text-center text-[#64748b]"
+          class="mt-12 rounded-3xl border-2 border-dashed border-[#e2e8f0] bg-[#f8fafc] p-20 text-center"
         >
-          No studios found. Try adjusting filters or widening your search.
+          <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+             <svg class="w-10 h-10 text-[#cbd5e1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          </div>
+          <h2 class="text-2xl font-black text-[#1a1a1a]">No studios found</h2>
+          <p class="text-[#64748b] mt-2 text-lg">We couldn't find any studios matching your criteria.</p>
+          <button @click="clearFilters(); refresh()" class="mt-8 px-10 py-4 bg-black text-white font-black rounded-2xl shadow-xl shadow-black/20 transform hover:scale-105 transition-transform">Reset Filters</button>
         </div>
-        <div v-if="loading" class="mt-12 text-center text-sm text-[#64748b]">Loading…</div>
 
-        <div
-          v-if="lastPage > 1"
-          class="mt-8 flex flex-wrap items-center justify-center gap-2 text-sm"
-        >
-          <button
-            type="button"
-            class="rounded-lg border border-[#e2e8f0] bg-white px-4 py-2 text-sm font-medium text-[#111827] shadow-sm transition hover:border-[#e63946] hover:text-[#e63946] disabled:cursor-not-allowed disabled:opacity-50"
-            :disabled="currentPage <= 1"
-            @click="load(currentPage - 1)"
-          >
-            Previous
-          </button>
-          <span class="flex items-center px-4 py-2 text-sm text-[#64748b]">
-            Page
-            <span class="mx-1 inline-flex h-7 min-w-[2.25rem] items-center justify-center rounded-full bg-[#f3f4f6] px-2 text-sm font-medium text-[#111827]">
-              {{ currentPage }}
-            </span>
-            of {{ lastPage }}
-          </span>
-          <button
-            type="button"
-            class="rounded-lg border border-[#e2e8f0] bg-white px-4 py-2 text-sm font-medium text-[#111827] shadow-sm transition hover:border-[#e63946] hover:text-[#e63946] disabled:cursor-not-allowed disabled:opacity-50"
-            :disabled="currentPage >= lastPage"
-            @click="load(currentPage + 1)"
-          >
-            Next
-          </button>
+        <!-- Infinite Scroll Trigger -->
+        <div ref="scrollTrigger" class="py-20 flex justify-center">
+          <div v-if="loading" class="flex items-center gap-3">
+            <div class="w-2.5 h-2.5 bg-black rounded-full animate-bounce" style="animation-delay: 0s"></div>
+            <div class="w-2.5 h-2.5 bg-black rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+            <div class="w-2.5 h-2.5 bg-black rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+          </div>
+          <div v-else-if="finished && list.length" class="text-xs font-black text-[#cbd5e1] uppercase tracking-[0.2em]">
+            Expertly Curated for You
+          </div>
         </div>
       </div>
     </div>
@@ -161,7 +135,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch, computed, nextTick } from 'vue';
+import { ref, reactive, onMounted, onUnmounted, watch, computed, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import L from 'leaflet';
@@ -172,6 +146,7 @@ import FilterSidebar from '../components/studio/FilterSidebar.vue';
 const route = useRoute();
 const list = ref([]);
 const loading = ref(false);
+const finished = ref(false);
 const showFilters = ref(false);
 const mapVisible = ref(false);
 const mapContainer = ref(null);
@@ -182,9 +157,10 @@ const myLocationLoading = ref(false);
 const categories = ref([]);
 const amenities = ref([]);
 const sort = ref('newest');
-const currentPage = ref(1);
-const lastPage = ref(1);
+const page = ref(1);
 const total = ref(0);
+const scrollTrigger = ref(null);
+let observer = null;
 
 const studiosWithCoords = computed(() =>
   list.value.filter((s) => s.latitude != null && s.longitude != null && !Number.isNaN(s.latitude) && !Number.isNaN(s.longitude))
@@ -213,8 +189,8 @@ function clearFilters() {
   filters.rating = '';
 }
 
-function buildParams(page = 1) {
-  const params = { page, sort: sort.value };
+function buildParams(p = 1) {
+  const params = { page: p, sort: sort.value };
   if (filters.category) params.category = filters.category;
   if (filters.city) params.city = filters.city;
   if (filters.min_price !== '' && filters.min_price != null) params.min_price = filters.min_price;
@@ -225,15 +201,39 @@ function buildParams(page = 1) {
   return params;
 }
 
-async function load(page = 1) {
+function refresh() {
+  page.value = 1;
+  list.value = [];
+  finished.value = false;
+  load(1);
+}
+
+async function loadMore() {
+  if (loading.value || finished.value || mapVisible.value) return;
+  page.value++;
+  load(page.value);
+}
+
+async function load(p = 1) {
   loading.value = true;
   try {
-    const res = await axios.get('/api/studios', { params: buildParams(page) });
-    const data = res.data?.data ?? res.data;
-    list.value = Array.isArray(data) ? data : (data && data.data) ? data.data : [];
-    currentPage.value = res.data?.current_page ?? 1;
-    lastPage.value = res.data?.last_page ?? 1;
-    total.value = res.data?.total ?? list.value.length;
+    const res = await axios.get('/api/studios', { params: buildParams(p) });
+    const resData = res.data;
+    const items = resData.data?.data || resData.data || (Array.isArray(resData) ? resData : []);
+    
+    if (items.length === 0) {
+      finished.value = true;
+    } else {
+      list.value = p === 1 ? items : [...list.value, ...items];
+      if (items.length < (resData.per_page || 12)) {
+        finished.value = true;
+      }
+    }
+    
+    total.value = resData.total || list.value.length;
+  } catch (e) {
+    console.error('Failed to load studios', e);
+    finished.value = true;
   } finally {
     loading.value = false;
   }
@@ -247,7 +247,7 @@ function initMap() {
     scrollWheelZoom: true,
   });
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    attribution: '&copy; OpenStreetMap',
   }).addTo(map);
   mapInstance.value = map;
   markersLayer.value = L.layerGroup().addTo(map);
@@ -317,7 +317,6 @@ function centerOnMyLocation() {
         iconAnchor: [8, 8],
       });
       myLocationMarker.value = L.marker([lat, lng], { icon: blueIcon }).addTo(mapInstance.value);
-      myLocationMarker.value.bindTooltip('You are here', { permanent: false, direction: 'top' });
     },
     () => {
       myLocationLoading.value = false;
@@ -345,13 +344,30 @@ onMounted(async () => {
     axios.get('/api/studios/categories'),
     axios.get('/api/amenities'),
   ]);
-  categories.value = catRes.data ?? [];
-  amenities.value = amRes.data ?? [];
+  categories.value = catRes.data || [];
+  amenities.value = amRes.data || [];
+  
+  // Initialize Infinite Scroll
+  observer = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && !loading.value && !finished.value && !mapVisible.value) {
+      loadMore();
+    }
+  }, { threshold: 0.1 });
+  
+  if (scrollTrigger.value) {
+    observer.observe(scrollTrigger.value);
+  }
+  
   load(1);
 });
 
-watch([sort], () => load(1));
-watch(() => route.query, () => load(route.query.page ? Number(route.query.page) : 1), { deep: true });
+onUnmounted(() => {
+  if (observer) observer.disconnect();
+  removeMap();
+});
+
+watch([sort], () => refresh());
+watch(() => route.query, () => refresh(), { deep: true });
 </script>
 
 <style scoped>

@@ -1,59 +1,99 @@
 <template>
   <div class="min-h-screen bg-[#fafaf9]">
-    <!-- Hero -->
-    <section class="relative overflow-hidden border-b border-[#e5e7eb] bg-gradient-to-br from-[#1a1a1a] via-[#2d2d2d] to-[#1a1a1a] px-4 py-20 md:py-28">
-      <div class="relative mx-auto max-w-4xl text-center">
-        <span class="inline-block rounded-full bg-[#e63946]/20 px-4 py-1 text-xs font-semibold uppercase tracking-wider text-[#e63946]">What we offer</span>
-        <h1 class="mt-4 text-4xl font-bold tracking-tight text-white md:text-5xl">Our Services</h1>
-        <p class="mt-5 text-lg text-[#94a3b8] md:text-xl">Explore what we offer. Professional solutions tailored for creators and brands.</p>
+    <!-- Hero Section -->
+    <section class="relative overflow-hidden bg-black px-4 py-24 md:py-32">
+       <!-- Abstract Background -->
+       <div class="absolute inset-0 opacity-20">
+          <div class="absolute top-0 -left-1/4 w-full h-full bg-gradient-to-br from-[#e63946] to-transparent rounded-full blur-[120px]"></div>
+          <div class="absolute bottom-0 -right-1/4 w-full h-full bg-gradient-to-tl from-[#e63946] to-transparent rounded-full blur-[120px]"></div>
+       </div>
+       
+       <div class="relative mx-auto max-w-5xl text-center">
+        <span class="inline-flex items-center gap-2 rounded-full bg-[#e63946]/10 border border-[#e63946]/20 px-4 py-2 text-xs font-black uppercase tracking-widest text-[#e63946] mb-6">
+           <span class="w-2 h-2 rounded-full bg-[#e63946] animate-ping"></span>
+           Premium Agency Solutions
+        </span>
+        <h1 class="text-5xl md:text-7xl font-black tracking-tight text-white mb-8">Elevate Your Presence</h1>
+        <p class="text-xl text-[#94a3b8] max-w-2xl mx-auto leading-relaxed">We provide end-to-end professional services for creators and brands who want to dominate their niche.</p>
       </div>
     </section>
 
-    <!-- Intro strip -->
-    <section class="border-b border-[#e5e7eb] bg-white px-4 py-10">
-      <div class="mx-auto max-w-4xl text-center">
-        <p class="text-[#64748b]">Select a service below to see full details, or get in touch for a custom quote.</p>
-      </div>
-    </section>
+    <!-- Services Section -->
+    <section class="px-4 py-12 -mt-20">
+      <div class="mx-auto max-w-5xl">
+        <div v-if="loading" class="flex justify-center py-20 bg-white rounded-3xl border border-[#e5e7eb] shadow-xl">
+           <div class="w-12 h-12 border-4 border-[#e63946] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        
+        <div v-else-if="!services.length" class="rounded-3xl border border-[#e5e7eb] bg-white p-20 text-center shadow-2xl">
+           <svg class="w-16 h-16 text-[#cbd5e1] mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+           <h3 class="text-2xl font-black text-[#1a1a1a]">Services coming soon</h3>
+           <p class="text-[#64748b] mt-2">Check back soon for our professional solutions.</p>
+        </div>
 
-    <!-- Services grid -->
-    <section class="px-4 py-16 md:py-24">
-      <div class="mx-auto max-w-6xl">
-        <div v-if="loading" class="flex justify-center py-20">
-          <div class="h-10 w-10 animate-spin rounded-full border-2 border-[#e63946] border-t-transparent"></div>
-        </div>
-        <div v-else-if="!services.length" class="rounded-2xl border border-[#e5e7eb] bg-white p-16 text-center shadow-sm">
-          <p class="text-[#64748b]">No services yet. Check back soon.</p>
-        </div>
-        <div v-else class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div v-else class="flex flex-col gap-8">
           <router-link
             v-for="s in services"
             :key="s.id"
             :to="'/services/' + s.slug"
-            class="group flex flex-col overflow-hidden rounded-2xl border border-[#e5e7eb] bg-white shadow-sm transition hover:border-[#e63946]/40 hover:shadow-xl"
+            class="group flex flex-col md:flex-row overflow-hidden rounded-3xl border border-[#e5e7eb] bg-white shadow-xl transition-all duration-500 hover:border-[#e63946]/30 hover:shadow-2xl hover:-translate-y-1"
           >
-            <div class="aspect-[16/10] overflow-hidden bg-[#f1f5f9]">
-              <img v-if="s.image" :src="s.image" :alt="s.name" class="h-full w-full transition duration-300 group-hover:scale-105" :class="(s.image_fit || 'cover') === 'contain' ? 'object-contain' : 'object-cover'" />
-              <div v-else class="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#e63946]/10 to-[#1a1a1a]/5">
-                <span class="text-4xl font-bold text-[#e63946]/30">{{ s.name.charAt(0) }}</span>
+            <!-- Image Area -->
+            <div class="w-full md:w-80 h-72 md:h-auto shrink-0 overflow-hidden bg-[#f1f5f9] relative">
+              <img v-if="s.image" :src="s.image" :alt="s.name" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              <div v-else class="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#e63946] to-[#1a1a1a]">
+                <span class="text-6xl font-black text-white/20">{{ s.name.charAt(0) }}</span>
               </div>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent md:hidden"></div>
             </div>
-            <div class="flex flex-1 flex-col p-6">
-              <h2 class="text-xl font-bold text-[#1a1a1a] transition group-hover:text-[#e63946]">{{ s.name }}</h2>
-              <p v-if="s.short_description" class="mt-2 flex-1 line-clamp-2 text-sm text-[#64748b]">{{ s.short_description }}</p>
-              <span class="mt-4 inline-flex items-center text-sm font-medium text-[#e63946]">Learn more <svg class="ml-1 h-4 w-4 transition group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg></span>
+
+            <!-- Content Area -->
+            <div class="flex-1 p-8 md:p-12 flex flex-col">
+              <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-6">
+                 <div>
+                    <h2 class="text-3xl font-black text-[#1a1a1a] group-hover:text-[#e63946] transition-colors leading-tight mb-4">{{ s.name }}</h2>
+                    <p v-if="s.short_description" class="text-[#64748b] text-lg leading-relaxed max-w-xl">{{ s.short_description }}</p>
+                 </div>
+                 <div class="shrink-0 flex items-center md:flex-col md:items-end font-black">
+                    <span class="text-[10px] text-[#94a3b8] uppercase tracking-widest mb-1 md:block hidden">Starting from</span>
+                    <span class="text-2xl text-[#1a1a1a]">₹{{ s.pricing_tiers?.[0]?.price || 'N/A' }}</span>
+                 </div>
+              </div>
+
+              <div class="mt-auto pt-8 border-t border-[#f1f5f9] flex flex-wrap items-center justify-between gap-6">
+                 <div class="flex items-center gap-4">
+                    <div class="flex -space-x-2">
+                       <img v-for="i in 3" :key="i" :src="'https://i.pravatar.cc/100?u=' + (s.id + i)" class="w-8 h-8 rounded-full border-2 border-white" />
+                    </div>
+                    <span class="text-xs font-bold text-[#64748b]">Trusted by 50+ clients</span>
+                 </div>
+                 
+                 <div class="flex items-center gap-2 text-[#e63946] font-black uppercase tracking-widest text-sm">
+                    View Details
+                    <svg class="w-5 h-5 transition-transform group-hover:translate-x-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                 </div>
+              </div>
             </div>
           </router-link>
         </div>
       </div>
     </section>
 
-    <!-- CTA -->
-    <section class="border-t border-[#e5e7eb] bg-white px-4 py-16 md:py-20">
-      <div class="mx-auto max-w-3xl rounded-2xl bg-gradient-to-br from-[#e63946] to-[#c1121f] px-8 py-12 text-center shadow-xl md:px-12 md:py-16">
-        <h2 class="text-2xl font-bold text-white md:text-3xl">Need something custom?</h2>
-        <p class="mt-3 text-[#fecaca]">Tell us your goals and we'll tailor a solution for you.</p>
-        <router-link to="/contact" class="mt-6 inline-block rounded-xl bg-white px-6 py-3 text-sm font-semibold text-[#e63946] shadow-lg transition hover:bg-[#fafafa]">Get in touch</router-link>
+    <!-- Professional CTA -->
+    <section class="px-4 py-24">
+      <div class="mx-auto max-w-5xl">
+        <div class="relative rounded-3xl bg-black px-8 py-16 text-center shadow-2xl overflow-hidden md:px-16 md:py-24">
+           <!-- Abstract BG -->
+           <div class="absolute inset-0 opacity-30">
+              <div class="absolute top-0 -left-1/4 w-full h-full bg-[#e63946] rounded-full blur-[100px]"></div>
+           </div>
+           
+           <div class="relative z-10">
+              <h2 class="text-4xl md:text-5xl font-black text-white mb-6">Ready to scale?</h2>
+              <p class="text-[#94a3b8] text-xl max-w-xl mx-auto mb-10">We create tailored strategies that actually convert. Let's build something legendary together.</p>
+              <router-link to="/contact" class="inline-block rounded-2xl bg-[#e63946] px-12 py-5 text-lg font-black text-white shadow-xl shadow-[#e63946]/20 transition-all hover:bg-[#c1121f] transform hover:scale-105">Get Started Now</router-link>
+           </div>
+        </div>
       </div>
     </section>
   </div>
