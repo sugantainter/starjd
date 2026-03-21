@@ -49,6 +49,10 @@ class PageController extends Controller
             'meta_title' => $page->meta_title ? html_entity_decode($page->meta_title) : '',
             'meta_description' => $page->meta_description ? html_entity_decode($page->meta_description) : '',
             'template' => $page->template,
+            'state_id' => $page->state_id,
+            'city_id' => $page->city_id,
+            'state' => $page->state ? $page->state->only(['id', 'name', 'slug']) : null,
+            'city' => $page->city ? $page->city->only(['id', 'name', 'slug', 'state_id']) : null,
         ]);
     }
 
