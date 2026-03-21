@@ -238,13 +238,13 @@
                             <button
                                 type="button"
                                 class="flex items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-4 py-2 text-sm font-medium text-[#1a1a1a] shadow-sm transition hover:border-[#fc4402] hover:bg-[#fafafa] focus:outline-none focus:ring-2 focus:ring-[#fc4402]/20"
-                                :class="
-                                    user.role === 'creator'
-                                        ? 'hover:border-[#10b981] focus:ring-[#10b981]/20'
-                                        : user.role === 'admin'
-                                          ? 'hover:border-[#1e293b] focus:ring-[#1e293b]/20'
-                                          : ''
-                                "
+                                :class="{
+                                    'hover:border-[#10b981] focus:ring-[#10b981]/20': user.role === 'creator',
+                                    'hover:border-[#1e293b] focus:ring-[#1e293b]/20': user.role === 'admin',
+                                    'hover:border-[#7c3aed] focus:ring-[#7c3aed]/20': user.role === 'agency',
+                                    'hover:border-[#f59e0b] focus:ring-[#f59e0b]/20': user.role === 'professional',
+                                    'hover:border-[#e63946] focus:ring-[#e63946]/20': user.role === 'studio_owner',
+                                }"
                                 @click="userMenuOpen = !userMenuOpen"
                             >
                                 <span class="max-w-[120px] truncate">{{
@@ -351,6 +351,34 @@
                                             @click="userMenuOpen = false"
                                             >Professional Dashboard</router-link
                                         >
+                                        <router-link
+                                            :to="ROUTE_PATHS.professionalProfile"
+                                            class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#f59e0b]/5 hover:text-[#f59e0b]"
+                                            @click="userMenuOpen = false"
+                                            >My Profile</router-link
+                                        >
+                                    </template>
+                                    <template
+                                        v-else-if="user.role === 'studio_owner'"
+                                    >
+                                        <router-link
+                                            :to="ROUTE_PATHS.studioDashboard"
+                                            class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]"
+                                            @click="userMenuOpen = false"
+                                            >Studio Dashboard</router-link
+                                        >
+                                        <router-link
+                                            :to="ROUTE_PATHS.studioMyStudios"
+                                            class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]"
+                                            @click="userMenuOpen = false"
+                                            >My Studios</router-link
+                                        >
+                                        <router-link
+                                            :to="ROUTE_PATHS.studioBookings"
+                                            class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]"
+                                            @click="userMenuOpen = false"
+                                            >Bookings</router-link
+                                        >
                                     </template>
                                     <div class="border-t border-[#e2e8f0] pt-1">
                                         <button
@@ -365,16 +393,18 @@
                             </Transition>
                         </div>
                     </template>
-                    <router-link
-                        :to="ROUTE_PATHS.login"
-                        class="text-sm font-semibold transition hover:text-[#fc4402]"
-                        >Login</router-link
-                    >
-                    <router-link
-                        :to="ROUTE_PATHS.register"
-                        class="rounded-lg bg-[#fc4402] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#e63d02]"
-                        >Join Free</router-link
-                    >
+                    <template v-else>
+                        <router-link
+                            :to="ROUTE_PATHS.login"
+                            class="text-sm font-semibold transition hover:text-[#fc4402]"
+                            >Login</router-link
+                        >
+                        <router-link
+                            :to="ROUTE_PATHS.register"
+                            class="rounded-lg bg-[#fc4402] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#e63d02]"
+                            >Join Free</router-link
+                        >
+                    </template>
                 </div>
             </div>
         </nav>
@@ -509,6 +539,36 @@
                                     >Agency Dashboard</router-link
                                 >
                             </template>
+                            <template
+                                v-else-if="user.role === 'professional'"
+                            >
+                                <router-link
+                                    :to="ROUTE_PATHS.professionalDashboard"
+                                    class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#f59e0b]/5 hover:text-[#f59e0b]"
+                                    @click="navMobileOpen = false"
+                                    >Professional Dashboard</router-link
+                                >
+                                <router-link
+                                    :to="ROUTE_PATHS.professionalProfile"
+                                    class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#f59e0b]/5 hover:text-[#f59e0b]"
+                                    @click="navMobileOpen = false"
+                                    >My Profile</router-link
+                                >
+                            </template>
+                            <template v-else-if="user.role === 'studio_owner'">
+                                <router-link
+                                    :to="ROUTE_PATHS.studioDashboard"
+                                    class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]"
+                                    @click="navMobileOpen = false"
+                                    >Studio Dashboard</router-link
+                                >
+                                <router-link
+                                    :to="ROUTE_PATHS.studioMyStudios"
+                                    class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#e63946]/5 hover:text-[#e63946]"
+                                    @click="navMobileOpen = false"
+                                    >My Studios</router-link
+                                >
+                            </template>
                             <button
                                 type="button"
                                 class="rounded-lg px-4 py-3 text-left text-sm text-red-600 transition hover:bg-red-50"
@@ -614,6 +674,10 @@ const ROUTE_PATHS = {
     admin: "/admin",
     agencyDashboard: "/agency/dashboard",
     professionalDashboard: "/professional/dashboard",
+    professionalProfile: "/professional/profile",
+    studioDashboard: "/studio/dashboard",
+    studioMyStudios: "/studio/studios",
+    studioBookings: "/studio/bookings",
 };
 
 function creatorCategoryTo(item) {

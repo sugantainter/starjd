@@ -486,6 +486,11 @@ function insertYouTube() {
   height: 0;
   pointer-events: none;
 }
+.rich-text-editor .ProseMirror a {
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+}
 .rich-text-editor .ProseMirror img {
   max-width: 100%;
   height: auto;

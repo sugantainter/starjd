@@ -41,11 +41,11 @@ class PageController extends Controller
         }
         return response()->json([
             'id' => $page->id,
-            'title' => $page->title,
+            'title' => $page->title ? html_entity_decode($page->title) : '',
             'slug' => $page->slug,
-            'content' => $page->content,
-            'meta_title' => $page->meta_title,
-            'meta_description' => $page->meta_description,
+            'content' => $page->content ? html_entity_decode($page->content) : '',
+            'meta_title' => $page->meta_title ? html_entity_decode($page->meta_title) : '',
+            'meta_description' => $page->meta_description ? html_entity_decode($page->meta_description) : '',
             'template' => $page->template,
         ]);
     }

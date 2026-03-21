@@ -26,7 +26,9 @@
       <!-- Main content -->
       <article class="border-b border-[#e5e7eb] bg-white px-4 py-12 md:py-20">
         <div class="mx-auto max-w-3xl">
-          <div class="prose prose-lg max-w-none text-[#1a1a1a] prose-headings:font-bold prose-headings:text-[#1a1a1a] prose-a:text-[#fc4402] prose-a:no-underline hover:prose-a:underline services-body" v-html="renderedBody"></div>
+          <RichTextContent
+            :content="service.body"
+          />
         </div>
       </article>
 
@@ -52,6 +54,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
+import RichTextContent from '../components/RichTextContent.vue';
 
 const route = useRoute();
 const service = ref(null);
@@ -64,16 +67,7 @@ const bannerPositionStyle = computed(() => {
   return 'center center';
 });
 
-const renderedBody = computed(() => {
-  if (!service.value?.body) return '';
-  const b = String(service.value.body).trim();
-  if (!b) return '';
-  if (b.startsWith('<')) return b;
-  return b
-    .split(/\r?\n\r?\n+/)
-    .map((p) => '<p>' + p.replace(/\r?\n/g, '<br/>') + '</p>')
-    .join('');
-});
+
 
 function updateDocumentMeta() {
   if (!service.value) return;
@@ -104,29 +98,5 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.services-body :deep(p) {
-  margin-bottom: 1em;
-}
-.services-body :deep(p:last-child) {
-  margin-bottom: 0;
-}
-.services-body :deep(br) {
-  display: block;
-  content: '';
-  margin-top: 0.25em;
-}
-.prose :deep(.youtube-embed) {
-  position: relative;
-  padding-bottom: 56.25%;
-  height: 0;
-  overflow: hidden;
-  margin: 1.5rem 0;
-}
-.prose :deep(.youtube-embed iframe) {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
+
 </style>

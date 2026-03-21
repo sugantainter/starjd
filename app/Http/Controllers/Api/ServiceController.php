@@ -33,7 +33,7 @@ class ServiceController extends Controller
             'banner_image' => $service->banner_image,
             'image_fit' => $service->image_fit,
             'banner_position' => $service->banner_position,
-            'body' => $service->body,
+            'body' => $service->body ? html_entity_decode($service->body) : '',
             'meta_title' => $service->meta_title,
             'meta_description' => $service->meta_description,
         ]);

@@ -39,9 +39,9 @@ class PostController extends Controller
         $paginator = $query->paginate(10);
         $posts = $paginator->getCollection()->map(fn (Post $p) => [
             'id' => $p->id,
-            'title' => $p->title,
+            'title' => $p->title ? html_entity_decode($p->title) : '',
             'slug' => $p->slug,
-            'excerpt' => $p->excerpt,
+            'excerpt' => $p->excerpt ? html_entity_decode($p->excerpt) : '',
             'category' => $p->category_label,
             'date' => $p->published_at?->format('M j, Y'),
             'image' => $p->image,
@@ -70,12 +70,12 @@ class PostController extends Controller
 
         return response()->json([
             'id' => $post->id,
-            'title' => $post->title,
+            'title' => $post->title ? html_entity_decode($post->title) : '',
             'slug' => $post->slug,
-            'excerpt' => $post->excerpt,
-            'meta_title' => $post->meta_title,
-            'meta_description' => $post->meta_description,
-            'body' => $post->body,
+            'excerpt' => $post->excerpt ? html_entity_decode($post->excerpt) : '',
+            'meta_title' => $post->meta_title ? html_entity_decode($post->meta_title) : '',
+            'meta_description' => $post->meta_description ? html_entity_decode($post->meta_description) : '',
+            'body' => $post->body ? html_entity_decode($post->body) : '',
             'image' => $post->image,
             'category' => $post->category_label,
             'category_tags' => $post->category_tags ?? [],

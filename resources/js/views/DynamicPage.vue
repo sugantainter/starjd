@@ -12,10 +12,9 @@
         </div>
       </header>
       <div class="mx-auto max-w-4xl px-4 py-10">
-        <article
-          class="prose prose-lg max-w-none text-[#374151] prose-headings:font-bold prose-headings:text-[#1a1a1a] prose-a:text-[#e63946] prose-a:no-underline hover:prose-a:underline"
-          v-html="renderedContent"
-        ></article>
+        <RichTextContent
+          :content="page.content"
+        />
       </div>
     </template>
     <template v-else>
@@ -32,15 +31,13 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
+import RichTextContent from '../components/RichTextContent.vue';
 
 const route = useRoute();
 const page = ref(null);
 const loading = ref(true);
 
-const renderedContent = computed(() => {
-  if (!page.value?.content) return '';
-  return page.value.content;
-});
+
 
 async function loadPage() {
   const slug = route.meta?.pageSlug || route.params.slug;

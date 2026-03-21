@@ -35,9 +35,9 @@
 
         <div v-if="studio.description" class="mt-6">
           <h2 class="text-lg font-semibold text-[#1a1a1a]">About</h2>
-          <div
-            class="studio-description prose prose-sm mt-2 max-w-none text-[#64748b] prose-headings:text-[#1a1a1a] prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5"
-            v-html="studio.description"
+          <RichTextContent
+            class="mt-2"
+            :content="studio.description"
           />
         </div>
 
@@ -113,6 +113,7 @@ import StudioCard from '../components/studio/StudioCard.vue';
 import BookingWidget from '../components/studio/BookingWidget.vue';
 import ReviewList from '../components/studio/ReviewList.vue';
 import AvailabilityCalendar from '../components/studio/AvailabilityCalendar.vue';
+import RichTextContent from '../components/RichTextContent.vue';
 
 const route = useRoute();
 const studio = ref(null);

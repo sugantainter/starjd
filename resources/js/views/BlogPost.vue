@@ -28,10 +28,9 @@
           <!-- Left: main content -->
           <div class="min-w-0">
             <article class="rounded-xl border border-[#e5e7eb] bg-white p-6 shadow-sm md:p-8">
-              <div
-                class="prose prose-lg max-w-none text-left text-[#374151] post-body prose-headings:font-bold prose-headings:text-[#1a1a1a] prose-headings:mt-10 prose-headings:mb-4 prose-a:text-[#e63946] prose-a:no-underline hover:prose-a:underline prose-ul:my-4 prose-ol:my-4 prose-li:my-1"
-                v-html="renderedBody"
-              ></div>
+              <RichTextContent
+                :content="post.body"
+              />
 
               <!-- Tags -->
               <div v-if="post.category_tags && post.category_tags.length" class="mt-10 border-t border-[#e5e7eb] pt-6">
@@ -206,6 +205,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
+import RichTextContent from '../components/RichTextContent.vue';
 
 const route = useRoute();
 const post = ref(null);
@@ -227,16 +227,7 @@ const newsPosts = computed(() => {
   return other.slice(5, 10);
 });
 
-const renderedBody = computed(() => {
-  if (!post.value?.body) return '';
-  const b = String(post.value.body).trim();
-  if (!b) return '';
-  if (b.startsWith('<')) return b;
-  return b
-    .split(/\r?\n\r?\n+/)
-    .map((p) => '<p>' + p.replace(/\r?\n/g, '<br/>') + '</p>')
-    .join('');
-});
+
 
 function updateDocumentMeta() {
   if (!post.value) return;
@@ -324,42 +315,5 @@ onMounted(loadPost);
 </script>
 
 <style scoped>
-.post-body :deep(p) {
-  margin-bottom: 1.25em;
-  line-height: 1.75;
-}
-.post-body :deep(p:last-child) {
-  margin-bottom: 0;
-}
-.post-body :deep(br) {
-  display: block;
-  content: '';
-  margin-top: 0.25em;
-}
-.post-body :deep(h2) {
-  font-size: 1.5rem;
-  margin-top: 2rem;
-}
-.post-body :deep(h3) {
-  font-size: 1.25rem;
-  margin-top: 1.5rem;
-}
-.post-body :deep(ul),
-.post-body :deep(ol) {
-  padding-left: 1.5em;
-}
-.prose :deep(.youtube-embed) {
-  position: relative;
-  padding-bottom: 56.25%;
-  height: 0;
-  overflow: hidden;
-  margin: 1.5rem 0;
-}
-.prose :deep(.youtube-embed iframe) {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
+
 </style>
