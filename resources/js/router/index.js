@@ -132,6 +132,13 @@ const routes = [
       { path: 'earnings', name: 'professional-earnings', component: () => import('../views/professional/Dashboard.vue') }, // Reusing for now
     ],
   },
+  {
+    path: '/:slug',
+    component: AppLayout,
+    children: [
+      { path: '', name: 'dynamic-root-page', component: () => import('../views/DynamicPage.vue') }
+    ]
+  },
 ];
 
 const router = createRouter({

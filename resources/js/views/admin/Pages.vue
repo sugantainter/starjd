@@ -219,13 +219,13 @@ const citiesForState = computed(() => {
 
 function pageUrl(page) {
   const base = window.location.origin;
-  if (page.city_id && page.city?.slug && page.state?.slug) {
-    return `${base}/page/${page.slug}?state_slug=${page.state.slug}&city_slug=${page.city.slug}`;
+  if (page.city_id && page.city?.slug) {
+    return `${base}/${page.slug}-in-${page.city.slug}`;
   }
   if (page.state_id && page.state?.slug) {
-    return `${base}/page/${page.slug}?state_slug=${page.state.slug}`;
+    return `${base}/${page.slug}-in-${page.state.slug}`;
   }
-  return `${base}/page/${page.slug}`;
+  return `${base}/${page.slug}`;
 }
 
 async function loadStates() {

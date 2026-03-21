@@ -19,16 +19,18 @@ class PageController extends Controller
         $citySlug = $request->query('city_slug');
         $stateId = null;
         $cityId = null;
-        if ($citySlug && $stateSlug) {
-            $state = \App\Models\State::where('slug', $stateSlug)->first();
-            if ($state) {
-                $city = \App\Models\City::where('state_id', $state->id)->where('slug', $citySlug)->first();
-                if ($city) {
-                    $stateId = $state->id;
-                    $cityId = $city->id;
-                }
+
+        if ($citySlug) {
+            // Try to find city first (if citySlug is same as stateSlug, it will still try)
+            $city = \App\Models\City::where('slug', $citySlug)->first();
+            if ($city) {
+                $cityId = $city->id;
+                $stateId = $city->state_id;
             }
-        } elseif ($stateSlug) {
+        }
+
+        if (!$cityId && $stateSlug) {
+            // If no city found, or only state provided, try to find state
             $state = \App\Models\State::where('slug', $stateSlug)->first();
             if ($state) {
                 $stateId = $state->id;

@@ -40,19 +40,47 @@ const loading = ref(true);
 
 
 async function loadPage() {
-  const slug = route.meta?.pageSlug || route.params.slug;
+  let slug = route.meta?.pageSlug || route.params.slug;
   if (!slug) {
     loading.value = false;
     return;
   }
+
+  // Handle SEO-friendly slug format: slug-in-location
+  let locationSlug = null;
+  if (slug.includes('-in-')) {
+    const parts = slug.split('-in-');
+    // The last part after the last '-in-' is the location (city or state)
+    locationSlug = parts.pop();
+    slug = parts.join('-in-');
+  }
+
   loading.value = true;
   page.value = null;
   try {
     const params = {};
+    // Priority 1: Query parameters (backward compatibility)
     if (route.query.state_slug) params.state_slug = route.query.state_slug;
     if (route.query.city_slug) params.city_slug = route.query.city_slug;
+    
+    // Priority 2: Path-based location (slug-in-location)
+    // If we have a locationSlug, let the backend try it as both city and state
+    if (locationSlug && !params.state_slug && !params.city_slug) {
+      params.state_slug = locationSlug;
+      params.city_slug = locationSlug;
+    }
+
     const r = await axios.get(`/api/pages/${encodeURIComponent(slug)}`, { params });
     page.value = r.data;
+    
+    // Update Meta Tags
+    if (page.value) {
+      document.title = page.value.meta_title || page.value.title || 'StarJD';
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute('content', page.value.meta_description || '');
+      }
+    }
   } catch (e) {
     if (e.response?.status !== 404) {
       page.value = null;
