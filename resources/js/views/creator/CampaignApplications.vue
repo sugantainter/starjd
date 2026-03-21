@@ -65,25 +65,15 @@
           </tbody>
         </table>
       </div>
-      <div v-if="pagination.last_page > 1" class="flex items-center justify-between border-t border-[#e2e8f0] px-5 py-3">
-        <p class="text-sm text-[#64748b]">Page {{ pagination.current_page }} of {{ pagination.last_page }}</p>
-        <div class="flex gap-2">
-          <button
-            type="button"
-            :disabled="pagination.current_page <= 1"
-            class="rounded-lg border border-[#e2e8f0] px-3 py-1.5 text-sm text-[#475569] hover:bg-[#f1f5f9] disabled:opacity-50"
-            @click="loadPage(pagination.current_page - 1)"
-          >
-            Previous
-          </button>
-          <button
-            type="button"
-            :disabled="pagination.current_page >= pagination.last_page"
-            class="rounded-lg border border-[#e2e8f0] px-3 py-1.5 text-sm text-[#475569] hover:bg-[#f1f5f9] disabled:opacity-50"
-            @click="loadPage(pagination.current_page + 1)"
-          >
-            Next
-          </button>
+      <div class="border-t border-[#e2e8f0] px-5 py-4">
+        <div ref="scrollTrigger" class="flex justify-center">
+          <div v-if="loadingMore" class="flex items-center gap-3">
+            <div class="h-2 w-2 animate-bounce rounded-full bg-[#10b981]" style="animation-delay: 0s"></div>
+            <div class="h-2 w-2 animate-bounce rounded-full bg-[#10b981]" style="animation-delay: 0.2s"></div>
+            <div class="h-2 w-2 animate-bounce rounded-full bg-[#10b981]" style="animation-delay: 0.4s"></div>
+            <span class="text-sm text-[#64748b]">Loading more applications...</span>
+          </div>
+          <p v-else-if="finished" class="text-sm text-[#94a3b8]">All applications loaded.</p>
         </div>
       </div>
     </div>
@@ -91,12 +81,16 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 
 const applications = ref([]);
 const loading = ref(true);
-const pagination = reactive({ current_page: 1, last_page: 1 });
+const loadingMore = ref(false);
+const finished = ref(false);
+const page = ref(1);
+const scrollTrigger = ref(null);
+let observer = null;
 
 function typeLabel(type) {
   const map = { instagram: 'Instagram', tiktok: 'TikTok', ugc: 'UGC', youtube: 'YouTube' };
@@ -131,22 +125,49 @@ function formatDate(iso) {
   return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-async function loadPage(page = 1) {
-  loading.value = true;
+async function loadPage(p = 1, append = false) {
+  if (append && (loadingMore.value || finished.value)) return;
+  if (append) loadingMore.value = true;
+  else loading.value = true;
   try {
     const res = await axios.get('/api/creator/campaign-applications', {
-      params: { page, per_page: 15 },
+      params: { page: p, per_page: 15 },
       withCredentials: true,
     });
-    applications.value = res.data?.data ?? [];
-    pagination.current_page = res.data?.current_page ?? 1;
-    pagination.last_page = res.data?.last_page ?? 1;
+    const items = res.data?.data ?? [];
+    const current = res.data?.current_page ?? p;
+    const last = res.data?.last_page ?? p;
+
+    if (append) {
+      applications.value = [...applications.value, ...items];
+    } else {
+      applications.value = items;
+    }
+
+    page.value = current;
+    finished.value = current >= last || items.length === 0;
   } catch (_) {
-    applications.value = [];
+    if (!append) applications.value = [];
   } finally {
-    loading.value = false;
+    if (append) loadingMore.value = false;
+    else loading.value = false;
   }
 }
 
-onMounted(() => loadPage(1));
+function loadMore() {
+  if (loading.value || loadingMore.value || finished.value) return;
+  loadPage(page.value + 1, true);
+}
+
+onMounted(() => {
+  loadPage(1, false);
+  observer = new IntersectionObserver((entries) => {
+    if (entries[0]?.isIntersecting) loadMore();
+  }, { threshold: 0.1 });
+  if (scrollTrigger.value) observer.observe(scrollTrigger.value);
+});
+
+onUnmounted(() => {
+  if (observer) observer.disconnect();
+});
 </script>

@@ -13,17 +13,17 @@
     <!-- Posts List -->
     <section class="px-4 py-12 md:py-24 -mt-12">
       <div class="mx-auto max-w-5xl">
-        <div v-if="loading" class="flex justify-center py-20 bg-white rounded-3xl border border-[#e5e7eb] shadow-xl">
+        <div v-if="loading && !posts.length" class="flex justify-center py-20 bg-white rounded-3xl border border-[#e5e7eb] shadow-xl">
            <div class="w-12 h-12 border-4 border-[#e63946] border-t-transparent rounded-full animate-spin"></div>
         </div>
         
-        <div v-else-if="!filteredPosts.length" class="rounded-3xl border border-[#e5e7eb] bg-white p-20 text-center shadow-xl text-[#64748b] font-bold text-lg">
+        <div v-else-if="!posts.length && finished" class="rounded-3xl border border-[#e5e7eb] bg-white p-20 text-center shadow-xl text-[#64748b] font-bold text-lg">
            No articles found in this category.
         </div>
 
         <div v-else class="flex flex-col gap-10">
           <article
-            v-for="post in filteredPosts"
+            v-for="post in posts"
             :key="post.id"
             class="group flex flex-col md:flex-row overflow-hidden rounded-3xl border border-[#e5e7eb] bg-white shadow-xl transition-all duration-500 hover:border-[#e63946]/30 hover:shadow-2xl hover:-translate-y-1"
           >
@@ -64,6 +64,17 @@
             </div>
           </article>
         </div>
+
+        <!-- Infinite scroll -->
+        <div v-if="posts.length" ref="scrollTrigger" class="flex justify-center py-12">
+          <div v-if="loadingMore" class="flex items-center gap-3">
+            <div class="h-2 w-2 animate-bounce rounded-full bg-[#e63946]" style="animation-delay: 0s"></div>
+            <div class="h-2 w-2 animate-bounce rounded-full bg-[#e63946]" style="animation-delay: 0.2s"></div>
+            <div class="h-2 w-2 animate-bounce rounded-full bg-[#e63946]" style="animation-delay: 0.4s"></div>
+            <span class="text-sm font-medium text-[#64748b]">Loading more stories…</span>
+          </div>
+          <p v-else-if="finished" class="text-sm font-bold uppercase tracking-widest text-[#cbd5e1]">You’ve read it all</p>
+        </div>
       </div>
     </section>
 
@@ -87,13 +98,27 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 
 const route = useRoute();
 const posts = ref([]);
 const loading = ref(true);
+const loadingMore = ref(false);
+const finished = ref(false);
+const page = ref(1);
+const scrollTrigger = ref(null);
+const resolvedCategoryLabel = ref('');
+let observer = null;
+
+function setupScrollObserver() {
+  if (!observer) return;
+  observer.disconnect();
+  if (scrollTrigger.value) observer.observe(scrollTrigger.value);
+}
+
+const PER_PAGE = 12;
 
 function slugify(text) {
   if (!text) return '';
@@ -104,26 +129,113 @@ function slugify(text) {
     .replace(/[^\w-]+/g, '');
 }
 
-const filteredPosts = computed(() => {
-  const list = posts.value;
-  const cat = route.query.category;
-  if (!cat) return list;
-  return list.filter((p) => slugify(p.category) === cat);
-});
-
 const categoryLabel = computed(() => {
   const cat = route.query.category;
   if (!cat) return '';
-  if (filteredPosts.value.length) return filteredPosts.value[0]?.category || cat;
+  if (posts.value.length) return posts.value[0]?.category || cat.replace(/-/g, ' ');
   return cat.replace(/-/g, ' ');
 });
 
-onMounted(async () => {
+async function resolveCategoryFilter() {
+  const q = route.query.category;
+  resolvedCategoryLabel.value = '';
+  if (q == null || q === '') return;
   try {
-    const r = await axios.get('/api/posts');
-    posts.value = r.data.posts || [];
-  } finally {
-    loading.value = false;
+    const { data } = await axios.get('/api/posts/categories');
+    const slug = String(q).toLowerCase();
+    const found = data.categories?.find(
+      (c) => c.slug === slug || slugify(c.label) === slug
+    );
+    resolvedCategoryLabel.value = found?.label || '';
+  } catch {
+    resolvedCategoryLabel.value = '';
   }
+}
+
+function refresh() {
+  posts.value = [];
+  page.value = 1;
+  finished.value = false;
+  load(1, false);
+}
+
+async function load(p = 1, append = false) {
+  if (append && (loadingMore.value || finished.value)) return;
+  if (append) loadingMore.value = true;
+  else loading.value = true;
+
+  try {
+    const params = { page: p, per_page: PER_PAGE };
+    if (resolvedCategoryLabel.value) {
+      params.category = resolvedCategoryLabel.value;
+    }
+
+    const r = await axios.get('/api/posts', { params });
+    let items = r.data.posts || [];
+    const current = r.data.current_page ?? p;
+    const last = r.data.last_page ?? p;
+    const perPage = r.data.per_page ?? PER_PAGE;
+
+    // Legacy ?category=slug links: filter client-side if slug not in /categories
+    const qCat = route.query.category;
+    if (qCat != null && qCat !== '' && !resolvedCategoryLabel.value) {
+      const want = String(qCat).toLowerCase();
+      items = items.filter((post) => slugify(post.category) === want);
+    }
+
+    if (append) {
+      posts.value = [...posts.value, ...items];
+    } else {
+      posts.value = items;
+    }
+
+    page.value = current;
+    finished.value = current >= last || (r.data.posts || []).length === 0 || (r.data.posts || []).length < perPage;
+  } catch {
+    if (!append) posts.value = [];
+    finished.value = true;
+  } finally {
+    if (append) loadingMore.value = false;
+    else loading.value = false;
+  }
+}
+
+function loadMore() {
+  if (loading.value || loadingMore.value || finished.value) return;
+  load(page.value + 1, true);
+}
+
+onMounted(async () => {
+  observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0]?.isIntersecting) loadMore();
+    },
+    { threshold: 0.1 }
+  );
+
+  await resolveCategoryFilter();
+  await load(1, false);
+  await nextTick();
+  setupScrollObserver();
 });
+
+onUnmounted(() => {
+  if (observer) observer.disconnect();
+});
+
+watch(
+  () => route.query.category,
+  async () => {
+    await resolveCategoryFilter();
+    refresh();
+  }
+);
+
+watch(
+  () => posts.value.length,
+  async () => {
+    await nextTick();
+    setupScrollObserver();
+  }
+);
 </script>

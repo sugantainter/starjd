@@ -36,7 +36,10 @@ class PostController extends Controller
             $query->where('category_label', request()->category);
         }
 
-        $paginator = $query->paginate(10);
+        $perPage = (int) request()->get('per_page', 10);
+        $perPage = min(30, max(1, $perPage));
+
+        $paginator = $query->paginate($perPage);
         $posts = $paginator->getCollection()->map(fn (Post $p) => [
             'id' => $p->id,
             'title' => $p->title ? html_entity_decode($p->title) : '',
@@ -52,6 +55,7 @@ class PostController extends Controller
             'posts' => $posts,
             'current_page' => $paginator->currentPage(),
             'last_page' => $paginator->lastPage(),
+            'per_page' => $paginator->perPage(),
             'total' => $paginator->total(),
         ]);
     }
