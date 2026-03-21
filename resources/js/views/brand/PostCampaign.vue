@@ -9,10 +9,10 @@
     <!-- Your campaigns -->
     <div class="mt-10">
       <h2 class="text-lg font-semibold text-[#1a1a1a]">Your campaigns</h2>
-      <div v-if="loading" class="mt-4 rounded-xl border border-[#e2e8f0] bg-white p-8 text-center shadow-sm">
+      <div v-if="loading && !campaigns.length" class="mt-4 rounded-xl border border-[#e2e8f0] bg-white p-8 text-center shadow-sm">
         <p class="text-[#64748b]">Loading campaigns…</p>
       </div>
-      <div v-else-if="!campaigns.length" class="mt-4 rounded-xl border border-[#e2e8f0] bg-white p-10 text-center shadow-sm">
+      <div v-else-if="!campaigns.length && finished" class="mt-4 rounded-xl border border-[#e2e8f0] bg-white p-10 text-center shadow-sm">
         <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#f1f5f9]">
           <svg class="h-7 w-7 text-[#94a3b8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
         </div>
@@ -84,18 +84,34 @@
             </tbody>
           </table>
         </div>
+        <div class="border-t border-[#e2e8f0] px-5 py-4">
+          <div ref="scrollTrigger" class="flex justify-center">
+            <div v-if="loadingMore" class="flex items-center gap-3">
+              <div class="h-2 w-2 animate-bounce rounded-full bg-[#e63946]" style="animation-delay: 0s"></div>
+              <div class="h-2 w-2 animate-bounce rounded-full bg-[#e63946]" style="animation-delay: 0.2s"></div>
+              <div class="h-2 w-2 animate-bounce rounded-full bg-[#e63946]" style="animation-delay: 0.4s"></div>
+              <span class="text-sm text-[#64748b]">Loading more campaigns...</span>
+            </div>
+            <p v-else-if="finished" class="text-sm text-[#94a3b8]">All campaigns loaded.</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import axios from 'axios';
 import PostCampaignFlow from '../../components/brand/PostCampaignFlow.vue';
 
 const loading = ref(true);
+const loadingMore = ref(false);
+const finished = ref(false);
+const page = ref(1);
 const campaigns = ref([]);
+const scrollTrigger = ref(null);
+let observer = null;
 
 function typeLabel(type) {
   const map = { instagram: 'Instagram', tiktok: 'TikTok', ugc: 'UGC', youtube: 'YouTube' };
@@ -144,16 +160,64 @@ async function openCampaign(c) {
 async function loadCampaigns() {
   loading.value = true;
   try {
-    const res = await axios.get('/api/brand/dashboard', { withCredentials: true });
+    const res = await axios.get('/api/brand/campaigns', {
+      withCredentials: true,
+      params: { page: 1, per_page: 15 },
+    });
     campaigns.value = res.data?.campaigns ?? [];
+    page.value = res.data?.current_page ?? 1;
+    finished.value = (res.data?.current_page ?? 1) >= (res.data?.last_page ?? 1) || !campaigns.value.length;
   } catch (_) {
     campaigns.value = [];
+    finished.value = true;
   } finally {
     loading.value = false;
   }
 }
 
-onMounted(loadCampaigns);
+async function loadMore() {
+  if (loading.value || loadingMore.value || finished.value) return;
+  loadingMore.value = true;
+  try {
+    const nextPage = page.value + 1;
+    const res = await axios.get('/api/brand/campaigns', {
+      withCredentials: true,
+      params: { page: nextPage, per_page: 15 },
+    });
+    const items = res.data?.campaigns ?? [];
+    campaigns.value = [...campaigns.value, ...items];
+    page.value = res.data?.current_page ?? nextPage;
+    finished.value = (res.data?.current_page ?? nextPage) >= (res.data?.last_page ?? nextPage) || items.length === 0;
+  } catch (_) {
+    finished.value = true;
+  } finally {
+    loadingMore.value = false;
+  }
+}
+
+function setupObserver() {
+  if (!observer) return;
+  observer.disconnect();
+  if (scrollTrigger.value) observer.observe(scrollTrigger.value);
+}
+
+onMounted(async () => {
+  observer = new IntersectionObserver((entries) => {
+    if (entries[0]?.isIntersecting) loadMore();
+  }, { threshold: 0.1 });
+  await loadCampaigns();
+  await nextTick();
+  setupObserver();
+});
+
+onUnmounted(() => {
+  if (observer) observer.disconnect();
+});
+
+watch(() => campaigns.value.length, async () => {
+  await nextTick();
+  setupObserver();
+});
 
 function onCampaignCreated() {
   loadCampaigns();

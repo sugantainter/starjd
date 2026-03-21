@@ -15,12 +15,37 @@ class BrandCampaignController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $campaigns = $request->user()
-            ->campaignsAsBrand()
-            ->latest()
-            ->get(['id', 'campaign_type', 'title', 'slug', 'status', 'targeting', 'created_at']);
+        $perPage = (int) $request->get('per_page', 15);
+        $perPage = min(50, max(1, $perPage));
 
-        return response()->json(['campaigns' => $campaigns]);
+        $paginator = $request->user()
+            ->campaignsAsBrand()
+            ->withCount([
+                'applications',
+                'applications as applications_pending_count' => function ($q) {
+                    $q->where('status', 'pending');
+                },
+            ])
+            ->latest()
+            ->paginate($perPage, [
+                'id',
+                'campaign_type',
+                'title',
+                'slug',
+                'status',
+                'budget',
+                'max_applications',
+                'targeting',
+                'created_at',
+            ]);
+
+        return response()->json([
+            'campaigns' => $paginator->items(),
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'per_page' => $paginator->perPage(),
+            'total' => $paginator->total(),
+        ]);
     }
 
     /**
