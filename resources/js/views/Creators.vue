@@ -44,7 +44,7 @@
         class="group flex flex-col md:flex-row bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden hover:border-[#fc4402]/40 hover:shadow-2xl transition-all duration-300"
       >
         <!-- Image Section -->
-        <div class="relative w-full md:w-72 h-64 md:h-auto overflow-hidden bg-[#f1f5f9] shrink-0">
+        <div class="relative w-full md:w-72 h-64 md:h-80 overflow-hidden bg-[#f1f5f9] shrink-0">
           <img
             :src="p.avatar_url || 'https://ui-avatars.com/api?name=' + encodeURIComponent(p.user?.name || '') + '&size=400&background=fc4402&color=fff'"
             :alt="p.user?.name"

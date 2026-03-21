@@ -28,7 +28,7 @@
             class="group flex flex-col md:flex-row overflow-hidden rounded-3xl border border-[#e5e7eb] bg-white shadow-xl transition-all duration-500 hover:border-[#e63946]/30 hover:shadow-2xl hover:-translate-y-1"
           >
             <!-- Feature Image -->
-            <div class="w-full md:w-96 h-64 md:h-auto shrink-0 overflow-hidden bg-[#f3f4f6] relative">
+            <div class="w-full md:w-96 h-64 md:h-80 shrink-0 overflow-hidden bg-[#f3f4f6] relative">
                <img v-if="post.image" :src="post.image" :alt="post.title" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
                <div v-else class="h-full w-full flex items-center justify-center bg-gradient-to-br from-[#e63946] to-[#1a1a1a]">
                  <span class="text-6xl font-black text-white/20">{{ post.title.charAt(0) }}</span>

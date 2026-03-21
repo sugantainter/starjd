@@ -26,7 +26,7 @@
           class="group flex flex-col md:flex-row overflow-hidden rounded-3xl border border-[#e5e7eb] bg-white shadow-xl transition-all duration-500 hover:border-[#e63946]/30 hover:shadow-2xl hover:-translate-y-1"
         >
           <!-- Video Player Area -->
-          <div class="w-full md:w-[480px] shrink-0 bg-black relative aspect-video md:aspect-auto">
+          <div class="w-full md:w-[480px] shrink-0 bg-black relative md:h-72 overflow-hidden aspect-video md:aspect-auto">
              <iframe 
                :src="video.embedUrl" 
                :title="video.title" 

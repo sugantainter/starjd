@@ -59,7 +59,7 @@
         class="group flex flex-col md:flex-row overflow-hidden rounded-3xl border border-[#e2e8f0] bg-white hover:border-[#e63946]/40 hover:shadow-2xl transition-all duration-500"
       >
         <!-- Campaign Image/Brand -->
-        <div class="w-full md:w-80 h-64 md:h-auto overflow-hidden bg-gradient-to-br from-[#f8fafc] to-[#f1f5f9] shrink-0 relative flex items-center justify-center p-8">
+        <div class="w-full md:w-80 h-64 md:h-80 overflow-hidden bg-gradient-to-br from-[#f8fafc] to-[#f1f5f9] shrink-0 relative flex items-center justify-center p-8">
            <div class="text-center">
               <div class="w-24 h-24 bg-white rounded-3xl shadow-xl flex items-center justify-center mx-auto mb-4 border border-[#e2e8f0] group-hover:scale-110 transition-transform duration-500">
                  <span class="text-3xl font-black text-[#e63946]">{{ (c.brand?.name || 'C').charAt(0) }}</span>

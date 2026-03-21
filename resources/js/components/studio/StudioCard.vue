@@ -4,7 +4,7 @@
     class="group flex flex-col md:flex-row overflow-hidden rounded-3xl border border-[#e2e8f0] bg-white hover:border-[#e63946]/40 hover:shadow-2xl transition-all duration-500 w-full"
   >
     <!-- Studio Image -->
-    <div class="relative w-full md:w-80 h-64 md:h-auto shrink-0 overflow-hidden bg-[#f1f5f9]">
+    <div class="relative w-full md:w-80 h-64 md:h-[320px] shrink-0 overflow-hidden bg-[#f1f5f9]">
       <img
         :src="mainImage || placeholderImage"
         :alt="studio.name"
