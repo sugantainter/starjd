@@ -76,6 +76,7 @@ Route::get('cities', function () {
             ->get(['id', 'state_id', 'name', 'slug'])
     );
 });
+Route::get('pages', [PageController::class, 'index']);
 Route::get('pages/{slug}', [PageController::class, 'show']);
 
 // ── Auth ───────────────────────────────────────────────────────────────────

@@ -72,4 +72,14 @@ class PageController extends Controller
         }
         return Page::published()->global()->where('slug', $slug)->first();
     }
+
+    public function index(): \Illuminate\Http\JsonResponse
+    {
+        $pages = Page::published()->inRandomOrder()->limit(18)->get();
+        return response()->json($pages->map(fn($p) => [
+            'id' => $p->id,
+            'title' => $p->title ? html_entity_decode($p->title) : '',
+            'slug' => $p->slug,
+        ]));
+    }
 }

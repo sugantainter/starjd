@@ -31,19 +31,46 @@
       <select
         v-model="scopeFilterStateId"
         class="rounded-full border border-[#e2e8f0] bg-white px-3 py-1.5 text-sm text-[#1a1a1a]"
-        @change="scopeFilter = scopeFilterStateId ? 'state' : ''; scopeFilterCityId = ''"
+        @change="scopeFilter = scopeFilterStateId ? 'state' : ''; scopeFilterCityId = ''; citySearch = ''"
       >
         <option value="">By state…</option>
         <option v-for="s in states" :key="s.id" :value="s.id">{{ s.name }}</option>
       </select>
-      <select
-        v-model="scopeFilterCityId"
-        class="rounded-full border border-[#e2e8f0] bg-white px-3 py-1.5 text-sm text-[#1a1a1a]"
-        @change="scopeFilter = scopeFilterCityId ? 'city' : scopeFilter"
-      >
-        <option value="">By city…</option>
-        <option v-for="c in cities" :key="c.id" :value="c.id">{{ c.name }}, {{ c.state?.name }}</option>
-      </select>
+      <div class="relative">
+        <input
+          type="text"
+          v-model="citySearch"
+          class="rounded-full border border-[#e2e8f0] bg-white px-4 py-1.5 text-sm text-[#1a1a1a] focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946] min-w-[150px]"
+          placeholder="Search city…"
+          @focus="cityDropdownOpen = true"
+          @input="cityDropdownOpen = true"
+          @blur="setTimeout(() => cityDropdownOpen = false, 200)"
+        />
+        <div
+          v-if="cityDropdownOpen"
+          class="absolute left-0 z-50 mt-1 max-h-60 w-64 overflow-auto rounded-xl border border-[#e2e8f0] bg-white py-1 shadow-lg"
+        >
+          <button
+            type="button"
+            class="w-full px-4 py-2 text-left text-sm hover:bg-[#f8fafc]"
+            @click="selectCityFilter('')"
+          >
+            All Cities
+          </button>
+          <button
+            v-for="c in filteredCitiesForFilter"
+            :key="c.id"
+            type="button"
+            class="w-full px-4 py-2 text-left text-sm hover:bg-[#f8fafc]"
+            :class="{ 'bg-red-50 text-[#e63946]': scopeFilterCityId === c.id }"
+            @click="selectCityFilter(c)"
+          >
+            <div class="font-medium">{{ c.name }}</div>
+            <div class="text-xs text-[#64748b]">{{ c.state?.name }}</div>
+          </button>
+          <div v-if="filteredCitiesForFilter.length === 0" class="px-4 py-2 text-sm text-[#64748b]">No cities found</div>
+        </div>
+      </div>
     </div>
 
     <div v-if="loading" class="overflow-hidden rounded-xl border border-[#e2e8f0] bg-white">
@@ -131,14 +158,32 @@
                 <span class="text-sm">City — select city</span>
               </label>
               <template v-if="scopeType === 'city'">
-                <select v-model="form.state_id" class="ml-6 mr-2 rounded border border-[#e2e8f0] px-2 py-1.5 text-sm" @change="form.city_id = ''">
+                <select v-model="form.state_id" class="ml-6 mr-2 rounded border border-[#e2e8f0] px-2 py-1.5 text-sm" @change="form.city_id = ''; modalCitySearch = ''">
                   <option value="">State first</option>
                   <option v-for="s in states" :key="s.id" :value="s.id">{{ s.name }}</option>
                 </select>
-                <select v-model="form.city_id" class="rounded border border-[#e2e8f0] px-2 py-1.5 text-sm">
-                  <option value="">Select city</option>
-                  <option v-for="c in citiesForState" :key="c.id" :value="c.id">{{ c.name }}</option>
-                </select>
+                <div class="relative ml-6 mt-2 inline-block">
+                  <input
+                    type="text"
+                    v-model="modalCitySearch"
+                    placeholder="Search city..."
+                    class="rounded border border-[#e2e8f0] px-3 py-1.5 text-sm focus:border-[#e63946] focus:outline-none"
+                    @focus="modalCityDropdownOpen = true"
+                    @blur="setTimeout(() => modalCityDropdownOpen = false, 200)"
+                  />
+                  <div v-if="modalCityDropdownOpen && form.state_id" class="absolute z-50 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-[#e2e8f0] bg-white shadow-lg">
+                    <button
+                      v-for="c in filteredCitiesForModal"
+                      :key="c.id"
+                      type="button"
+                      class="w-full px-3 py-2 text-left text-sm hover:bg-[#f8fafc]"
+                      @click="selectCityForModal(c)"
+                    >
+                      {{ c.name }}
+                    </button>
+                    <div v-if="filteredCitiesForModal.length === 0" class="px-3 py-2 text-sm text-[#64748b]">No cities</div>
+                  </div>
+                </div>
               </template>
             </div>
           </div>
@@ -200,7 +245,11 @@ const editing = ref(null);
 const scopeFilter = ref('');
 const scopeFilterStateId = ref('');
 const scopeFilterCityId = ref('');
+const citySearch = ref('');
+const cityDropdownOpen = ref(false);
 const scopeType = ref('global');
+const modalCitySearch = ref('');
+const modalCityDropdownOpen = ref(false);
 const form = reactive({
   title: '',
   slug: '',
@@ -216,6 +265,46 @@ const citiesForState = computed(() => {
   if (!form.state_id) return [];
   return cities.value.filter((c) => String(c.state_id) === String(form.state_id));
 });
+
+const filteredCitiesForFilter = computed(() => {
+  let list = cities.value;
+  if (scopeFilterStateId.value) {
+    list = list.filter((c) => String(c.state_id) === String(scopeFilterStateId.value));
+  }
+  const q = citySearch.value.trim().toLowerCase();
+  if (q) {
+    list = list.filter((c) => (c.name || '').toLowerCase().includes(q));
+  }
+  return list;
+});
+
+const filteredCitiesForModal = computed(() => {
+  const q = modalCitySearch.value.trim().toLowerCase();
+  let list = citiesForState.value;
+  if (q) {
+    list = list.filter((c) => (c.name || '').toLowerCase().includes(q));
+  }
+  return list;
+});
+
+function selectCityFilter(city) {
+  if (city === '') {
+    scopeFilterCityId.value = '';
+    citySearch.value = '';
+    scopeFilter.value = scopeFilterStateId.value ? 'state' : '';
+  } else {
+    scopeFilterCityId.value = city.id;
+    citySearch.value = city.name;
+    scopeFilter.value = 'city';
+  }
+  cityDropdownOpen.value = false;
+}
+
+function selectCityForModal(city) {
+  form.city_id = String(city.id);
+  modalCitySearch.value = city.name;
+  modalCityDropdownOpen.value = false;
+}
 
 function pageUrl(page) {
   const base = window.location.origin;
@@ -268,10 +357,12 @@ function openForm(item = null) {
     form.state_id = item.state_id ? String(item.state_id) : '';
     form.city_id = item.city_id ? String(item.city_id) : '';
     scopeType.value = item.city_id ? 'city' : item.state_id ? 'state' : 'global';
+    if (item.city) modalCitySearch.value = item.city.name;
   } else {
     form.title = form.slug = form.content = form.meta_title = form.meta_description = '';
     form.status = 'draft';
     form.state_id = form.city_id = '';
+    modalCitySearch.value = '';
     scopeType.value = 'global';
   }
   showModal.value = true;

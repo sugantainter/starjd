@@ -139,7 +139,14 @@
         <div>
           <h4 class="text-sm font-bold text-white">Useful Links</h4>
           <p class="mt-1 text-xs text-[#64748b]">Legal & info</p>
-          <ul class="mt-4 space-y-2.5 text-sm">
+          <ul v-if="legalPagesOnly.length" class="mt-4 space-y-2.5 text-sm">
+            <li v-for="page in legalPagesOnly" :key="page.id">
+              <router-link :to="'/page/' + page.slug" class="transition hover:text-[#fc4402]">{{ page.title }}</router-link>
+            </li>
+            <li><router-link to="/child-safety" class="transition hover:text-[#fc4402]">Child Safety</router-link></li>
+            <li><router-link to="/contact" class="transition hover:text-[#fc4402]">Contact</router-link></li>
+          </ul>
+          <ul v-else class="mt-4 space-y-2.5 text-sm">
             <li><router-link to="/privacy" class="transition hover:text-[#fc4402]">Privacy Policy</router-link></li>
             <li><router-link to="/terms" class="transition hover:text-[#fc4402]">Terms of Service</router-link></li>
             <li><router-link to="/child-safety" class="transition hover:text-[#fc4402]">Child Safety</router-link></li>
@@ -148,8 +155,25 @@
         </div>
       </div>
 
-      <!-- Our Services: above bottom bar, hr, heading on top then options below (6 per line responsive) -->
+      <!-- Our Pages (Location & Legal Grid) -->
       <hr class="mt-12 border-[#334155]" />
+      <div v-if="dynamicPages.length" class="flex flex-col gap-4 pt-6">
+        <h4 class="text-sm font-bold text-white">Our Pages</h4>
+        <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+          <router-link
+            v-for="page in dynamicPages"
+            :key="page.id"
+            :to="'/page/' + page.slug"
+            class="transition hover:text-[#fc4402] line-clamp-1"
+            :title="page.title"
+          >
+            {{ page.title }}
+          </router-link>
+        </div>
+      </div>
+
+      <!-- Our Services: above bottom bar, hr, heading on top then options below (6 per line responsive) -->
+      <hr class="mt-10 border-[#334155]" />
       <div class="flex flex-col gap-4 pt-6">
         <h4 class="text-sm font-bold text-white">Our Services</h4>
         <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
@@ -171,8 +195,8 @@
         <div class="flex flex-wrap justify-center gap-6 text-sm">
           <router-link to="/about" class="transition hover:text-[#fc4402]">About</router-link>
           <router-link to="/contact" class="transition hover:text-[#fc4402]">Contact</router-link>
-          <router-link to="/privacy" class="transition hover:text-[#fc4402]">Privacy</router-link>
-          <router-link to="/terms" class="transition hover:text-[#fc4402]">Terms</router-link>
+          <router-link to="/privacy" class="transition hover:text-[#fc4402]">Privacy Policy</router-link>
+          <router-link to="/terms" class="transition hover:text-[#fc4402]">Terms of Service</router-link>
           <router-link to="/child-safety" class="transition hover:text-[#fc4402]">Child Safety</router-link>
         </div>
       </div>
@@ -199,6 +223,7 @@ const defaultFooterServices = [
 
 const footerServices = ref([]);
 const blogCategories = ref([]);
+const dynamicPages = ref([]);
 const newsletterEmail = ref('');
 
 function onNewsletterSubmit() {
@@ -216,17 +241,25 @@ const displayServices = computed(() => {
   return fromApi.length ? fromApi : defaultFooterServices;
 });
 
+const legalPagesOnly = computed(() => {
+  const legalSlugs = ['privacy', 'terms', 'cookie-policy'];
+  return dynamicPages.value.filter(page => legalSlugs.includes(page.slug));
+});
+
 onMounted(async () => {
   try {
-    const [servicesRes, categoriesRes] = await Promise.all([
+    const [servicesRes, categoriesRes, pagesRes] = await Promise.all([
       axios.get('/api/services'),
       axios.get('/api/posts/categories'),
+      axios.get('/api/pages'),
     ]);
     footerServices.value = Array.isArray(servicesRes.data) ? servicesRes.data : servicesRes.data?.data ?? [];
     blogCategories.value = categoriesRes.data?.categories ?? [];
+    dynamicPages.value = Array.isArray(pagesRes.data) ? pagesRes.data : [];
   } catch {
     footerServices.value = [];
     blogCategories.value = [];
+    dynamicPages.value = [];
   }
 });
 </script>

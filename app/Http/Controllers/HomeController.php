@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Page;
+
 class HomeController extends Controller
 {
     /**
@@ -9,6 +11,7 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('welcome');
+        $pages = \App\Models\Page::published()->inRandomOrder()->limit(18)->get(['id', 'title', 'slug']);
+        return view('welcome', compact('pages'));
     }
 }

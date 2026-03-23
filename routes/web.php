@@ -124,6 +124,7 @@ Route::prefix('api')->group(function () {
     Route::get('amenities', fn () => response()->json(\App\Models\Amenity::active()->orderBy('sort_order')->orderBy('name')->get(['id', 'name', 'slug', 'icon'])));
     Route::get('services', [ServiceController::class, 'index']);
     Route::get('services/{slug}', [ServiceController::class, 'show']);
+    Route::get('pages', [ApiPageController::class, 'index']);
     Route::get('pages/{slug}', [ApiPageController::class, 'show']);
     Route::get('states', fn () => response()->json(\App\Models\State::orderBy('sort_order')->orderBy('name')->get(['id', 'name', 'slug'])));
     Route::get('cities', function () {
