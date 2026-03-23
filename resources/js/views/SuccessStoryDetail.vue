@@ -69,14 +69,20 @@
              <router-link to="/success-stories" class="font-black text-[#e63946] hover:underline uppercase tracking-widest text-sm">View all</router-link>
           </div>
           
-          <div v-if="relatedStories.length" class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div v-if="loadingRelated" class="flex justify-center py-12">
+             <div class="h-8 w-8 animate-spin rounded-full border-4 border-[#e63946] border-t-transparent"></div>
+          </div>
+          <div v-else-if="relatedStories.length" class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
              <SuccessStoryCard
                v-for="s in relatedStories"
                :key="s.id"
                :story="s"
              />
           </div>
-          <div v-else class="text-[#94a3b8] text-center italic">Loading more stories...</div>
+          <div v-else class="text-[#94a3b8] text-center border border-dashed border-[#e2e8f0] rounded-3xl py-12">
+            <p class="italic">No more stories found in this category.</p>
+            <router-link to="/success-stories" class="mt-4 inline-block text-[#e63946] font-bold hover:underline">Browse all stories</router-link>
+          </div>
        </div>
     </section>
   </div>
@@ -91,6 +97,7 @@ import SuccessStoryCard from '../components/SuccessStoryCard.vue';
 const route = useRoute();
 const story = ref(null);
 const loading = ref(true);
+const loadingRelated = ref(false);
 const relatedStories = ref([]);
 
 async function loadStory() {
@@ -107,16 +114,20 @@ async function loadStory() {
 }
 
 async function loadRelated(roleSlug) {
+  loadingRelated.value = true;
   try {
     const { data } = await axios.get('/api/success-stories', {
       params: { 
-        limit: 3,
+        limit: 4,
         role_slug: roleSlug !== 'all' ? roleSlug : undefined
       }
     });
+    // Filter out current story and take top 3
     relatedStories.value = (data.data || []).filter(s => s.id !== story.value?.id).slice(0, 3);
   } catch (e) {
     console.error('Failed to load related stories', e);
+  } finally {
+    loadingRelated.value = false;
   }
 }
 
