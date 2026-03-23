@@ -28,7 +28,6 @@
     </div>
     <p v-if="couponError" class="mt-1 text-sm text-red-600">{{ couponError }}</p>
     <p v-if="couponApplied" class="mt-1 text-sm text-[#10b981]">Coupon applied. Pay ₹{{ finalAmount }}</p>
-    <p v-if="couponApplied" class="mt-1 text-sm text-[#10b981]">Coupon applied. Pay ₹{{ finalAmount }}</p>
 
     <!-- Available Coupons -->
     <div v-if="availableCoupons.length" class="mt-6 border-t border-[#e2e8f0] pt-6">
@@ -139,6 +138,16 @@ async function pay() {
       amount: Number(amount),
       coupon_code: couponCode.value.trim() || undefined,
     }, { withCredentials: true });
+    
+    if (res.data.free && res.data.redirect) {
+      window.location.href = res.data.redirect;
+      return;
+    }
+
+    if (!res.data.payment_url) {
+      throw new Error(res.data.message || 'Payment URL missing from server.');
+    }
+
     payuUrl.value = res.data.payment_url;
     payuParams.value = res.data.params || {};
     nextTick(() => {

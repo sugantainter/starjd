@@ -29,7 +29,7 @@ class CollaborationController extends Controller
         $request->validate([
             'creator_id' => ['required', 'exists:users,id'],
             'package_id' => ['nullable', 'exists:packages,id'],
-            'amount' => ['required', 'numeric', 'min:1'],
+            'amount' => ['required', 'numeric', 'min:0'],
             'brand_notes' => ['nullable', 'string', 'max:1000'],
             'coupon_code' => ['nullable', 'string', 'max:64'],
         ]);

@@ -38,9 +38,7 @@ class PayUController extends Controller
         $amount = (float) $request->input('amount');
         $productinfo = $request->input('productinfo', 'Order');
 
-        if ($amount <= 0) {
-            return response()->json(['message' => 'Invalid amount'], 422);
-        }
+        // Amount will be validated after processing coupons in each case
 
         $payableType = null;
         $payableId = null;
@@ -62,17 +60,30 @@ class PayUController extends Controller
                     }
                     $amount = $applied['final_amount'];
                     $couponId = $applied['coupon_id'] ?? null;
-                } elseif ((float) $amount !== $originalAmount) {
-                    return response()->json(['message' => 'Invalid amount'], 422);
+                } elseif ((float) $amount !== (float) $originalAmount) {
+                    return response()->json(['message' => "Invalid amount (Original: $originalAmount, Received: $amount)"], 422);
                 }
                 $accessPayment = AccessPayment::create([
                     'user_id' => $user->id,
                     'type' => $user->role,
                     'amount' => $amount,
-                    'status' => 'pending',
-                    'gateway_ref' => null,
+                    'status' => $amount == 0 ? 'paid' : 'pending',
+                    'paid_at' => $amount == 0 ? now() : null,
+                    'gateway_ref' => $amount == 0 ? 'coupon_free' : null,
                     'coupon_id' => $couponId,
                 ]);
+
+                if ($amount == 0) {
+                    if ($couponId) {
+                        Coupon::where('id', $couponId)->increment('used_count');
+                    }
+                    return response()->json([
+                        'free' => true,
+                        'message' => 'Access granted via 100% discount.',
+                        'redirect' => $user->role === 'creator' ? url('/creator/dashboard') : url('/brand/dashboard'),
+                    ]);
+                }
+
                 $payableType = AccessPayment::class;
                 $payableId = $accessPayment->id;
                 $productinfo = 'StarJD '.ucfirst($user->role).' Plan - '.($plan['name'] ?? $planId);
@@ -87,6 +98,18 @@ class PayUController extends Controller
                 if ((float) $collab->amount != $amount) {
                     return response()->json(['message' => 'Amount mismatch'], 422);
                 }
+                if ($amount == 0) {
+                    $collab->update(['status' => 'paid', 'paid_at' => now()]);
+                    if ($collab->coupon_id) {
+                        Coupon::where('id', $collab->coupon_id)->increment('used_count');
+                    }
+                    return response()->json([
+                        'free' => true,
+                        'message' => 'Collaboration confirmed via 100% discount.',
+                        'redirect' => url('/brand/collaborations'),
+                    ]);
+                }
+
                 $payableType = Collaboration::class;
                 $payableId = $collab->id;
                 $productinfo = 'Collaboration #'.$collab->id.' - StarJD';
@@ -101,6 +124,18 @@ class PayUController extends Controller
                 if ((float) $booking->amount != $amount) {
                     return response()->json(['message' => 'Amount mismatch'], 422);
                 }
+                if ($amount == 0) {
+                    $this->bookingService->confirmBooking($booking, 'coupon_free', 'free');
+                    if ($booking->coupon_id) {
+                        Coupon::where('id', $booking->coupon_id)->increment('used_count');
+                    }
+                    return response()->json([
+                        'free' => true,
+                        'message' => 'Booking confirmed via 100% discount.',
+                        'redirect' => url('/payment/result?status=success&booking=1'),
+                    ]);
+                }
+
                 $payableType = Booking::class;
                 $payableId = $booking->id;
                 $productinfo = 'Studio Booking #'.$booking->id.' - StarJD';
@@ -122,8 +157,8 @@ class PayUController extends Controller
                     }
                     $amount = $applied['final_amount'];
                     $featuredCouponId = $applied['coupon_id'] ?? null;
-                } elseif ((float) $amount !== $originalAmount) {
-                    return response()->json(['message' => 'Invalid featured plan or amount'], 422);
+                } elseif ((float) $amount !== (float) $originalAmount) {
+                    return response()->json(['message' => "Invalid featured amount (Original: $originalAmount, Received: $amount)"], 422);
                 }
                 $profile = $user->creatorProfile;
                 if (! $profile) {
@@ -136,12 +171,35 @@ class PayUController extends Controller
                     'plan_id' => $plan['id'],
                     'amount' => $amount,
                     'duration_days' => (int) $plan['duration_days'],
-                    'status' => 'pending',
-                    'featured_until' => null,
-                    'paid_at' => null,
-                    'gateway_ref' => null,
+                    'status' => $amount == 0 ? 'paid' : 'pending',
+                    'featured_until' => null, // Will be set below if free
+                    'paid_at' => $amount == 0 ? now() : null,
+                    'gateway_ref' => $amount == 0 ? 'coupon_free' : null,
                     'coupon_id' => $featuredCouponId,
                 ]);
+
+                if ($amount == 0) {
+                    $now = Carbon::now();
+                    $currentEnd = $profile->featured_until && Carbon::parse($profile->featured_until)->isFuture()
+                        ? Carbon::parse($profile->featured_until)
+                        : $now;
+                    $newFeaturedUntil = $currentEnd->copy()->addDays($featuredPayment->duration_days);
+                    
+                    $featuredPayment->update([
+                        'featured_until' => $newFeaturedUntil,
+                    ]);
+                    $profile->update(['featured_until' => $newFeaturedUntil]);
+
+                    if ($featuredCouponId) {
+                        Coupon::where('id', $featuredCouponId)->increment('used_count');
+                    }
+                    return response()->json([
+                        'free' => true,
+                        'message' => 'Featured status activated via 100% discount.',
+                        'redirect' => url('/creator/dashboard'),
+                    ]);
+                }
+
                 $payableType = FeaturedPayment::class;
                 $payableId = $featuredPayment->id;
                 $productinfo = 'StarJD Featured - '.($plan['name'] ?? $planId);
