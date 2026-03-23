@@ -22,6 +22,8 @@ class Coupon extends Model
         'valid_until',
         'is_active',
         'applicable_to',
+        'applicable_roles',
+        'is_public',
     ];
 
     protected function casts(): array

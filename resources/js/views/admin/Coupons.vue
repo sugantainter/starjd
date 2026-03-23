@@ -14,6 +14,7 @@
             <th class="px-4 py-3 text-left text-xs font-medium uppercase text-[#64748b]">Min / Uses</th>
             <th class="px-4 py-3 text-left text-xs font-medium uppercase text-[#64748b]">Valid</th>
             <th class="px-4 py-3 text-left text-xs font-medium uppercase text-[#64748b]">Applicable</th>
+            <th class="px-4 py-3 text-left text-xs font-medium uppercase text-[#64748b]">Public / Roles</th>
             <th class="px-4 py-3 text-right text-xs font-medium uppercase text-[#64748b]">Actions</th>
           </tr>
         </thead>
@@ -33,6 +34,11 @@
               {{ formatDate(item.valid_from) }} – {{ formatDate(item.valid_until) }}
             </td>
             <td class="px-4 py-3 text-sm text-[#64748b]">{{ item.applicable_to || 'All' }}</td>
+            <td class="px-4 py-3 text-sm text-[#64748b]">
+              <span v-if="item.is_public" class="text-green-600 font-medium">Public</span>
+              <span v-else class="text-gray-400">Private</span>
+              <div v-if="item.applicable_roles" class="text-[10px] mt-1 text-[#64748b]">{{ item.applicable_roles }}</div>
+            </td>
             <td class="px-4 py-3 text-right">
               <button type="button" class="text-[#e63946] hover:underline" @click="openForm(item)">Edit</button>
               <button type="button" class="ml-3 text-red-600 hover:underline" @click="remove(item)">Delete</button>
@@ -42,7 +48,7 @@
       </table>
     </div>
     <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="showModal = false">
-      <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+      <div class="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
         <h2 class="mb-4 text-lg font-semibold text-[#1a1a1a]">{{ editing ? 'Edit' : 'Add' }} coupon</h2>
         <form @submit.prevent="save" class="space-y-3">
           <div>
@@ -91,11 +97,22 @@
               <option value="access">Access plans</option>
               <option value="collaboration">Collaborations</option>
               <option value="booking">Studio bookings</option>
+              <option value="package">Package management</option>
             </select>
           </div>
-          <div class="flex items-center gap-2">
-            <input id="coupon-active" v-model="form.is_active" type="checkbox" class="h-4 w-4 rounded border-[#e2e8f0] text-[#e63946] focus:ring-[#e63946]" />
-            <label for="coupon-active" class="text-sm text-[#64748b]">Active</label>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Applicable Roles (optional, comma-separated)</label>
+            <input v-model="form.applicable_roles" type="text" placeholder="e.g. brand, creator" class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-[#1a1a1a]" />
+          </div>
+          <div class="flex flex-wrap gap-4">
+            <div class="flex items-center gap-2">
+              <input id="coupon-active" v-model="form.is_active" type="checkbox" class="h-4 w-4 rounded border-[#e2e8f0] text-[#e63946] focus:ring-[#e63946]" />
+              <label for="coupon-active" class="text-sm font-medium text-[#1a1a1a]">Active</label>
+            </div>
+            <div class="flex items-center gap-2">
+              <input id="coupon-public" v-model="form.is_public" type="checkbox" class="h-4 w-4 rounded border-[#e2e8f0] text-[#e63946] focus:ring-[#e63946]" />
+              <label for="coupon-public" class="text-sm font-medium text-[#1a1a1a]">Display on pages (Public)</label>
+            </div>
           </div>
           <div class="flex gap-2 pt-2">
             <button type="submit" class="rounded-lg bg-[#e63946] px-4 py-2 text-sm font-medium text-white hover:bg-[#c1121f]">Save</button>
@@ -126,6 +143,8 @@ const form = reactive({
   valid_until: '',
   is_active: true,
   applicable_to: '',
+  applicable_roles: '',
+  is_public: false,
 });
 
 function formatDate(val) {
@@ -157,6 +176,8 @@ function openForm(item = null) {
     form.valid_until = item.valid_until ? item.valid_until.slice(0, 10) : '';
     form.is_active = item.is_active !== false;
     form.applicable_to = item.applicable_to || '';
+    form.applicable_roles = item.applicable_roles || '';
+    form.is_public = !!item.is_public;
   } else {
     form.code = '';
     form.description = '';
@@ -168,6 +189,8 @@ function openForm(item = null) {
     form.valid_until = '';
     form.is_active = true;
     form.applicable_to = '';
+    form.applicable_roles = '';
+    form.is_public = false;
   }
   showModal.value = true;
 }
@@ -185,6 +208,8 @@ async function save() {
       valid_until: form.valid_until || null,
       is_active: form.is_active,
       applicable_to: form.applicable_to || null,
+      applicable_roles: form.applicable_roles || null,
+      is_public: form.is_public,
     };
     if (editing.value) {
       await axios.put('/api/admin/coupons/' + editing.value.id, payload, { withCredentials: true });

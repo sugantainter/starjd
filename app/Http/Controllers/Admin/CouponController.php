@@ -27,10 +27,13 @@ class CouponController extends Controller
             'valid_from' => ['nullable', 'date'],
             'valid_until' => ['nullable', 'date', 'after_or_equal:valid_from'],
             'is_active' => ['boolean'],
-            'applicable_to' => ['nullable', 'string', 'in:access,collaboration,booking'],
+            'applicable_to' => ['nullable', 'string', 'in:access,collaboration,booking,package'],
+            'applicable_roles' => ['nullable', 'string', 'max:255'],
+            'is_public' => ['boolean'],
         ]);
         $data['code'] = strtoupper(trim($data['code']));
         $data['is_active'] = $request->boolean('is_active', true);
+        $data['is_public'] = $request->boolean('is_public', false);
         $coupon = Coupon::create($data);
         return response()->json($coupon, 201);
     }
@@ -47,10 +50,15 @@ class CouponController extends Controller
             'valid_from' => ['nullable', 'date'],
             'valid_until' => ['nullable', 'date'],
             'is_active' => ['boolean'],
-            'applicable_to' => ['nullable', 'string', 'in:access,collaboration,booking'],
+            'applicable_to' => ['nullable', 'string', 'in:access,collaboration,booking,package'],
+            'applicable_roles' => ['nullable', 'string', 'max:255'],
+            'is_public' => ['boolean'],
         ]);
         if (isset($data['code'])) {
             $data['code'] = strtoupper(trim($data['code']));
+        }
+        if ($request->has('is_public')) {
+            $data['is_public'] = $request->boolean('is_public');
         }
         $coupon->update($data);
         return response()->json($coupon);

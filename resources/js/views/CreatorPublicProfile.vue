@@ -116,6 +116,25 @@
             <label class="mb-1 block text-sm font-medium">Coupon code (optional)</label>
             <input v-model="collabForm.coupon_code" type="text" placeholder="e.g. SAVE20" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#fc4402] focus:outline-none focus:ring-1 focus:ring-[#fc4402]" />
           </div>
+          
+          <!-- Available Coupons -->
+          <div v-if="availableCoupons.length" class="space-y-2">
+            <p class="text-[10px] font-bold text-[#94a3b8] uppercase">Applicable Offers</p>
+            <div class="grid grid-cols-1 gap-2">
+              <div v-for="c in availableCoupons" :key="c.id" 
+                class="flex items-center justify-between rounded-lg border border-dashed border-[#fc4402]/30 bg-[#fc4402]/5 px-3 py-2 cursor-pointer hover:bg-[#fc4402]/10"
+                @click="collabForm.coupon_code = c.code"
+              >
+                <div>
+                  <span class="font-mono text-sm font-bold text-[#fc4402]">{{ c.code }}</span>
+                  <p class="text-[10px] text-[#64748b] leading-tight">{{ c.description }}</p>
+                </div>
+                <span class="shrink-0 text-[10px] font-bold text-[#fc4402] bg-white border border-[#fc4402]/20 px-1.5 py-0.5 rounded">
+                  {{ c.discount_type === 'percent' ? c.discount_value + '%' : '₹' + c.discount_value }} OFF
+                </span>
+              </div>
+            </div>
+          </div>
           <div>
             <label class="mb-1 block text-sm font-medium">Notes (optional)</label>
             <textarea v-model="collabForm.brand_notes" rows="3" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#fc4402] focus:outline-none focus:ring-1 focus:ring-[#fc4402]"></textarea>
@@ -150,6 +169,16 @@ const collabForm = reactive({ amount: 0, brand_notes: '', coupon_code: '' });
 const error = ref('');
 const loadingCollab = ref(false);
 const isBrand = ref(false);
+const availableCoupons = ref([]);
+
+async function loadCoupons() {
+  try {
+    const { data } = await axios.get('/api/coupons', { params: { applicable_to: 'collaboration' } });
+    availableCoupons.value = data || [];
+  } catch (e) {
+    console.error('Failed to load coupons', e);
+  }
+}
 
 const platformFee = computed(() => {
   const amt = Number(collabForm.amount);
@@ -228,6 +257,7 @@ onMounted(async () => {
   } catch {
     isBrand.value = false;
   }
+  loadCoupons();
 });
 
 watch(selectedPackage, (p) => {

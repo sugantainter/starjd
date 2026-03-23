@@ -132,6 +132,7 @@ Route::prefix('api')->group(function () {
         $stateId = request()->query('state_id');
         return response()->json(\App\Models\City::when($stateId, fn ($q) => $q->where('state_id', $stateId))->with('state:id,name,slug')->orderBy('sort_order')->orderBy('name')->get(['id', 'state_id', 'name', 'slug']));
     });
+    Route::get('coupons', [\App\Http\Controllers\Api\CouponController::class, 'index']);
     Route::get('success-stories', [\App\Http\Controllers\Api\SuccessStoryController::class, 'index']);
     Route::get('success-stories/roles', [\App\Http\Controllers\Api\SuccessStoryController::class, 'roles']);
     Route::get('success-stories/{slug}', [\App\Http\Controllers\Api\SuccessStoryController::class, 'show']);

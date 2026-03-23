@@ -28,6 +28,27 @@
     </div>
     <p v-if="couponError" class="mt-1 text-sm text-red-600">{{ couponError }}</p>
     <p v-if="couponApplied" class="mt-1 text-sm text-[#10b981]">Coupon applied. Pay ₹{{ finalAmount }}</p>
+    <p v-if="couponApplied" class="mt-1 text-sm text-[#10b981]">Coupon applied. Pay ₹{{ finalAmount }}</p>
+
+    <!-- Available Coupons -->
+    <div v-if="availableCoupons.length" class="mt-6 border-t border-[#e2e8f0] pt-6">
+      <p class="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">Available Discount Codes</p>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div v-for="c in availableCoupons" :key="c.id" 
+          class="flex flex-col justify-between rounded-xl border border-dashed border-[#e63946]/30 bg-[#e63946]/5 p-4 cursor-pointer hover:bg-[#e63946]/10 transition"
+          @click="couponCode = c.code; applyCoupon()"
+        >
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-mono font-bold text-[#e63946]">{{ c.code }}</span>
+            <span class="text-[10px] font-bold text-white bg-[#e63946] px-1.5 py-0.5 rounded shadow-sm">
+              {{ c.discount_type === 'percent' ? c.discount_value + '%' : '₹' + c.discount_value }} OFF
+            </span>
+          </div>
+          <p class="text-xs text-[#64748b] line-clamp-2">{{ c.description }}</p>
+        </div>
+      </div>
+    </div>
+
     <div class="mt-8">
       <button
         type="button"
@@ -59,6 +80,16 @@ const finalAmount = ref(null);
 const payuForm = ref(null);
 const payuUrl = ref('');
 const payuParams = ref({});
+const availableCoupons = ref([]);
+
+async function loadCoupons() {
+  try {
+    const { data } = await axios.get('/api/coupons', { params: { applicable_to: 'access' } });
+    availableCoupons.value = data || [];
+  } catch (e) {
+    console.error('Failed to load coupons', e);
+  }
+}
 
 const displayPrice = (plan) => {
   if (couponApplied.value && selected.value?.id === plan.id && finalAmount.value != null) return finalAmount.value;
@@ -76,6 +107,7 @@ onMounted(async () => {
     }
     error.value = 'Could not load plans.';
   }
+  loadCoupons();
 });
 
 async function applyCoupon() {

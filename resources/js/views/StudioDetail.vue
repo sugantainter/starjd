@@ -190,6 +190,13 @@ async function onBook() {
       alert('Booking created. Complete payment from your account.');
       return;
     }
+
+    if (booking.status === 'confirmed') {
+      alert('Success! Your booking is confirmed with 100% discount.');
+      location.href = '/dashboard/bookings';
+      return;
+    }
+
     const payRes = await axios.post('/api/payment/payu/create', {
       type: 'booking',
       booking_id: booking.id,

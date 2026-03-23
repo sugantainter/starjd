@@ -113,6 +113,10 @@ class BookingController extends Controller
             $couponId
         );
 
+        if ((float) $booking->amount <= 0) {
+            $this->bookingService->confirmBooking($booking, 'coupon', $request->coupon_code);
+        }
+
         $booking->load(['studio:id,name,slug,city', 'studio.category:id,name,slug']);
 
         return response()->json([
@@ -144,7 +148,7 @@ class BookingController extends Controller
     {
         $request->validate([
             'booking_id' => ['required', 'integer', 'exists:bookings,id'],
-            'gateway' => ['nullable', 'string', 'in:razorpay,stripe,payu'],
+            'gateway' => ['nullable', 'string', 'in:razorpay,stripe,payu,coupon,free'],
             'gateway_ref' => ['nullable', 'string'],
         ]);
 
