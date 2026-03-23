@@ -20,6 +20,11 @@ class Role extends Model
             ->withTimestamps();
     }
 
+    public function successStories()
+    {
+        return $this->hasMany(SuccessStory::class);
+    }
+
     public function scopeBySlug($query, string $slug)
     {
         return $query->where('slug', $slug);

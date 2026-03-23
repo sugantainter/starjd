@@ -119,6 +119,7 @@
           <p class="mt-1 text-xs text-[#64748b]">Guides & support</p>
           <ul class="mt-4 space-y-2.5 text-sm">
             <li><a href="/#how-it-works" class="transition hover:text-[#fc4402]">How It Works</a></li>
+            <li><router-link to="/success-stories" class="transition hover:text-[#fc4402]">Success Stories</router-link></li>
             <li><a href="/#featured" class="transition hover:text-[#fc4402]">Featured Creators</a></li>
             <li><a href="/#faq" class="transition hover:text-[#fc4402]">FAQ</a></li>
             <li><a href="/#articles" class="transition hover:text-[#fc4402]">Articles & Resources</a></li>
@@ -195,6 +196,7 @@
         <div class="flex flex-wrap justify-center gap-6 text-sm">
           <router-link to="/about" class="transition hover:text-[#fc4402]">About</router-link>
           <router-link to="/contact" class="transition hover:text-[#fc4402]">Contact</router-link>
+          <router-link to="/success-stories" class="transition hover:text-[#fc4402]">Success Stories</router-link>
           <router-link to="/privacy" class="transition hover:text-[#fc4402]">Privacy Policy</router-link>
           <router-link to="/terms" class="transition hover:text-[#fc4402]">Terms of Service</router-link>
           <router-link to="/child-safety" class="transition hover:text-[#fc4402]">Child Safety</router-link>

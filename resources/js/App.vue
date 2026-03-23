@@ -1455,6 +1455,9 @@
             </div>
         </section>
 
+        <!-- New Success Stories Section -->
+        <SuccessStoriesSection />
+
         <!-- How it works -->
         <section
             id="how-it-works"
@@ -2065,6 +2068,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import Footer from "@/components/Footer.vue";
+import SuccessStoriesSection from "@/components/SuccessStoriesSection.vue";
 
 defineProps({ noHeaderFooter: { type: Boolean, default: false } });
 import { useRouter } from "vue-router";

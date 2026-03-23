@@ -132,6 +132,9 @@ Route::prefix('api')->group(function () {
         $stateId = request()->query('state_id');
         return response()->json(\App\Models\City::when($stateId, fn ($q) => $q->where('state_id', $stateId))->with('state:id,name,slug')->orderBy('sort_order')->orderBy('name')->get(['id', 'state_id', 'name', 'slug']));
     });
+    Route::get('success-stories', [\App\Http\Controllers\Api\SuccessStoryController::class, 'index']);
+    Route::get('success-stories/roles', [\App\Http\Controllers\Api\SuccessStoryController::class, 'roles']);
+    Route::get('success-stories/{slug}', [\App\Http\Controllers\Api\SuccessStoryController::class, 'show']);
 
     Route::middleware(['auth:web'])->group(function () {
         Route::get('me', [AuthController::class, 'me']);
@@ -219,6 +222,7 @@ Route::prefix('api')->group(function () {
     Route::middleware(['auth:web', 'verified', 'admin'])->prefix('admin')->group(function () {
         Route::get('user', fn () => response()->json(request()->user()));
         Route::get('dashboard', [DashboardController::class, 'index']);
+        Route::get('roles', fn () => response()->json(\App\Models\Role::whereNotIn('slug', ['admin', 'customer'])->orderBy('name')->get(['id', 'name', 'slug'])));
         Route::apiResource('categories', AdminCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('testimonials', AdminTestimonialController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('faqs', AdminFaqController::class)->only(['index', 'store', 'update', 'destroy']);
@@ -248,6 +252,8 @@ Route::prefix('api')->group(function () {
         Route::apiResource('studio-categories', AdminStudioCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('amenities', AdminAmenityController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('coupons', AdminCouponController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::post('success-stories/upload', [\App\Http\Controllers\Admin\SuccessStoryController::class, 'uploadImage']);
+        Route::apiResource('success-stories', \App\Http\Controllers\Admin\SuccessStoryController::class);
         
         // Support Tickets
         Route::get('support/tickets', [SupportAdminController::class, 'index']);
