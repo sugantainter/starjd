@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Country;
 use App\Models\State;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,13 +13,30 @@ class StateController extends Controller
 {
     public function index(): JsonResponse
     {
-        $items = State::orderBy('sort_order')->orderBy('name')->get();
+        $items = State::with('country:id,name')
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
         return response()->json($items);
     }
 
     public function store(Request $request): JsonResponse
     {
+        // Older admin UI may not send `country_id` yet; default to the first
+        // available country (or create "India") so state creation doesn't fail.
+        if (! $request->filled('country_id')) {
+            $country = Country::orderBy('sort_order')->orderBy('id')->first();
+            if (! $country) {
+                $country = Country::firstOrCreate(
+                    ['slug' => 'india'],
+                    ['name' => 'India', 'code' => 'IN', 'sort_order' => 0]
+                );
+            }
+            $request->merge(['country_id' => $country->id]);
+        }
+
         $data = $request->validate([
+            'country_id' => 'required|integer|exists:countries,id',
             'name' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255|unique:states,slug',
             'code' => 'nullable|string|max:20',
@@ -33,6 +51,7 @@ class StateController extends Controller
     public function update(Request $request, State $state): JsonResponse
     {
         $data = $request->validate([
+            'country_id' => 'sometimes|nullable|integer|exists:countries,id',
             'name' => 'sometimes|string|max:255',
             'slug' => 'sometimes|string|max:255|unique:states,slug,' . $state->id,
             'code' => 'nullable|string|max:20',
