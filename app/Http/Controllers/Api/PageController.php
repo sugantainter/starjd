@@ -75,11 +75,21 @@ class PageController extends Controller
 
     public function index(): \Illuminate\Http\JsonResponse
     {
-        $pages = Page::published()->inRandomOrder()->limit(18)->get();
-        return response()->json($pages->map(fn($p) => [
-            'id' => $p->id,
-            'title' => $p->title ? html_entity_decode($p->title) : '',
-            'slug' => $p->slug,
-        ]));
+        $pages = Page::published()->with(['state', 'city'])->inRandomOrder()->limit(18)->get();
+        return response()->json($pages->map(function($p) {
+            $fullSlug = $p->slug;
+            if ($p->city_id && $p->city) {
+                $fullSlug = $p->slug . '-in-' . $p->city->slug;
+            } elseif ($p->state_id && $p->state) {
+                $fullSlug = $p->slug . '-in-' . $p->state->slug;
+            }
+
+            return [
+                'id' => $p->id,
+                'title' => $p->title ? html_entity_decode($p->title) : '',
+                'slug' => $p->slug,
+                'full_slug' => $fullSlug,
+            ];
+        }));
     }
 }

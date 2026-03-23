@@ -142,7 +142,7 @@
           <p class="mt-1 text-xs text-[#64748b]">Legal & info</p>
           <ul v-if="legalPagesOnly.length" class="mt-4 space-y-2.5 text-sm">
             <li v-for="page in legalPagesOnly" :key="page.id">
-              <router-link :to="'/page/' + page.slug" class="transition hover:text-[#fc4402]">{{ page.title }}</router-link>
+              <router-link :to="'/' + (page.full_slug || page.slug)" class="transition hover:text-[#fc4402]">{{ page.title }}</router-link>
             </li>
             <li><router-link to="/child-safety" class="transition hover:text-[#fc4402]">Child Safety</router-link></li>
             <li><router-link to="/contact" class="transition hover:text-[#fc4402]">Contact</router-link></li>
@@ -164,7 +164,7 @@
           <router-link
             v-for="page in dynamicPages"
             :key="page.id"
-            :to="'/page/' + page.slug"
+            :to="'/' + (page.full_slug || page.slug)"
             class="transition hover:text-[#fc4402] line-clamp-1"
             :title="page.title"
           >
