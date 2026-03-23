@@ -11,12 +11,13 @@
     </AdminPageHeader>
 
     <div v-if="loading" class="overflow-hidden rounded-xl border border-[#e2e8f0] bg-white">
-      <AdminTableSkeleton :columns="4" :rows="6" />
+      <AdminTableSkeleton :columns="5" :rows="6" />
     </div>
     <div v-else-if="items.length" class="overflow-hidden rounded-xl border border-[#e2e8f0] bg-white shadow-sm">
       <table class="min-w-full divide-y divide-[#e2e8f0]">
         <thead class="bg-[#f8fafc]">
           <tr>
+            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[#64748b]">Country</th>
             <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[#64748b]">Name</th>
             <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[#64748b]">Slug</th>
             <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[#64748b]">Code</th>
@@ -25,6 +26,7 @@
         </thead>
         <tbody class="divide-y divide-[#e2e8f0]">
           <tr v-for="item in items" :key="item.id" class="hover:bg-[#f8fafc]">
+            <td class="px-4 py-3 text-sm text-[#64748b]">{{ item.country?.name || '—' }}</td>
             <td class="px-4 py-3 text-sm font-medium text-[#1a1a1a]">{{ item.name }}</td>
             <td class="px-4 py-3 text-sm text-[#64748b]">{{ item.slug }}</td>
             <td class="px-4 py-3 text-sm text-[#64748b]">{{ item.code || '—' }}</td>
@@ -49,6 +51,17 @@
       <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
         <h2 class="mb-4 text-lg font-semibold text-[#1a1a1a]">{{ editing ? 'Edit' : 'Add' }} State</h2>
         <form @submit.prevent="save" class="space-y-3">
+          <div>
+            <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Country</label>
+            <select
+              v-model="form.country_id"
+              required
+              class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-[#1a1a1a]"
+            >
+              <option value="" disabled>Select country</option>
+              <option v-for="c in countries" :key="c.id" :value="c.id">{{ c.name }}</option>
+            </select>
+          </div>
           <div>
             <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Name</label>
             <input v-model="form.name" type="text" required class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-[#1a1a1a]" placeholder="e.g. Maharashtra" />
@@ -89,12 +102,25 @@ import AdminTableSkeleton from '../../components/admin/AdminTableSkeleton.vue';
 import AdminConfirmModal from '../../components/admin/AdminConfirmModal.vue';
 
 const items = ref([]);
+const countries = ref([]);
 const loading = ref(true);
 const showModal = ref(false);
 const showDeleteModal = ref(false);
 const itemToRemove = ref(null);
 const editing = ref(null);
-const form = reactive({ name: '', slug: '', code: '' });
+const form = reactive({ country_id: '', name: '', slug: '', code: '' });
+
+async function loadCountries() {
+  try {
+    const r = await axios.get('/api/admin/countries');
+    countries.value = r.data;
+    if (form.country_id === '' && countries.value.length === 1) {
+      form.country_id = String(countries.value[0].id);
+    }
+  } catch {
+    countries.value = [];
+  }
+}
 
 async function load() {
   loading.value = true;
@@ -108,10 +134,12 @@ async function load() {
 function openForm(item = null) {
   editing.value = item;
   if (item) {
+    form.country_id = item.country_id != null ? String(item.country_id) : (countries.value[0] ? String(countries.value[0].id) : '');
     form.name = item.name;
     form.slug = item.slug || '';
     form.code = item.code || '';
   } else {
+    form.country_id = countries.value.length === 1 ? String(countries.value[0].id) : '';
     form.name = form.slug = form.code = '';
   }
   showModal.value = true;
@@ -144,5 +172,8 @@ async function doRemove() {
     alert(e.response?.data?.message || 'Error deleting');
   }
 }
-onMounted(load);
+onMounted(async () => {
+  await loadCountries();
+  await load();
+});
 </script>

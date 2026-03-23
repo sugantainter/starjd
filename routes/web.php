@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\PageController as AdminPageController;
 use App\Http\Controllers\Admin\LegalPageController as AdminLegalPageController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Admin\StateController as AdminStateController;
+use App\Http\Controllers\Admin\CountryController as AdminCountryController;
 use App\Http\Controllers\Admin\StepController as AdminStepController;
 use App\Http\Controllers\Admin\StudioCategoryController as AdminStudioCategoryController;
 use App\Http\Controllers\Admin\AmenityController as AdminAmenityController;
@@ -233,6 +234,7 @@ Route::prefix('api')->group(function () {
         Route::apiResource('partners', AdminPartnerController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::post('partners/upload', [AdminPartnerController::class, 'upload']);
         Route::apiResource('services', AdminServiceController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::get('countries', [AdminCountryController::class, 'index']);
         Route::apiResource('states', AdminStateController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('cities', AdminCityController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('pages', AdminPageController::class)->only(['index', 'store', 'update', 'destroy']);
