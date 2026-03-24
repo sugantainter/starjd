@@ -428,7 +428,7 @@ class AuthController extends Controller
      */
     public function updateFcmToken(Request $request): JsonResponse
     {
-        $request->validate(['fcm_token' => 'required|string']);
+        $request->validate(['fcm_token' => 'nullable|string']);
         
         $user = Auth::user();
         if ($user) {

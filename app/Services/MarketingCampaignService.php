@@ -42,20 +42,25 @@ class MarketingCampaignService
 
     public function dispatchCampaign(MarketingCampaign $campaign)
     {
-        if ($campaign->status !== 'draft') {
+        Log::info('MarketingCampaignService: dispatching campaign', ['id' => $campaign->id, 'status' => $campaign->status]);
+        if ($campaign->status !== 'draft' && $campaign->status !== 'failed') {
             return;
         }
 
         $campaign->update(['status' => 'queued']);
         \App\Jobs\SendMarketingCampaignJob::dispatch($campaign);
+        Log::info('MarketingCampaignService: SendMarketingCampaignJob dispatched');
     }
 
     public function sendCampaign(MarketingCampaign $campaign)
     {
+        Log::info('MarketingCampaignService: starting sendCampaign', ['id' => $campaign->id]);
         $users = $this->getTargetUsers($campaign)->get();
+        Log::info('MarketingCampaignService: users found', ['count' => $users->count()]);
         
         foreach ($users as $user) {
             try {
+                Log::info('MarketingCampaignService: notifying user', ['user_id' => $user->id, 'has_fcm' => (bool)$user->fcm_token]);
                 $user->notify(new MarketingNotification($campaign));
             } catch (\Exception $e) {
                 Log::error("Failed to send marketing notification to user {$user->id}: " . $e->getMessage());
@@ -63,5 +68,6 @@ class MarketingCampaignService
         }
 
         $campaign->update(['status' => 'completed']);
+        Log::info('MarketingCampaignService: campaign marked as completed');
     }
 }

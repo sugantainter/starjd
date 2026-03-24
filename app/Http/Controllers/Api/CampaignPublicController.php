@@ -78,33 +78,42 @@ class CampaignPublicController extends Controller
     /**
      * Show a single open campaign by slug (SEO-friendly).
      */
-    public function show(string $slug): JsonResponse
+    public function show(string $slugOrId): JsonResponse
     {
-        $campaign = Campaign::query()
-            ->open()
-            ->where('slug', $slug)
-            ->with('brand:id,name')
-            ->firstOrFail();
+        try {
+            $campaign = Campaign::query()
+                ->open()
+                ->where(function ($q) use ($slugOrId) {
+                    $q->where('slug', $slugOrId)
+                      ->orWhere('id', $slugOrId);
+                })
+                ->with('brand:id,name')
+                ->firstOrFail();
 
-        $applicationsCount = $campaign->applications()->count();
+            $applicationsCount = $campaign->applications()->count();
 
-        return response()->json([
-            'id' => $campaign->id,
-            'slug' => $campaign->slug,
-            'title' => $campaign->title,
-            'campaign_type' => $campaign->campaign_type,
-            'description' => $campaign->description,
-            'deliverables' => $campaign->deliverables,
-            'budget' => $campaign->budget,
-            'max_applications' => $campaign->max_applications,
-            'starts_at' => $campaign->starts_at?->toIso8601String(),
-            'ends_at' => $campaign->ends_at?->toIso8601String(),
-            'targeting' => $campaign->targeting,
-            'embed_url' => $campaign->targeting['embed_url'] ?? null,
-            'brand' => $campaign->brand ? ['id' => $campaign->brand->id, 'name' => $campaign->brand->name] : null,
-            'applications_count' => $applicationsCount,
-            'created_at' => $campaign->created_at->toIso8601String(),
-        ]);
+            return response()->json([
+                'id' => $campaign->id,
+                'slug' => $campaign->slug,
+                'title' => $campaign->title,
+                'campaign_type' => $campaign->campaign_type,
+                'description' => $campaign->description,
+                'deliverables' => $campaign->deliverables,
+                'budget' => $campaign->budget,
+                'max_applications' => $campaign->max_applications,
+                'starts_at' => $campaign->starts_at?->toIso8601String(),
+                'ends_at' => $campaign->ends_at?->toIso8601String(),
+                'targeting' => $campaign->targeting,
+                'embed_url' => $campaign->targeting['embed_url'] ?? null,
+                'brand' => $campaign->brand ? ['id' => $campaign->brand->id, 'name' => $campaign->brand->name] : null,
+                'applications_count' => $applicationsCount,
+                'created_at' => $campaign->created_at?->toIso8601String(),
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['message' => 'Campaign not found'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error: ' . $e->getMessage()], 500);
+        }
     }
 
     /**

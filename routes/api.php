@@ -56,6 +56,12 @@ Route::get('creators',                  [CreatorPublicController::class, 'index'
 Route::get('creators/options/filters',  [CreatorOptionsController::class, 'filters']);
 Route::get('creators/{slug}',           [CreatorPublicController::class, 'show']);
 
+// Campaigns – Public
+Route::get('campaigns',                 [CampaignPublicController::class, 'index']);
+Route::get('campaigns/filters',         [CampaignPublicController::class, 'filters']);
+Route::get('campaigns/categories',      [CampaignPublicController::class, 'categories']);
+Route::get('campaigns/{slug}',          [CampaignPublicController::class, 'show']);
+
 // Professional Services (Gigs) – Public
 Route::get('gigs',                      [\App\Http\Controllers\ProfessionalPublicController::class, 'index']);
 Route::get('gigs/{slug}',               [\App\Http\Controllers\ProfessionalPublicController::class, 'show']);
@@ -138,6 +144,10 @@ Route::middleware('web')->group(function () {
             Route::get('social-accounts', [\App\Http\Controllers\Creator\CreatorSocialAccountController::class, 'index']);
             Route::post('social-accounts/sync', [\App\Http\Controllers\Creator\CreatorSocialAccountController::class, 'sync']);
             Route::delete('social-accounts/{platform}', [\App\Http\Controllers\Creator\CreatorSocialAccountController::class, 'disconnect']);
+
+            // Campaigns
+            Route::get('campaign-applications', [\App\Http\Controllers\Creator\CreatorCampaignApplicationController::class, 'index']);
+            Route::post('campaign-applications', [\App\Http\Controllers\Creator\CreatorCampaignApplicationController::class, 'store']);
         });
 
         Route::middleware(['brand', 'paid'])->prefix('brand')->group(function () {

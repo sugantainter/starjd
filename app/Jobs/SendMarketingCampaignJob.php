@@ -39,7 +39,21 @@ class SendMarketingCampaignJob implements ShouldQueue
         $service->getTargetUsers($this->campaign)->chunk(100, function ($users) {
             foreach ($users as $user) {
                 try {
-                    $user->notify(new \App\Notifications\MarketingNotification($this->campaign));
+                    $notification = new \App\Notifications\MarketingNotification($this->campaign);
+                    $channels = $notification->via($user);
+                    
+                    if (empty($channels)) {
+                        \App\Models\MarketingLog::create([
+                            'marketing_campaign_id' => $this->campaign->id,
+                            'user_id' => $user->id,
+                            'type' => $this->campaign->type,
+                            'status' => 'failed',
+                            'error_message' => 'No delivery channels available (missing email or FCM token)',
+                        ]);
+                        continue;
+                    }
+
+                    $user->notify($notification);
                     
                     // Log success
                     \App\Models\MarketingLog::create([

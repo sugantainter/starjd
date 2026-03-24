@@ -65,11 +65,14 @@ class MarketingController extends Controller
 
     public function send(MarketingCampaign $marketing): JsonResponse
     {
-        if ($marketing->status !== 'draft') {
+        Log::info('MarketingController@send: Request received', ['id' => $marketing->id]);
+        if ($marketing->status !== 'draft' && $marketing->status !== 'failed') {
+            Log::warning('MarketingController@send: Campaign not in draft/failed status', ['status' => $marketing->status]);
             return response()->json(['message' => 'Campaign already processed or in progress'], 400);
         }
 
         $this->service->dispatchCampaign($marketing);
+        Log::info('MarketingController@send: Service dispatch called');
 
         return response()->json([
             'message' => 'Campaign queued for delivery',
