@@ -1,5 +1,6 @@
 <template>
   <div class="p-6 max-w-7xl mx-auto">
+    <!-- Header Section -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
       <div>
         <h1 class="text-3xl font-bold text-gray-900 drop-shadow-sm">Marketing Management</h1>
@@ -21,7 +22,15 @@
       <div v-for="(stat, index) in quickStats" :key="index" class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
         <div class="flex items-center space-x-4">
           <div :class="`p-3 rounded-xl ${stat.bgColor}`">
-            <component :is="stat.icon" class="w-6 h-6" :class="stat.iconColor" />
+            <svg v-if="stat.icon === 'document'" class="w-6 h-6" :class="stat.iconColor" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <svg v-else-if="stat.icon === 'check'" class="w-6 h-6" :class="stat.iconColor" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <svg v-else class="w-6 h-6" :class="stat.iconColor" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
           </div>
           <div>
             <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">{{ stat.label }}</p>
@@ -60,16 +69,16 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50">
-            <tr v-if="loading" v-for="i in 3" :key="i" class="animate-pulse">
-              <td colspan="5" class="px-6 py-4"><div class="h-4 bg-gray-100 rounded w-full"></div></td>
+            <tr v-if="loading">
+              <td colspan="5" class="px-6 py-12 text-center text-gray-400">Loading campaigns...</td>
             </tr>
             <tr v-else-if="filteredCampaigns.length === 0">
               <td colspan="5" class="px-6 py-12 text-center text-gray-400">No campaigns found. Start by creating one!</td>
             </tr>
-            <tr v-for="campaign in filteredCampaigns" :key="campaign.id" class="hover:bg-gray-50/50 transition-colors">
+            <tr v-else v-for="campaign in filteredCampaigns" :key="campaign.id" class="hover:bg-gray-50/50 transition-colors">
               <td class="px-6 py-4">
                 <div class="font-medium text-gray-900">{{ campaign.title }}</div>
-                <div class="text-xs text-gray-400 line-clamp-1 truncate max-w-xs">{{ campaign.content }}</div>
+                <div class="text-xs text-gray-400 truncate max-w-xs">{{ campaign.content }}</div>
               </td>
               <td class="px-6 py-4">
                 <span :class="getTypeBadge(campaign.type)">{{ campaign.type }}</span>
@@ -88,19 +97,10 @@
                 <button 
                   v-if="campaign.status === 'draft'"
                   @click="sendCampaign(campaign)"
-                  class="text-indigo-600 hover:text-indigo-900 font-semibold text-sm transition-colors disabled:opacity-50"
+                  class="text-indigo-600 hover:text-indigo-900 font-semibold text-sm transition-colors"
                   :disabled="sendingId === campaign.id"
                 >
                   {{ sendingId === campaign.id ? 'Sending...' : 'Send Now' }}
-                </button>
-                <button 
-                  @click="viewDetails(campaign)"
-                  class="ml-4 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
                 </button>
               </td>
             </tr>
@@ -110,116 +110,85 @@
     </div>
 
     <!-- Create Campaign Modal -->
-    <div v-if="showCreateModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div @click="showCreateModal = false" class="fixed inset-0 bg-gray-500/75 backdrop-blur-sm transition-opacity" aria-hidden="true"></div>
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        
-        <div class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-gray-200">
-          <div class="bg-white px-8 pt-8 pb-6">
-            <div class="flex items-center justify-between mb-8">
-              <h3 class="text-2xl font-bold text-gray-900" id="modal-title">Launch New Campaign</h3>
-              <button @click="showCreateModal = false" class="text-gray-400 hover:text-gray-600 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l18 18" />
-                </svg>
-              </button>
+    <div v-if="showCreateModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div @click="showCreateModal = false" class="fixed inset-0 bg-gray-900/60 backdrop-blur-md transition-opacity"></div>
+      
+      <div class="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 transform transition-all z-10">
+        <div class="px-8 pt-8 pb-6">
+          <div class="flex items-center justify-between mb-8">
+            <h3 class="text-2xl font-bold text-gray-900">Launch New Campaign</h3>
+            <button @click="showCreateModal = false" class="text-gray-400 hover:text-gray-600 transition-colors">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <form @submit.prevent="createCampaign" class="space-y-6">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Campaign Title</label>
+              <input v-model="form.title" type="text" required class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl outline-none">
             </div>
 
-            <form @submit.prevent="createCampaign" class="space-y-6">
-              <!-- Title -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Message Content</label>
+              <textarea v-model="form.content" rows="4" required class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl outline-none resize-none"></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Campaign Title</label>
-                <input 
-                  v-model="form.title" 
-                  type="text" 
-                  required
-                  placeholder="e.g. Weekly Premium Creators Spotlight"
-                  class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
-                >
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Delivery Channels</label>
+                <select v-model="form.type" class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl outline-none">
+                  <option value="both">Both (Email & Push)</option>
+                  <option value="email">Email Only</option>
+                  <option value="push">Push Only</option>
+                </select>
               </div>
 
-              <!-- Content -->
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Message Content</label>
-                <textarea 
-                  v-model="form.content" 
-                  rows="4" 
-                  required
-                  placeholder="What would you like to say?"
-                  class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none resize-none"
-                ></textarea>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Target Audience</label>
+                <select v-model="form.target_type" class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl outline-none">
+                  <option value="all">All Users</option>
+                  <option value="role">By Role</option>
+                  <option value="category">By Category</option>
+                  <option value="individual">Individual</option>
+                </select>
               </div>
+            </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Delivery Type -->
-                <div>
-                  <label class="block text-sm font-semibold text-gray-700 mb-2">Delivery Channels</label>
-                  <select 
-                    v-model="form.type"
-                    class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none appearance-none"
-                  >
-                    <option value="both">Both (Email & Push)</option>
-                    <option value="email">Email Only</option>
-                    <option value="push">Push Only</option>
-                  </select>
-                </div>
+            <!-- Conditional Filters -->
+            <div v-if="form.target_type !== 'all'" class="p-6 bg-indigo-50/50 rounded-2xl border border-indigo-100 animate-fadeIn">
+              <template v-if="form.target_type === 'role'">
+                <label class="block text-sm font-semibold text-indigo-900 mb-2">Select User Role</label>
+                <select v-model="form.target_id" class="w-full px-4 py-3 bg-white border border-indigo-200 rounded-xl outline-none">
+                  <option :value="null" disabled>Select User Role</option>
+                  <option v-for="role in filterData.roles" :key="role.id" :value="role.id">{{ role.name }}</option>
+                </select>
+              </template>
 
-                <!-- Target Type -->
-                <div>
-                  <label class="block text-sm font-semibold text-gray-700 mb-2">Target Audience</label>
-                  <select 
-                    v-model="form.target_type"
-                    class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none appearance-none"
-                  >
-                    <option value="all">All Registered Users</option>
-                    <option value="role">By User Role</option>
-                    <option value="category">By Creator Category</option>
-                    <option value="individual">Specific User</option>
-                  </select>
-                </div>
-              </div>
+              <template v-if="form.target_type === 'category'">
+                <label class="block text-sm font-semibold text-indigo-900 mb-2">Select Creator Category</label>
+                <select v-model="form.target_id" class="w-full px-4 py-3 bg-white border border-indigo-200 rounded-xl outline-none">
+                  <option :value="null" disabled>Select Creator Category</option>
+                  <option v-for="cat in filterData.categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+                </select>
+              </template>
 
-              <!-- Conditional Filters -->
-              <div v-if="form.target_type !== 'all'" class="p-6 bg-indigo-50/50 rounded-2xl border border-indigo-100 animate-fadeIn">
-                <template v-if="form.target_type === 'role'">
-                  <label class="block text-sm font-semibold text-indigo-900 mb-2">Select User Role</label>
-                  <select v-model="form.target_id" class="w-full px-4 py-3 bg-white border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
-                    <option v-for="role in filterData.roles" :key="role.id" :value="role.id">{{ role.name }}</option>
-                  </select>
-                </template>
+              <template v-if="form.target_type === 'individual'">
+                <label class="block text-sm font-semibold text-indigo-900 mb-2">User ID</label>
+                <input v-model="form.target_id" type="number" placeholder="Enter User ID" class="w-full px-4 py-3 bg-white border border-indigo-200 rounded-xl outline-none">
+              </template>
+            </div>
 
-                <template v-if="form.target_type === 'category'">
-                  <label class="block text-sm font-semibold text-indigo-900 mb-2">Select Creator Category</label>
-                  <select v-model="form.target_id" class="w-full px-4 py-3 bg-white border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
-                    <option v-for="cat in filterData.categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
-                  </select>
-                </template>
-
-                <template v-if="form.target_type === 'individual'">
-                  <label class="block text-sm font-semibold text-indigo-900 mb-2">User ID</label>
-                  <input v-model="form.target_id" type="number" placeholder="Enter User ID" class="w-full px-4 py-3 bg-white border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
-                </template>
-              </div>
-
-              <div class="pt-4 flex items-center gap-4">
-                <button 
-                  type="submit" 
-                  class="flex-1 px-6 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl transition-all shadow-lg hover:shadow-indigo-200 disabled:opacity-50"
-                  :disabled="creating"
-                >
-                  {{ creating ? 'Creating...' : 'Create Draft' }}
-                </button>
-                <button 
-                  type="button"
-                  @click="showCreateModal = false"
-                  class="px-6 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-2xl transition-all"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
+            <div class="pt-4 flex items-center gap-4">
+              <button type="submit" :disabled="creating" class="flex-1 px-6 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl transition-all shadow-lg hover:shadow-indigo-200 disabled:opacity-50">
+                {{ creating ? 'Creating...' : 'Create Draft' }}
+              </button>
+              <button type="button" @click="showCreateModal = false" class="px-6 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-2xl transition-all">
+                Cancel
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -259,21 +228,21 @@ const quickStats = computed(() => [
   { 
     label: 'Total Campaigns', 
     value: stats.value.total_campaigns, 
-    icon: 'DocumentTextIcon',
+    icon: 'document',
     bgColor: 'bg-indigo-50', 
     iconColor: 'text-indigo-600' 
   },
   { 
     label: 'Successful Sends', 
     value: stats.value.total_sent, 
-    icon: 'CheckCircleIcon',
+    icon: 'check',
     bgColor: 'bg-green-50', 
     iconColor: 'text-green-600' 
   },
   { 
     label: 'Delivery Failures', 
     value: stats.value.total_failed, 
-    icon: 'ExclamationCircleIcon',
+    icon: 'exclamation',
     bgColor: 'bg-red-50', 
     iconColor: 'text-red-600' 
   }
@@ -307,14 +276,17 @@ const loadData = async () => {
 };
 
 const createCampaign = async () => {
+  console.log('Creating campaign with form data:', form.value);
   creating.value = true;
   try {
     const res = await axios.post('/api/admin/marketing', form.value);
+    console.log('Campaign created successfully:', res.data);
     campaigns.value.unshift(res.data.campaign);
     showCreateModal.value = false;
     form.value = { title: '', content: '', type: 'both', target_type: 'all', target_id: null };
   } catch (e) {
     alert('Error creating campaign. Please try again.');
+    console.error('Error creating campaign:', e);
   } finally {
     creating.value = false;
   }

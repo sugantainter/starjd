@@ -11,6 +11,7 @@ use App\Services\MarketingCampaignService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class MarketingController extends Controller
 {
@@ -29,6 +30,7 @@ class MarketingController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        Log::info('MarketingController@store: Request received', $request->all());
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
@@ -37,8 +39,10 @@ class MarketingController extends Controller
             'target_id' => 'nullable|integer',
             'scheduled_at' => 'nullable|date',
         ]);
+        Log::info('MarketingController@store: Validation passed', $data);
 
         $campaign = MarketingCampaign::create($data);
+        Log::info('MarketingController@store: Campaign created', ['id' => $campaign->id]);
 
         return response()->json([
             'message' => 'Campaign created successfully',
