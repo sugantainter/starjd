@@ -14,6 +14,7 @@ use App\Http\Controllers\CreatorPublicController;
 use App\Http\Controllers\CreatorOptionsController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\SupportController;
+use App\Http\Controllers\Api\CampaignPublicController;
 use App\Http\Controllers\Admin\FaqController;
 use Illuminate\Support\Facades\Route;
 
