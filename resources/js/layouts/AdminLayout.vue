@@ -147,6 +147,10 @@
                 <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                 AI Usage Monitoring
               </router-link>
+              <router-link to="/admin/marketing" class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#e63946]/10 !text-[#e63946]">
+                <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+                Marketing
+              </router-link>
             </div>
           </div>
         </nav>
@@ -189,7 +193,7 @@ watch(() => route.path, (path) => {
   if (path.startsWith('/admin/studios')) navOpen.studios = true;
   if (path.startsWith('/admin/coupons')) navOpen.commerce = true;
   if (path.startsWith('/admin/contacts') || path.startsWith('/admin/support')) navOpen.inbox = true;
-  if (path.startsWith('/admin/ai-usage')) navOpen.system = true;
+  if (path.startsWith('/admin/ai-usage') || path.startsWith('/admin/marketing')) navOpen.system = true;
 
 }, { immediate: true });
 

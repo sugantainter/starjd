@@ -266,6 +266,12 @@ Route::prefix('api')->group(function () {
         Route::get('ai/usage', [AdminAIUsageController::class, 'index']);
         Route::get('ai/usage/users', [AdminAIUsageController::class, 'userStats']);
         Route::get('ai/usage/logs', [AdminAIUsageController::class, 'recentLogs']);
+
+        // Marketing
+        Route::get('marketing/stats', [\App\Http\Controllers\Admin\MarketingController::class, 'stats']);
+        Route::get('marketing/filters', [\App\Http\Controllers\Admin\MarketingController::class, 'getFilters']);
+        Route::apiResource('marketing', \App\Http\Controllers\Admin\MarketingController::class)->only(['index', 'store', 'show']);
+        Route::post('marketing/{marketing}/send', [\App\Http\Controllers\Admin\MarketingController::class, 'send']);
     });
 });
 
