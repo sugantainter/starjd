@@ -253,6 +253,8 @@ Route::prefix('api')->group(function () {
         Route::apiResource('studio-categories', AdminStudioCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('amenities', AdminAmenityController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('coupons', AdminCouponController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::apiResource('banners', \App\Http\Controllers\Admin\BannerController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::post('banners/upload', [\App\Http\Controllers\Admin\BannerController::class, 'upload']);
         Route::post('success-stories/upload', [\App\Http\Controllers\Admin\SuccessStoryController::class, 'uploadImage']);
         Route::apiResource('success-stories', \App\Http\Controllers\Admin\SuccessStoryController::class);
         

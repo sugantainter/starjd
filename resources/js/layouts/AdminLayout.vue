@@ -82,6 +82,10 @@
                 <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" /></svg>
                 Hero Section
               </router-link>
+              <router-link to="/admin/banners" class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#e63946]/10 !text-[#e63946]">
+                <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1v-2zM4 21a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1v-2z" /></svg>
+                Banners
+              </router-link>
               <router-link to="/admin/testimonials" class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#e63946]/10 !text-[#e63946]">Testimonials</router-link>
               <router-link to="/admin/faqs" class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#e63946]/10 !text-[#e63946]">FAQs</router-link>
               <router-link to="/admin/steps" class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#e63946]/10 !text-[#e63946]">Steps</router-link>
@@ -189,7 +193,7 @@ onMounted(async () => {
 watch(() => route.path, (path) => {
   if (path.startsWith('/admin/legal-pages') || path.startsWith('/admin/pages') || path.startsWith('/admin/posts') || path.startsWith('/admin/videos') || path.startsWith('/admin/success-stories')) navOpen.content = true;
   if (path.startsWith('/admin/states') || path.startsWith('/admin/cities')) navOpen.locations = true;
-  if (path.startsWith('/admin/categories') || path.startsWith('/admin/hero') || path.startsWith('/admin/testimonials') || path.startsWith('/admin/faqs') || path.startsWith('/admin/steps') || path.startsWith('/admin/partners') || path.startsWith('/admin/services')) navOpen.site = true;
+  if (path.startsWith('/admin/categories') || path.startsWith('/admin/hero') || path.startsWith('/admin/banners') || path.startsWith('/admin/testimonials') || path.startsWith('/admin/faqs') || path.startsWith('/admin/steps') || path.startsWith('/admin/partners') || path.startsWith('/admin/services')) navOpen.site = true;
   if (path.startsWith('/admin/studios')) navOpen.studios = true;
   if (path.startsWith('/admin/coupons')) navOpen.commerce = true;
   if (path.startsWith('/admin/contacts') || path.startsWith('/admin/support')) navOpen.inbox = true;

@@ -110,6 +110,7 @@ const routes = [
       { path: 'pages', name: 'admin-pages', component: () => import('../views/admin/Pages.vue') },
       { path: 'success-stories', name: 'admin-success-stories', component: () => import('../views/admin/SuccessStories.vue') },
       { path: 'hero', name: 'admin-hero', component: () => import('../views/admin/Hero.vue') },
+      { path: 'banners', name: 'admin-banners', component: () => import('../views/admin/Banners.vue') },
       { path: 'legal-pages', name: 'admin-legal-pages', component: () => import('../views/admin/LegalPages.vue') },
       { path: 'partners', name: 'admin-partners', component: () => import('../views/admin/Partners.vue') },
       { path: 'services', name: 'admin-services', component: () => import('../views/admin/Services.vue') },
