@@ -53,14 +53,21 @@ class SectionsController extends Controller
                 'answer' => $r->answer,
             ])->toArray();
         }
-        if (\Schema::hasTable('steps')) {
-            $steps = DB::table('steps')->orderBy('sort_order')->get()->map(fn ($r) => [
-                'title' => $r->title,
-                'desc' => $r->desc,
-            ])->toArray();
+        $banners = [];
+        if (\Schema::hasTable('banners')) {
+            $banners = \App\Models\Banner::where('is_active', true)
+                ->orderBy('sort_order')
+                ->get()
+                ->map(fn ($b) => [
+                    'id' => $b->id,
+                    'title' => $b->title,
+                    'link' => $b->link,
+                    'image' => $b->image && !str_starts_with($b->image, 'http') ? asset('storage/' . $b->image) : $b->image,
+                ])->toArray();
         }
 
         return response()->json([
+            'banners' => $banners,
             'categories' => $categories,
             'testimonials' => $testimonials,
             'faqs' => $faqs,
