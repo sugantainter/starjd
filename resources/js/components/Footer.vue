@@ -35,7 +35,7 @@
               <img
                 src="/logo.png"
                 alt="StarJD"
-                class="h-11 w-auto object-contain"
+                class="h-16 w-auto object-contain"
                 onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('hidden');"
               />
               <span class="hidden text-xl font-bold text-white">StarJD</span>

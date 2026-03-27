@@ -31,7 +31,7 @@ function saveSize($src, int $sx, int $sy, int $side, int $size, string $path): v
     imagesavealpha($dst, true);
     $transparent = imagecolorallocatealpha($dst, 0, 0, 0, 127);
     imagefilledrectangle($dst, 0, 0, $size, $size, $transparent);
-    imagecopyresampled($dst, $src, 0, 0, $sx, $sy, $side, $side, $size, $size);
+    imagecopyresampled($dst, $src, 0, 0, $sx, $sy, $size, $size, $side, $side);
     imagepng($dst, $path, 9);
     imagedestroy($dst);
 }

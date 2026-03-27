@@ -4,7 +4,7 @@
       <div class="sticky top-0 flex h-screen flex-col">
         <div class="border-b border-[#e2e8f0] px-4 py-5">
           <router-link to="/admin" class="flex items-center gap-2">
-            <img src="/logo.png" alt="StarJD" class="h-10 w-auto object-contain" onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('hidden');" />
+            <img src="/logo.png" alt="StarJD" class="h-16 w-auto object-contain" onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('hidden');" />
             <span class="hidden text-lg font-bold text-[#1a1a1a]">StarJD</span>
             <span class="text-xs font-semibold uppercase tracking-wider text-[#64748b]">Admin</span>
           </router-link>

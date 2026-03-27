@@ -15,7 +15,7 @@
                 <img
                     src="/logo.png"
                     alt="StarJD"
-                    class="h-11 w-auto object-contain sm:h-12"
+                    class="h-14 w-auto object-contain sm:h-20"
                     onerror="
                         this.style.display = 'none';
                         this.nextElementSibling?.classList.remove('hidden');

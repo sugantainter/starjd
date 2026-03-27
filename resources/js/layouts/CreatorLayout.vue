@@ -4,7 +4,7 @@
       <div class="sticky top-0 flex flex-col p-4">
         <router-link to="/creator/dashboard" class="mb-6 rounded-2xl border border-[#e2e8f0] bg-gradient-to-r from-white to-[#f8fafc] px-4 py-4 shadow-sm transition hover:shadow-md">
           <div class="flex items-center justify-center rounded-xl bg-white/90 px-2 py-2">
-            <img src="/logo.png" alt="StarJD" class="h-14 w-44 object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.08)]" onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('hidden');" />
+            <img src="/logo.png" alt="StarJD" class="h-16 w-auto object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.08)]" onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('hidden');" />
             <span class="hidden text-2xl font-bold text-[#1a1a1a]">StarJD</span>
           </div>
           <span class="mt-3 block text-center text-sm font-semibold tracking-[0.08em] text-[#64748b]">Creator Panel</span>
