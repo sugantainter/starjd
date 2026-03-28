@@ -76,27 +76,28 @@ class CreatorSocialAccountController extends Controller
         $callbackUrl = route('creator.social.callback', ['platform' => $platform]);
         config(["services.{$platform}.redirect" => $callbackUrl]);
 
-        $driver = Socialite::driver($platform);
-
         if ($platform === 'google') {
-            $driver->scopes([
-                'https://www.googleapis.com/auth/youtube.readonly', 
-                'https://www.googleapis.com/auth/yt-analytics.readonly',
-                'email', 
-                'profile'
-            ]);
-        } elseif ($platform === 'facebook') {
-            $driver->scopes([
-                'email', 
-                'public_profile', 
-                'instagram_basic', 
-                'instagram_manage_insights', 
-                'pages_show_list', 
-                'pages_read_engagement'
-            ]);
+            return Socialite::driver('google')
+                ->scopes(['yt-analytics.readonly', 'https://www.googleapis.com/auth/youtube.readonly'])
+                ->with(['access_type' => 'offline', 'prompt' => 'consent'])
+                ->redirect();
         }
 
-        return $driver->redirect();
+        if ($platform === 'facebook') {
+            return Socialite::driver('facebook')
+                ->scopes([
+                    'email',
+                    'public_profile',
+                    'pages_show_list',
+                    'pages_read_engagement',
+                    'instagram_basic',
+                    'instagram_manage_insights',
+                    'business_management',
+                ])
+                ->redirect();
+        }
+
+        return Socialite::driver($platform)->redirect();
     }
 
     public function callback(Request $request, string $platform, \App\Services\SocialAnalyticsService $analytics)
