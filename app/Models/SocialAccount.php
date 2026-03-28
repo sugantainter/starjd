@@ -13,16 +13,20 @@ class SocialAccount extends Model
         'username',
         'profile_url',
         'access_token',
+        'refresh_token',
+        'expires_at',
+        'token_secret',
         'followers_count',
         'is_connected',
     ];
 
-    protected $hidden = ['access_token'];
+    protected $hidden = ['access_token', 'refresh_token', 'token_secret'];
 
     protected function casts(): array
     {
         return [
             'is_connected' => 'boolean',
+            'expires_at' => 'datetime',
         ];
     }
 

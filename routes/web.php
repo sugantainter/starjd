@@ -170,6 +170,7 @@ Route::prefix('api')->group(function () {
         Route::apiResource('packages', CreatorPackageController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get('social-accounts', [CreatorSocialAccountController::class, 'index']);
         Route::post('social-accounts/sync', [CreatorSocialAccountController::class, 'sync']);
+        Route::post('social-accounts/{platform}/refresh', [CreatorSocialAccountController::class, 'refresh']);
         Route::delete('social-accounts/{platform}', [CreatorSocialAccountController::class, 'disconnect']);
         Route::get('image-posts', [CreatorImagePostController::class, 'index']);
         Route::post('image-posts', [CreatorImagePostController::class, 'store']);
@@ -289,6 +290,12 @@ Route::get('/auth/google/redirect', [SocialAuthController::class, 'googleRedirec
 Route::get('/auth/google/callback', [SocialAuthController::class, 'googleCallback'])->name('auth.google.callback');
 Route::get('/auth/facebook/redirect', [SocialAuthController::class, 'facebookRedirect'])->name('auth.facebook.redirect');
 Route::get('/auth/facebook/callback', [SocialAuthController::class, 'facebookCallback'])->name('auth.facebook.callback');
+
+// Creator Account Connections (OAuth)
+Route::middleware(['auth:web', 'verified', 'creator'])->group(function () {
+    Route::get('/creator/social-accounts/{platform}/redirect', [CreatorSocialAccountController::class, 'redirect'])->name('creator.social.redirect');
+    Route::get('/creator/social-accounts/{platform}/callback', [CreatorSocialAccountController::class, 'callback'])->name('creator.social.callback');
+});
 
 /*
 |--------------------------------------------------------------------------

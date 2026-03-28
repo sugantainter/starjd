@@ -43,7 +43,8 @@
           </div>
         </form>
         <div v-else class="flex flex-wrap gap-2 border-t border-[#e2e8f0] p-4">
-          <button type="button" class="cursor-link rounded-lg border border-[#e2e8f0] bg-white px-3 py-2 text-sm font-medium text-[#1a1a1a] hover:bg-[#f1f5f9]" @click="startEdit(acc)">{{ acc.is_connected ? 'Edit' : 'Connect' }}</button>
+          <button type="button" class="cursor-link rounded-lg border border-[#e2e8f0] bg-white px-3 py-2 text-sm font-medium text-[#1a1a1a] hover:bg-[#f1f5f9]" @click="startConnect(acc)">{{ acc.is_connected ? 'Edit' : 'Connect' }}</button>
+          <button v-if="acc.is_connected && oauthPlatforms.includes(acc.platform)" type="button" class="cursor-link rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50" @click="refreshStats(acc.platform)">Refresh Stats</button>
           <button v-if="acc.is_connected" type="button" class="cursor-link rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50" @click="disconnect(acc.platform)">Disconnect</button>
         </div>
       </div>
@@ -74,11 +75,34 @@ function formatFollowers(n) {
   return num.toLocaleString();
 }
 
-onMounted(load);
+onMounted(() => {
+  load();
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('success')) {
+    // Show success toast or message if needed
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+  if (urlParams.has('error')) {
+    error.value = 'Failed to connect account: ' + urlParams.get('error');
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+});
 
 async function load() {
   const res = await axios.get('/api/creator/social-accounts', { withCredentials: true });
   accounts.value = res.data;
+}
+
+const oauthPlatforms = ['facebook', 'instagram', 'youtube'];
+
+function startConnect(acc) {
+  if (oauthPlatforms.includes(acc.platform)) {
+    // Use OAuth flow
+    const driver = acc.platform === 'youtube' ? 'google' : 'facebook';
+    window.location.href = `/creator/social-accounts/${driver}/redirect`;
+  } else {
+    startEdit(acc);
+  }
 }
 
 function startEdit(acc) {
@@ -96,6 +120,16 @@ async function sync(platform) {
     await load();
   } catch (e) {
     error.value = e.response?.data?.message || 'Failed to save.';
+  }
+}
+
+async function refreshStats(platform) {
+  error.value = '';
+  try {
+    await axios.post(`/api/creator/social-accounts/${platform}/refresh`, {}, { withCredentials: true });
+    await load();
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Failed to refresh stats.';
   }
 }
 

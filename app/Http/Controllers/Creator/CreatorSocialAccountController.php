@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Creator;
 
 use App\Http\Controllers\Controller;
 use App\Models\SocialAccount;
+use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -62,6 +63,66 @@ class CreatorSocialAccountController extends Controller
         $account->save();
 
         return response()->json($account);
+    }
+
+    public function redirect(Request $request, string $platform)
+    {
+        $allowed = ['facebook', 'google']; // google is used for YouTube
+        if (! in_array($platform, $allowed, true)) {
+            return redirect()->to('/creator/social-accounts?error=platform_not_supported');
+        }
+
+        $driver = Socialite::driver($platform);
+
+        if ($platform === 'google') {
+            $driver->scopes(['https://www.googleapis.com/auth/youtube.readonly', 'email', 'profile']);
+        } elseif ($platform === 'facebook') {
+            $driver->scopes(['email', 'public_profile', 'instagram_basic', 'instagram_manage_insights', 'pages_show_list', 'pages_read_engagement']);
+        }
+
+        return $driver->redirect();
+    }
+
+    public function callback(Request $request, string $platform, \App\Services\SocialAnalyticsService $analytics)
+    {
+        try {
+            $oauthUser = Socialite::driver($platform)->user();
+        } catch (\Throwable $e) {
+            return redirect()->to('/creator/social-accounts?error=oauth_failed');
+        }
+
+        $user = $request->user();
+        
+        // Map google to youtube for storage
+        $savePlatform = ($platform === 'google') ? 'youtube' : $platform;
+
+        $account = $user->socialAccounts()->firstOrNew(['platform' => $savePlatform]);
+        $account->access_token = $oauthUser->token;
+        $account->refresh_token = $oauthUser->refreshToken;
+        $account->expires_at = $oauthUser->expiresIn ? now()->addSeconds($oauthUser->expiresIn) : null;
+        $account->is_connected = true;
+
+        // Fetch initial stats
+        $analytics->updateStats($account);
+
+        $account->save();
+
+        return redirect()->to('/creator/social-accounts?success=connected');
+    }
+
+    public function refresh(Request $request, string $platform, \App\Services\SocialAnalyticsService $analytics): JsonResponse
+    {
+        $account = $request->user()->socialAccounts()->where('platform', $platform)->first();
+        if (! $account || ! $account->access_token) {
+            return response()->json(['message' => 'Account not connected via OAuth'], 422);
+        }
+
+        $success = $analytics->updateStats($account);
+        return response()->json([
+            'success' => $success,
+            'followers_count' => $account->followers_count,
+            'username' => $account->username,
+        ]);
     }
 
     public function disconnect(Request $request, string $platform): JsonResponse
