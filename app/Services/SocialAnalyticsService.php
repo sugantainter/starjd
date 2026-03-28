@@ -146,6 +146,7 @@ class SocialAnalyticsService
     private function updateFacebookStats(SocialAccount $account): bool
     {
         try {
+            Log::info("Starting Facebook sync for account {$account->id}");
             // 1. Fetch FB User Stats
             $res = Http::withToken($account->access_token)
                 ->get('https://graph.facebook.com/v19.0/me', [
@@ -157,6 +158,7 @@ class SocialAnalyticsService
                 $account->username = $data['name'] ?? $account->username;
                 $account->followers_count = $data['followers_count'] ?? $account->followers_count;
                 $account->save();
+                Log::info("Found Facebook User: {$account->username}");
                 
                 // 2. Discover and update Facebook Pages
                 $pagesRes = Http::withToken($account->access_token)
@@ -165,9 +167,13 @@ class SocialAnalyticsService
                     ]);
                 
                 if ($pagesRes->successful() && !empty($pagesRes->json('data'))) {
-                    $page = $pagesRes->json('data.0'); // Syncing first page for now
+                    $pageList = $pagesRes->json('data');
+                    Log::info("Discovered " . count($pageList) . " Facebook Page(s)");
+                    
+                    $page = $pageList[0]; // Primary page for now
                     $pageId = $page['id'];
                     $pageToken = $page['access_token'];
+                    Log::info("Sycing Page: {$page['name']} (ID: {$pageId})");
 
                     // 3. Fetch Page Insights (Last 30 days)
                     $insightsRes = Http::withToken($pageToken)
@@ -192,55 +198,68 @@ class SocialAnalyticsService
                             'limit' => 5,
                         ]);
 
-                    // Format Demographics (Facebook style)
-                    $formattedDemo = [];
-                    if ($demoRes->successful() && !empty($demoRes->json('data.0.values.0.value'))) {
-                        $values = $demoRes->json('data.0.values.0.value');
-                        $total = array_sum($values);
-                        foreach ($values as $key => $count) {
-                            if (!str_contains($key, '.')) continue;
-                            [$genderCode, $age] = explode('.', $key); // e.g. "M.18-24"
-                            $gender = ($genderCode === 'M') ? 'male' : 'female';
-                            $formattedDemo[] = ['age' . $age, $gender, ($count / $total) * 100];
+                    if ($insightsRes->successful() || $demoRes->successful()) {
+                        // Format Demographics (Facebook style)
+                        $formattedDemo = [];
+                        if ($demoRes->successful() && !empty($demoRes->json('data.0.values.0.value'))) {
+                            $values = $demoRes->json('data.0.values.0.value');
+                            $total = array_sum($values);
+                            foreach ($values as $key => $count) {
+                                if (!str_contains($key, '.')) continue;
+                                [$genderCode, $age] = explode('.', $key);
+                                $gender = ($genderCode === 'M') ? 'male' : 'female';
+                                $formattedDemo[] = ['age' . $age, $gender, ($total > 0 ? ($count / $total) * 100 : 0)];
+                            }
                         }
-                    }
 
-                    // Format History
-                    $history = [];
-                    if ($insightsRes->successful()) {
-                        $impressData = collect($insightsRes->json('data'))->firstWhere('name', 'page_impressions')['values'] ?? [];
-                        foreach ($impressData as $val) {
-                            $history[] = [
-                                date('Y-m-d', strtotime($val['end_time'])),
-                                0, // fans gained (can be added later)
-                                0,
-                                $val['value'], // page impressions
-                            ];
+                        // Format History
+                        $history = [];
+                        if ($insightsRes->successful()) {
+                            $impressData = collect($insightsRes->json('data'))->firstWhere('name', 'page_impressions')['values'] ?? [];
+                            foreach ($impressData as $val) {
+                                $history[] = [
+                                    date('Y-m-d', strtotime($val['end_time'])),
+                                    0, 0, $val['value'],
+                                ];
+                            }
                         }
-                    }
 
-                    $account->analytics_data = array_merge((array)$account->analytics_data, [
-                        'fb_page_id' => $pageId,
-                        'last_updated' => now()->toIso8601String(),
-                        'history' => $history,
-                        'demographics' => $formattedDemo,
-                        'top_videos' => collect($postsRes->json('data', []))->map(fn($p) => [
-                            'id' => $p['id'],
-                            'title' => $p['message'] ?? 'Facebook Post',
-                            'thumbnail' => $p['attachments']['data'][0]['media']['image']['src'] ?? null,
-                            'views' => ($p['likes']['summary']['total_count'] ?? 0) + ($p['comments']['summary']['total_count'] ?? 0),
-                        ])->toArray(),
-                    ]);
-                    $account->save();
+                        $account->analytics_data = array_merge((array)$account->analytics_data, [
+                            'fb_page_id' => $pageId,
+                            'last_updated' => now()->toIso8601String(),
+                            'history' => $history,
+                            'demographics' => $formattedDemo,
+                            'top_videos' => collect($postsRes->json('data', []))->map(fn($p) => [
+                                'id' => $p['id'],
+                                'title' => $p['message'] ?? 'Facebook Post',
+                                'thumbnail' => $p['attachments']['data'][0]['media']['image']['src'] ?? null,
+                                'views' => ($p['likes']['summary']['total_count'] ?? 0) + ($p['comments']['summary']['total_count'] ?? 0),
+                            ])->toArray(),
+                        ]);
+                        $account->save();
+                        Log::info("Facebook Page analytics updated for account {$account->id}");
+                    } else {
+                        Log::warning("Facebook Page insights fetch failed for ID {$pageId}", [
+                            'insights_status' => $insightsRes->status(),
+                            'demo_status' => $demoRes->status(),
+                        ]);
+                    }
+                } else {
+                    Log::warning("No Facebook Pages discovered for account {$account->id}");
                 }
 
                 // Also trigger linked Instagram update 
                 $this->updateInstagramStats($account);
                 
                 return true;
+            } else {
+                Log::error("Failed to fetch basic FB profile for account {$account->id}", [
+                    'status' => $res->status(),
+                    'body' => $res->body()
+                ]);
             }
         } catch (\Throwable $e) {
-            Log::error('Facebook Page Analytics update failed: ' . $e->getMessage());
+            Log::error('Facebook Page Analytics update traceback: ' . $e->getMessage());
         }
 
         return false;
@@ -249,6 +268,7 @@ class SocialAnalyticsService
     private function updateInstagramStats(SocialAccount $account): bool
     {
         try {
+            Log::info("Starting Instagram discovery for account {$account->id}");
             // 1. Find Instagram Business Account via FB Pages
             $pagesRes = Http::withToken($account->access_token)
                 ->get('https://graph.facebook.com/v19.0/me/accounts', [
@@ -261,11 +281,12 @@ class SocialAnalyticsService
                     $ig = $page['instagram_business_account'] ?? null;
                     if ($ig) {
                         $igId = $ig['id'];
+                        Log::info("Found IG Business Account: @{$ig['username']} (ID: {$igId})");
                         
                         // 2. Fetch IG Reach/Impressions (Last 30 days)
                         $insightsRes = Http::withToken($account->access_token)
                             ->get("https://graph.facebook.com/v19.0/{$igId}/insights", [
-                                'metric' => 'reach,impressions',
+                                'metric' => 'reach',
                                 'period' => 'day',
                                 'since' => now()->subDays(30)->timestamp,
                                 'until' => now()->timestamp,
@@ -285,28 +306,26 @@ class SocialAnalyticsService
                                 'limit' => 5,
                             ]);
 
-                        // Format Demographics to match YouTube style [age, gender, percentage]
+                        // Format Demographics
                         $formattedDemo = [];
                         if ($demoRes->successful() && !empty($demoRes->json('data.0.values.0.value'))) {
                             $values = $demoRes->json('data.0.values.0.value');
                             $total = array_sum($values);
                             foreach ($values as $key => $count) {
-                                [$genderCode, $age] = explode('.', $key); // e.g. "M.18-24"
+                                [$genderCode, $age] = explode('.', $key);
                                 $gender = ($genderCode === 'M') ? 'male' : 'female';
-                                $formattedDemo[] = ['age' . $age, $gender, ($count / $total) * 100];
+                                $formattedDemo[] = ['age' . $age, $gender, ($total > 0 ? ($count / $total) * 100 : 0)];
                             }
                         }
 
-                        // Format History for GrowthChart
+                        // Format History
                         $history = [];
-                        if ($insightsRes->successful()) {
+                        if ($insightsRes->successful() && !empty($insightsRes->json('data'))) {
                             $reachData = collect($insightsRes->json('data'))->firstWhere('name', 'reach')['values'] ?? [];
                             foreach ($reachData as $val) {
                                 $history[] = [
                                     date('Y-m-d', strtotime($val['end_time'])),
-                                    0, // subscribers gained (not directly in daily insights)
-                                    0, // subscribers lost
-                                    $val['value'], // views (using reach as a proxy for engagement)
+                                    0, 0, $val['value'],
                                 ];
                             }
                         }
@@ -318,16 +337,20 @@ class SocialAnalyticsService
                             'demographics' => $formattedDemo,
                             'top_videos' => collect($mediaRes->json('data', []))->map(fn($m) => [
                                 'id' => $m['id'],
-                                'title' => $m['caption'] ?? 'No caption',
+                                'title' => $m['caption'] ?? 'Media Post',
                                 'thumbnail' => $m['media_url'] ?? $m['thumbnail_url'] ?? null,
                                 'views' => ($m['like_count'] ?? 0) + ($m['comments_count'] ?? 0),
                             ])->toArray(),
                         ]);
                         
                         $account->save();
+                        Log::info("Instagram analytics updated for ID {$igId}");
                         return true;
                     }
                 }
+                Log::warning("No IG Business accounts linked to any Facebook Page for account {$account->id}");
+            } else {
+                Log::error("Failed to fetch FB Pages for IG discovery: {$pagesRes->body()}");
             }
         } catch (\Throwable $e) {
             Log::error('Instagram detailed analytics failed: ' . $e->getMessage());
