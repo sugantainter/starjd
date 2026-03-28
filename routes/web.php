@@ -305,4 +305,5 @@ Route::middleware(['auth:web', 'verified', 'creator'])->group(function () {
 | /contact, /privacy, /terms, /child-safety, /blog, /services, /creators, /login, /register,
 | /creator/*, /brand/*, /admin/*, etc.
 */
+Route::get('/login', [HomeController::class, 'index'])->name('login');
 Route::get('/{any?}', [HomeController::class, 'index'])->where('any', '.*')->name('home');

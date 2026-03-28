@@ -21,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'professional' => \App\Http\Middleware\EnsureUserIsProfessional::class,
             'paid' => \App\Http\Middleware\EnsureCreatorOrBrandHasPaid::class,
         ]);
+        // SPA uses /login (no named route by default); avoid route('login') RouteNotFoundException
+        $middleware->redirectGuestsTo('/login');
         // PayU redirects here via POST without a CSRF token; we verify with PayU hash instead
         $middleware->validateCsrfTokens(except: [
             'payment/callback/success',
@@ -33,7 +35,9 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
-            \Illuminate\Support\Facades\Log::warning('Unauthenticated API Access Attempt', [
+            $isApiStyle = $request->is('api/*') || $request->expectsJson();
+
+            \Illuminate\Support\Facades\Log::warning($isApiStyle ? 'Unauthenticated API request' : 'Unauthenticated web request', [
                 'url' => $request->fullUrl(),
                 'method' => $request->method(),
                 'headers' => $request->headers->all(),
@@ -42,11 +46,13 @@ return Application::configure(basePath: dirname(__DIR__))
                 'session_id' => $request->hasSession() ? $request->session()->getId() : null,
             ]);
 
-            if ($request->is('api/*') || $request->expectsJson()) {
+            if ($isApiStyle) {
                 return response()->json([
                     'message' => 'Unauthenticated.',
                     'hint' => 'Ensure you send the session cookie (starjd-session) from your login/verify response on every API request, including the first one (e.g. set-role).',
                 ], 401);
             }
+
+            return redirect()->guest('/login');
         });
     })->create();
