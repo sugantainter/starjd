@@ -152,6 +152,13 @@ class SocialAnalyticsService
                 ->get('https://graph.facebook.com/v19.0/me', [
                     'fields' => 'name,picture',
                 ]);
+            
+            // Check Permissions
+            $permRes = Http::withToken($account->access_token)->get('https://graph.facebook.com/v19.0/me/permissions');
+            if ($permRes->successful()) {
+                $granted = collect($permRes->json('data'))->where('status', 'granted')->pluck('permission')->implode(', ');
+                Log::info("OAuth Permissions Audit for account {$account->id}: [{$granted}]");
+            }
 
             if ($res->successful()) {
                 $data = $res->json();
