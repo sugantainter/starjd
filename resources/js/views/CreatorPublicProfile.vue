@@ -100,6 +100,108 @@
       <p v-if="isBrand && !packages.length" class="mt-4 text-[#64748b]">No packages listed. Contact the creator directly.</p>
       <p v-if="!isBrand" class="mt-4 text-[#64748b]">Log in as a brand to request a collaboration.</p>
     </div>
+
+    <!-- Advanced Channel Insights (Public Mirror of Dashboard) -->
+    <div v-if="connectedSocialAccountsWithAnalytics.length" class="mt-8">
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-4">
+        <div>
+           <h2 class="text-xl font-semibold text-[#1a1a1a]">Channel Insights</h2>
+           <p class="text-sm text-[#64748b]">Real-time audience performance and demographics.</p>
+        </div>
+        <!-- Platform Tabs -->
+        <div class="flex items-center gap-1 overflow-x-auto rounded-xl bg-slate-100 p-1">
+          <button
+            v-for="s in connectedSocialAccountsWithAnalytics"
+            :key="s.platform"
+            @click="selectedPlatform = s.platform"
+            class="flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-all"
+            :class="selectedPlatform === s.platform ? 'bg-white text-[#1a1a1a] shadow-sm' : 'text-[#64748b] hover:text-[#1a1a1a]'"
+          >
+            <SocialPlatformIcon :platform="s.platform" :size="18" />
+            {{ platformName(s.platform) }}
+          </button>
+        </div>
+      </div>
+
+      <div class="relative overflow-hidden rounded-2xl border border-[#e2e8f0] bg-white p-6 shadow-sm">
+        <!-- Dashboard-like Stats Grid -->
+        <div class="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5" :class="{ 'opacity-10 blur-xl pointer-events-none': !isLoggedIn }">
+           <div class="rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-4">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-[#94a3b8]">Reach</span>
+              <div class="mt-1 text-xl font-bold text-[#1a1a1a]">{{ formatFollowers(activeAccount?.followers_count) || '0' }}</div>
+           </div>
+           <div class="rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-4">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-[#94a3b8]">Platform</span>
+              <div class="mt-1 text-sm font-bold text-[#1a1a1a] capitalize">{{ activeAccount?.platform }}</div>
+           </div>
+        </div>
+
+        <!-- Lock Overlay for guests -->
+        <div v-if="!isLoggedIn" class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/40 backdrop-blur-lg">
+           <div class="w-full max-w-sm rounded-3xl bg-[#0f172a]/90 p-8 text-center text-white shadow-2xl border border-white/10">
+              <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#10b981]/10 border border-[#10b981]/20">
+                 <svg class="h-8 w-8 text-[#10b981]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                 </svg>
+              </div>
+              <h3 class="text-xl font-bold tracking-tight">Analytics Locked</h3>
+              <p class="mt-3 text-sm text-slate-400 leading-relaxed">Create a free account to unlock daily insights, historical charts, and audience demographics for <b>{{ profile.user?.name }}</b>.</p>
+              <div class="mt-8 flex flex-col gap-3">
+                 <router-link to="/register" class="rounded-2xl bg-[#10b981] px-6 py-3.5 font-bold text-white transition-all hover:bg-[#059669] hover:scale-[1.02] active:scale-95 shadow-lg shadow-[#10b981]/20">Create Free Account</router-link>
+                 <router-link to="/login" class="text-sm font-medium text-slate-400 hover:text-white transition-colors">Already have an account? Log in</router-link>
+              </div>
+           </div>
+        </div>
+
+        <!-- Scrollable Analytics Content (only fully visible to logged in users) -->
+        <div :class="{ 'opacity-10 blur-2xl pointer-events-none select-none max-h-48 overflow-hidden': !isLoggedIn }" class="transition-all duration-700">
+          <!-- Graphs (views) -->
+          <div class="mt-10">
+             <h3 class="text-xs font-bold uppercase tracking-wider text-[#94a3b8] mb-4">View Growth (Last 30 days)</h3>
+             <GrowthChart v-if="activeHistory.length" :history="activeHistory" :metricIndex="3" color="#3b82f6" />
+             <div v-else class="h-[200px] flex items-center justify-center text-sm text-slate-400 italic">No historical data available yet.</div>
+          </div>
+
+          <div class="mt-12 grid gap-12 lg:grid-cols-2">
+             <!-- Top Videos -->
+             <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-[#94a3b8] mb-4">Top Content</h3>
+                <div class="space-y-4">
+                   <div v-for="video in activeTopVideos" :key="video.id" class="flex gap-4 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-3">
+                      <img :src="video.thumbnail" class="h-16 w-28 rounded-lg object-cover bg-slate-200" />
+                      <div class="min-w-0 flex-1">
+                         <h4 class="truncate font-medium text-[#1a1a1a] shadow-sm" :title="video.title">{{ video.title }}</h4>
+                         <span class="text-xs text-[#64748b]">{{ formatFollowers(video.views) }} views</span>
+                      </div>
+                   </div>
+                </div>
+             </div>
+             <!-- Demographics -->
+             <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-[#94a3b8] mb-4">Audience Demographics</h3>
+                <div class="rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-6">
+                   <div class="space-y-6">
+                      <div>
+                         <div class="flex justify-between text-xs mb-1.5">
+                            <span class="font-medium text-[#1e293b]">Male</span>
+                            <span class="text-[#64748b]">{{ Math.round(activeDemographics.gender.male || 0) }}%</span>
+                         </div>
+                         <div class="h-2 w-full rounded-full bg-slate-200"><div class="h-full bg-blue-500 rounded-full" :style="{ width: activeDemographics.gender.male + '%' }"></div></div>
+                      </div>
+                      <div>
+                         <div class="flex justify-between text-xs mb-1.5">
+                            <span class="font-medium text-[#1e293b]">Female</span>
+                            <span class="text-[#64748b]">{{ Math.round(activeDemographics.gender.female || 0) }}%</span>
+                         </div>
+                         <div class="h-2 w-full rounded-full bg-slate-200"><div class="h-full bg-pink-500 rounded-full" :style="{ width: activeDemographics.gender.female + '%' }"></div></div>
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="showModal = false">
       <div class="w-full max-w-md rounded-xl bg-white p-6">
         <h2 class="text-lg font-semibold text-[#1a1a1a]">Request collaboration</h2>
@@ -158,6 +260,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import SocialPlatformIcon from '../components/SocialPlatformIcon.vue';
+import GrowthChart from '../components/GrowthChart.vue';
 import { platformDisplayName } from '../lib/socialPlatforms.js';
 
 const route = useRoute();
@@ -169,7 +272,31 @@ const collabForm = reactive({ amount: 0, brand_notes: '', coupon_code: '' });
 const error = ref('');
 const loadingCollab = ref(false);
 const isBrand = ref(false);
+const isLoggedIn = ref(false);
 const availableCoupons = ref([]);
+
+const selectedPlatform = ref('');
+
+const connectedSocialAccountsWithAnalytics = computed(() => {
+  const list = profile.value?.user?.social_accounts || [];
+  return list.filter((s) => s.has_analytics || s.is_connected);
+});
+
+const activeAccount = computed(() => {
+  if (!selectedPlatform.value && connectedSocialAccountsWithAnalytics.value.length) {
+    selectedPlatform.value = connectedSocialAccountsWithAnalytics.value[0].platform;
+  }
+  return connectedSocialAccountsWithAnalytics.value.find(a => a.platform === selectedPlatform.value);
+});
+
+const activeHistory = computed(() => activeAccount.value?.analytics_data?.history ?? []);
+const activeTopVideos = computed(() => activeAccount.value?.analytics_data?.top_videos ?? []);
+const activeDemographics = computed(() => {
+  const data = activeAccount.value?.analytics_data?.demographics ?? [];
+  const genderMap = { male: 0, female: 0 };
+  data.forEach(row => { genderMap[row[1]] = (genderMap[row[1]] || 0) + row[2]; });
+  return { gender: genderMap };
+});
 
 async function loadCoupons() {
   try {
@@ -253,8 +380,10 @@ onMounted(async () => {
   }
   try {
     const userRes = await axios.get('/api/me', { withCredentials: true });
+    isLoggedIn.value = !!userRes.data;
     isBrand.value = userRes.data?.role === 'brand';
   } catch {
+    isLoggedIn.value = false;
     isBrand.value = false;
   }
   loadCoupons();

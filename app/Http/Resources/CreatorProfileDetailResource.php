@@ -48,6 +48,8 @@ class CreatorProfileDetailResource extends JsonResource
                     'profile_url' => $a->profile_url,
                     'followers_count' => $a->followers_count,
                     'is_connected' => $a->is_connected,
+                    'analytics_data' => $request->user() ? $a->analytics_data : null,
+                    'has_analytics' => !empty($a->analytics_data),
                 ]),
             ] : null,
         ];
