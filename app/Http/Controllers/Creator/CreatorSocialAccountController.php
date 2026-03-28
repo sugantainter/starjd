@@ -84,17 +84,25 @@ class CreatorSocialAccountController extends Controller
         }
 
         if ($platform === 'facebook') {
-            return Socialite::driver('facebook')
-                ->scopes([
-                    'email',
-                    'public_profile',
-                    'pages_show_list',
-                    'pages_read_engagement',
-                    'instagram_basic',
-                    'instagram_manage_insights',
-                    'business_management',
-                ])
-                ->redirect();
+            /** @var \Laravel\Socialite\Two\FacebookProvider $driver */
+            $driver = Socialite::driver('facebook');
+            
+            $builder = $driver->scopes([
+                'email',
+                'public_profile',
+                'pages_show_list',
+                'pages_read_engagement',
+                'instagram_basic',
+                'instagram_manage_insights',
+                'business_management',
+            ]);
+
+            $configId = env('FACEBOOK_CONFIG_ID');
+            if ($configId) {
+                $builder->with(['config_id' => $configId]);
+            }
+
+            return $builder->redirect();
         }
 
         return Socialite::driver($platform)->redirect();
