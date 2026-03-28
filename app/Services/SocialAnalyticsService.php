@@ -36,12 +36,24 @@ class SocialAnalyticsService
 
             if ($res->successful()) {
                 $item = $res->json('items.0');
+                Log::debug('YouTube API Response Item:', ['item' => $item]);
                 if ($item) {
                     $account->followers_count = $item['statistics']['subscriberCount'] ?? $account->followers_count;
                     $account->username = $item['snippet']['customUrl'] ?? $item['snippet']['title'] ?? $account->username;
+                    Log::info("YouTube stats updated for account {$account->id}", [
+                        'followers' => $account->followers_count,
+                        'username' => $account->username
+                    ]);
                     $account->save();
                     return true;
+                } else {
+                    Log::warning("YouTube API returned no items for account {$account->id}");
                 }
+            } else {
+                Log::error("YouTube API error for account {$account->id}", [
+                    'status' => $res->status(),
+                    'body' => $res->body()
+                ]);
             }
         } catch (\Throwable $e) {
             Log::error('YouTube Analytics update failed: ' . $e->getMessage());
