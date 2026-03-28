@@ -147,10 +147,10 @@ class SocialAnalyticsService
     {
         try {
             Log::info("Starting Facebook sync for account {$account->id}");
-            // 1. Fetch FB User Stats
+            // 1. Fetch FB User Stats (Limited fields to avoid #100 error)
             $res = Http::withToken($account->access_token)
                 ->get('https://graph.facebook.com/v19.0/me', [
-                    'fields' => 'name,followers_count,picture',
+                    'fields' => 'name,picture',
                 ]);
 
             if ($res->successful()) {
@@ -173,7 +173,8 @@ class SocialAnalyticsService
                     $page = $pageList[0]; // Primary page for now
                     $pageId = $page['id'];
                     $pageToken = $page['access_token'];
-                    Log::info("Sycing Page: {$page['name']} (ID: {$pageId})");
+                    $account->followers_count = $page['followers_count'] ?? $account->followers_count;
+                    Log::info("Sycing Page: {$page['name']} (ID: {$pageId}) with {$account->followers_count} followers.");
 
                     // 3. Fetch Page Insights (Last 30 days)
                     $insightsRes = Http::withToken($pageToken)
