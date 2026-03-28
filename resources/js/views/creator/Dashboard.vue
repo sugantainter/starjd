@@ -85,6 +85,79 @@
         </div>
       </div>
     </div>
+
+    <!-- Additional Insights Grid -->
+    <div v-if="youtubeAccount && (topVideos.length > 0 || demographics.age.length > 0)" class="mt-8 grid gap-8 lg:grid-cols-2">
+      <!-- Top Content -->
+      <div v-if="topVideos.length > 0">
+        <h2 class="text-lg font-semibold text-[#1a1a1a]">Top Content</h2>
+        <p class="mt-1 text-sm text-[#64748b]">Your best performing videos in the last 60 days.</p>
+        <div class="mt-4 space-y-3">
+          <div v-for="video in topVideos" :key="video.id" class="flex gap-4 rounded-xl border border-[#e2e8f0] bg-white p-3 transition hover:shadow-md">
+            <img :src="video.thumbnail" alt="" class="h-16 w-28 rounded-lg object-cover bg-slate-100 shadow-inner" />
+            <div class="min-w-0 flex-1">
+              <h4 class="truncate font-medium text-[#1a1a1a]" :title="video.title">{{ video.title }}</h4>
+              <div class="mt-1 flex items-center gap-3 text-xs text-[#64748b]">
+                <span class="flex items-center gap-1">
+                  <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                  {{ formatFollowers(video.views) }} views
+                </span>
+                <a :href="'https://youtube.com/watch?v=' + video.id" target="_blank" class="text-[#3b82f6] hover:underline">Watch</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Audience Demographics -->
+      <div v-if="demographics.age.length > 0">
+        <h2 class="text-lg font-semibold text-[#1a1a1a]">Audience Demographics</h2>
+        <p class="mt-1 text-sm text-[#64748b]">Based on viewer percentages across age and gender.</p>
+        <div class="mt-4 rounded-xl border border-[#e2e8f0] bg-white p-5 space-y-6">
+          <!-- Gender -->
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-[#94a3b8] mb-3">Gender Distribution</h4>
+            <div class="flex items-center gap-4">
+              <div class="flex-1">
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-[#1e293b] font-medium">Male</span>
+                  <span class="text-[#64748b]">{{ Math.round(demographics.gender.male || 0) }}%</span>
+                </div>
+                <div class="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                  <div class="h-full bg-blue-500 rounded-full" :style="{ width: (demographics.gender.male || 0) + '%' }"></div>
+                </div>
+              </div>
+              <div class="flex-1">
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-[#1e293b] font-medium">Female</span>
+                  <span class="text-[#64748b]">{{ Math.round(demographics.gender.female || 0) }}%</span>
+                </div>
+                <div class="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                  <div class="h-full bg-pink-500 rounded-full" :style="{ width: (demographics.gender.female || 0) + '%' }"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Age Groups -->
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-[#94a3b8] mb-3">Top Age Groups</h4>
+            <div class="space-y-3">
+              <div v-for="[age, pct] in demographics.age.slice(0, 4)" :key="age">
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-[#1e293b] font-medium">{{ age.replace('age', '') }} years</span>
+                  <span class="text-[#64748b]">{{ Math.round(pct) }}%</span>
+                </div>
+                <div class="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                  <div class="h-full bg-indigo-500 rounded-full" :style="{ width: pct + '%' }"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="mt-8">
       <h2 class="text-lg font-semibold text-[#1a1a1a]">Campaigns you applied to</h2>
       <p class="mt-1 text-sm text-[#64748b]">Campaigns you showed interest in and your application status.</p>
@@ -172,6 +245,28 @@ const youtubeAccount = computed(() => {
 
 const analyticsHistory = computed(() => {
   return youtubeAccount.value?.analytics_data?.history ?? [];
+});
+
+const topVideos = computed(() => {
+  return youtubeAccount.value?.analytics_data?.top_videos ?? [];
+});
+
+const demographics = computed(() => {
+  const data = youtubeAccount.value?.analytics_data?.demographics ?? [];
+  // Format: [ [ageGroup, gender, percentage], ... ]
+  
+  const genderMap = { male: 0, female: 0 };
+  const ageGroups = {};
+  
+  data.forEach(row => {
+    genderMap[row[1]] = (genderMap[row[1]] || 0) + row[2];
+    ageGroups[row[0]] = (ageGroups[row[0]] || 0) + row[2];
+  });
+  
+  return {
+    gender: genderMap,
+    age: Object.entries(ageGroups).sort((a, b) => b[1] - a[1])
+  };
 });
 
 const connectedSocialCount = computed(() => {

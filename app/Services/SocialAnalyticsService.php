@@ -70,28 +70,73 @@ class SocialAnalyticsService
     {
         try {
             $end = now()->toDateString();
-            $start = now()->subDays(30)->toDateString();
+            $start = now()->subDays(60)->toDateString(); // 60 days for better demographic data
             
-            $res = Http::withToken($account->access_token)
+            // 1. Fetch Growth History (30 days)
+            $growthRes = Http::withToken($account->access_token)
                 ->get('https://youtubeanalytics.googleapis.com/v2/reports', [
                     'ids' => 'channel==MINE',
-                    'startDate' => $start,
+                    'startDate' => now()->subDays(30)->toDateString(),
                     'endDate' => $end,
                     'metrics' => 'subscribersGained,subscribersLost,views,likes',
                     'dimensions' => 'day',
                     'sort' => 'day',
                 ]);
 
-            if ($res->successful()) {
-                $rows = $res->json('rows') ?? [];
-                $account->analytics_data = [
+            // 2. Fetch Audience Demographics (Gender & Age)
+            $demoRes = Http::withToken($account->access_token)
+                ->get('https://youtubeanalytics.googleapis.com/v2/reports', [
+                    'ids' => 'channel==MINE',
+                    'startDate' => $start,
+                    'endDate' => $end,
+                    'metrics' => 'viewerPercentage',
+                    'dimensions' => 'ageGroup,gender',
+                    'sort' => 'ageGroup,gender',
+                ]);
+
+            // 3. Fetch Top Content (Videos)
+            $topVideosRes = Http::withToken($account->access_token)
+                ->get('https://youtubeanalytics.googleapis.com/v2/reports', [
+                    'ids' => 'channel==MINE',
+                    'startDate' => $start,
+                    'endDate' => $end,
+                    'metrics' => 'views,estimatedMinutesWatched,averageViewDuration',
+                    'dimensions' => 'video',
+                    'sort' => '-views',
+                    'maxResults' => 5
+                ]);
+
+            // 4. Fetch Video Details (Titles/Thumbnails) for the top videos
+            $topVideos = [];
+            if ($topVideosRes->successful() && !empty($topVideosRes->json('rows'))) {
+                $videoIds = collect($topVideosRes->json('rows'))->pluck(0)->implode(',');
+                $detailsRes = Http::withToken($account->access_token)
+                    ->get('https://www.googleapis.com/youtube/v3/videos', [
+                        'id' => $videoIds,
+                        'part' => 'snippet,statistics',
+                    ]);
+                
+                if ($detailsRes->successful()) {
+                    $topVideos = collect($detailsRes->json('items'))->map(function($v) {
+                        return [
+                            'id' => $v['id'],
+                            'title' => $v['snippet']['title'],
+                            'thumbnail' => $v['snippet']['thumbnails']['medium']['url'],
+                            'views' => $v['statistics']['viewCount'] ?? 0,
+                        ];
+                    })->toArray();
+                }
+            }
+
+            if ($growthRes->successful() || $demoRes->successful()) {
+                $account->analytics_data = array_merge((array)$account->analytics_data, [
                     'last_updated' => now()->toIso8601String(),
-                    'history' => $rows, // Format: [ [date, gained, lost, views, likes], ... ]
-                ];
+                    'history' => $growthRes->json('rows') ?? [],
+                    'demographics' => $demoRes->json('rows') ?? [],
+                    'top_videos' => $topVideos,
+                ]);
                 $account->save();
-                Log::info("YouTube historical analytics updated for account {$account->id}");
-            } else {
-                Log::error("YouTube Analytics API error for account {$account->id}: " . $res->body());
+                Log::info("YouTube expanded analytics updated for account {$account->id}");
             }
         } catch (\Throwable $e) {
             Log::error("Failed to fetch YouTube analytics: " . $e->getMessage());
