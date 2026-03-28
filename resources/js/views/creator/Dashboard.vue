@@ -112,46 +112,21 @@
       <!-- Audience Demographics -->
       <div v-if="demographics.age.length > 0">
         <h2 class="text-lg font-semibold text-[#1a1a1a]">Audience Demographics</h2>
-        <p class="mt-1 text-sm text-[#64748b]">Based on viewer percentages across age and gender.</p>
-        <div class="mt-4 rounded-xl border border-[#e2e8f0] bg-white p-5 space-y-6">
-          <!-- Gender -->
+        <p class="mt-1 text-sm text-[#64748b]">Deep insights into who is watching your content.</p>
+        <div class="mt-4 rounded-xl border border-[#e2e8f0] bg-white p-6 grid gap-8 sm:grid-cols-2">
+          <!-- Gender Donut -->
           <div>
-            <h4 class="text-xs font-bold uppercase tracking-wider text-[#94a3b8] mb-3">Gender Distribution</h4>
-            <div class="flex items-center gap-4">
-              <div class="flex-1">
-                <div class="flex justify-between text-xs mb-1">
-                  <span class="text-[#1e293b] font-medium">Male</span>
-                  <span class="text-[#64748b]">{{ Math.round(demographics.gender.male || 0) }}%</span>
-                </div>
-                <div class="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
-                  <div class="h-full bg-blue-500 rounded-full" :style="{ width: (demographics.gender.male || 0) + '%' }"></div>
-                </div>
-              </div>
-              <div class="flex-1">
-                <div class="flex justify-between text-xs mb-1">
-                  <span class="text-[#1e293b] font-medium">Female</span>
-                  <span class="text-[#64748b]">{{ Math.round(demographics.gender.female || 0) }}%</span>
-                </div>
-                <div class="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
-                  <div class="h-full bg-pink-500 rounded-full" :style="{ width: (demographics.gender.female || 0) + '%' }"></div>
-                </div>
-              </div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-[#94a3b8] mb-4">Gender Distribution</h4>
+            <div class="h-[250px]">
+               <DoughnutChart :counts="demographics.gender" />
             </div>
           </div>
 
-          <!-- Age Groups -->
+          <!-- Age Bars -->
           <div>
-            <h4 class="text-xs font-bold uppercase tracking-wider text-[#94a3b8] mb-3">Top Age Groups</h4>
-            <div class="space-y-3">
-              <div v-for="[age, pct] in demographics.age.slice(0, 4)" :key="age">
-                <div class="flex justify-between text-xs mb-1">
-                  <span class="text-[#1e293b] font-medium">{{ age.replace('age', '') }} years</span>
-                  <span class="text-[#64748b]">{{ Math.round(pct) }}%</span>
-                </div>
-                <div class="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
-                  <div class="h-full bg-indigo-500 rounded-full" :style="{ width: pct + '%' }"></div>
-                </div>
-              </div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-[#94a3b8] mb-4">Top Age Groups</h4>
+            <div class="h-[250px]">
+               <BarChart :dataRows="demographics.age" color="#6366f1" />
             </div>
           </div>
         </div>
@@ -229,6 +204,8 @@ import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import SocialPlatformIcon from '../../components/SocialPlatformIcon.vue';
 import GrowthChart from '../../components/GrowthChart.vue';
+import DoughnutChart from '../../components/DoughnutChart.vue';
+import BarChart from '../../components/BarChart.vue';
 
 const data = ref(null);
 const activeTab = ref('views'); // 'views' or 'subscribers'
@@ -253,8 +230,6 @@ const topVideos = computed(() => {
 
 const demographics = computed(() => {
   const data = youtubeAccount.value?.analytics_data?.demographics ?? [];
-  // Format: [ [ageGroup, gender, percentage], ... ]
-  
   const genderMap = { male: 0, female: 0 };
   const ageGroups = {};
   

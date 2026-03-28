@@ -180,21 +180,19 @@
              <div>
                 <h3 class="text-xs font-bold uppercase tracking-wider text-[#94a3b8] mb-4">Audience Demographics</h3>
                 <div class="rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-6">
-                   <div class="space-y-6">
-                      <div>
-                         <div class="flex justify-between text-xs mb-1.5">
-                            <span class="font-medium text-[#1e293b]">Male</span>
-                            <span class="text-[#64748b]">{{ Math.round(activeDemographics.gender.male || 0) }}%</span>
-                         </div>
-                         <div class="h-2 w-full rounded-full bg-slate-200"><div class="h-full bg-blue-500 rounded-full" :style="{ width: activeDemographics.gender.male + '%' }"></div></div>
-                      </div>
-                      <div>
-                         <div class="flex justify-between text-xs mb-1.5">
-                            <span class="font-medium text-[#1e293b]">Female</span>
-                            <span class="text-[#64748b]">{{ Math.round(activeDemographics.gender.female || 0) }}%</span>
-                         </div>
-                         <div class="h-2 w-full rounded-full bg-slate-200"><div class="h-full bg-pink-500 rounded-full" :style="{ width: activeDemographics.gender.female + '%' }"></div></div>
-                      </div>
+                   <div class="grid gap-8 sm:grid-cols-2">
+                       <div>
+                          <p class="text-[10px] font-bold uppercase text-[#94a3b8] mb-2 text-center">Gender</p>
+                          <div class="h-[200px]">
+                             <DoughnutChart :counts="activeDemographics.gender" />
+                          </div>
+                       </div>
+                       <div>
+                          <p class="text-[10px] font-bold uppercase text-[#94a3b8] mb-2 text-center">Age Groups</p>
+                          <div class="h-[200px]">
+                             <BarChart :dataRows="activeDemographics.age" color="#6366f1" />
+                          </div>
+                       </div>
                    </div>
                 </div>
              </div>
@@ -261,6 +259,8 @@ import { useRoute } from 'vue-router';
 import axios from 'axios';
 import SocialPlatformIcon from '../components/SocialPlatformIcon.vue';
 import GrowthChart from '../components/GrowthChart.vue';
+import DoughnutChart from '../components/DoughnutChart.vue';
+import BarChart from '../components/BarChart.vue';
 import { platformDisplayName } from '../lib/socialPlatforms.js';
 
 const route = useRoute();
@@ -294,8 +294,17 @@ const activeTopVideos = computed(() => activeAccount.value?.analytics_data?.top_
 const activeDemographics = computed(() => {
   const data = activeAccount.value?.analytics_data?.demographics ?? [];
   const genderMap = { male: 0, female: 0 };
-  data.forEach(row => { genderMap[row[1]] = (genderMap[row[1]] || 0) + row[2]; });
-  return { gender: genderMap };
+  const ageGroups = {};
+  
+  data.forEach(row => {
+    genderMap[row[1]] = (genderMap[row[1]] || 0) + row[2];
+    ageGroups[row[0]] = (ageGroups[row[0]] || 0) + row[2];
+  });
+  
+  return {
+    gender: genderMap,
+    age: Object.entries(ageGroups).sort((a, b) => b[1] - a[1])
+  };
 });
 
 async function loadCoupons() {
