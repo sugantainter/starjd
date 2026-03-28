@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Creator;
 
 use App\Http\Controllers\Controller;
+use App\Models\CreatorProfile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,10 +21,9 @@ class CreatorProfileController extends Controller
     {
         $profile = $request->user()->creatorProfile;
         if (! $profile) {
-            $profile = $request->user()->creatorProfile()->create([
-                'slug' => Str::slug($request->user()->name) . '-' . $request->user()->id,
-            ]);
+            $profile = $request->user()->creatorProfile()->create([]);
         }
+        $this->ensureCreatorProfileHasSlug($request, $profile);
         $profile->load('user:id,name');
         return response()->json($this->profileWithAvatarUrl($profile));
     }
@@ -66,9 +66,7 @@ class CreatorProfileController extends Controller
 
         $profile = $request->user()->creatorProfile;
         if (! $profile) {
-            $profile = $request->user()->creatorProfile()->create([
-                'slug' => Str::slug($request->user()->name) . '-' . $request->user()->id,
-            ]);
+            $profile = $request->user()->creatorProfile()->create([]);
         }
 
         $data = $request->only(['bio', 'location', 'tagline', 'category', 'gender', 'language', 'min_rate', 'engagement_rate']);
@@ -89,14 +87,28 @@ class CreatorProfileController extends Controller
 
         $profile->update($data);
 
-        if ($request->has('slug') && $request->input('slug') !== $profile->slug) {
+        // Only treat non-empty slug as an intentional change (empty string = leave current slug).
+        if ($request->filled('slug') && $request->input('slug') !== $profile->slug) {
             $request->validate(['slug' => ['required', 'string', 'max:100', 'unique:creator_profiles,slug,' . $profile->id]]);
             $profile->update(['slug' => Str::slug($request->input('slug')) ?: $profile->slug]);
         }
 
         $updated = $profile->fresh();
+        $this->ensureCreatorProfileHasSlug($request, $updated);
         $updated->load('user:id,name');
         return response()->json($this->profileWithAvatarUrl($updated));
+    }
+
+    /**
+     * Backfill slug for legacy rows or edge cases where slug is null/empty.
+     */
+    private function ensureCreatorProfileHasSlug(Request $request, CreatorProfile $profile): void
+    {
+        if (! blank($profile->slug)) {
+            return;
+        }
+        $profile->slug = CreatorProfile::generateUniqueSlugForUser($request->user(), $profile->id);
+        $profile->save();
     }
 
     /**

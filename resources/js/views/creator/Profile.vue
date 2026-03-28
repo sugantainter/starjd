@@ -94,9 +94,14 @@
         <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Min rate (₹)</label>
         <input v-model.number="form.min_rate" type="number" step="0.01" min="0" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#10b981] focus:outline-none focus:ring-1 focus:ring-[#10b981]" />
       </div>
-      <div class="flex items-center gap-2">
-        <input v-model="form.is_public" type="checkbox" id="is_public" class="rounded border-[#e2e8f0] text-[#10b981] focus:ring-[#10b981]" />
-        <label for="is_public" class="text-sm text-[#1a1a1a]">Show my profile on Discover</label>
+      <div>
+        <div class="flex items-center gap-2">
+          <input v-model="form.is_public" type="checkbox" id="is_public" class="rounded border-[#e2e8f0] text-[#10b981] focus:ring-[#10b981]" />
+          <label for="is_public" class="text-sm text-[#1a1a1a]">Show my profile on Discover</label>
+        </div>
+        <p class="mt-2 text-xs text-[#64748b]">
+          Discover only lists profiles that are public, have a profile URL slug, and include a tagline or bio. Click Save profile after changes. On the Creators page, clear filters if you do not see yourself.
+        </p>
       </div>
       <button type="submit" :disabled="loading" class="cursor-link rounded-xl bg-[#10b981] px-6 py-3 font-semibold text-white hover:bg-[#059669] disabled:opacity-50 disabled:cursor-not-allowed">
         {{ loading ? 'Saving...' : 'Save profile' }}

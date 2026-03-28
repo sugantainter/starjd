@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Str;
 
 class CreatorProfile extends Model
 {
@@ -36,6 +37,57 @@ class CreatorProfile extends Model
             'engagement_rate' => 'decimal:2',
             'featured_until' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (CreatorProfile $profile) {
+            if (blank($profile->slug) && $profile->user_id) {
+                $user = User::query()->find($profile->user_id);
+                if ($user) {
+                    $profile->slug = static::generateUniqueSlugForUser($user);
+                }
+            }
+        });
+    }
+
+    /**
+     * Build a URL-safe slug from the user's name + id, ensuring uniqueness across creator_profiles.
+     */
+    public static function generateUniqueSlugForUser(User $user, ?int $exceptProfileId = null): string
+    {
+        $base = Str::slug($user->name);
+        if ($base === '') {
+            $base = 'creator';
+        }
+        $base = rtrim(substr($base, 0, 180), '-');
+        if ($base === '') {
+            $base = 'creator';
+        }
+
+        $suffix = '-' . $user->id;
+        $candidate = $base . $suffix;
+
+        $slugTaken = static function (string $slug) use ($exceptProfileId): bool {
+            $q = static::query()->where('slug', $slug);
+            if ($exceptProfileId !== null) {
+                $q->where('id', '!=', $exceptProfileId);
+            }
+
+            return $q->exists();
+        };
+
+        if (! $slugTaken($candidate)) {
+            return $candidate;
+        }
+
+        $n = 2;
+        do {
+            $candidate = $base . $suffix . '-' . $n;
+            $n++;
+        } while ($slugTaken($candidate));
+
+        return $candidate;
     }
 
     public function agency(): BelongsTo

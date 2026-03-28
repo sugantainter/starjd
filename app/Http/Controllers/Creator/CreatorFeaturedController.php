@@ -46,9 +46,7 @@ class CreatorFeaturedController extends Controller
         $user = $request->user();
         $profile = $user->creatorProfile;
         if (! $profile) {
-            $profile = $user->creatorProfile()->create([
-                'slug' => \Illuminate\Support\Str::slug($user->name) . '-' . $user->id,
-            ]);
+            $profile = $user->creatorProfile()->create([]);
         }
 
         $durationDays = (int) $plan['duration_days'];

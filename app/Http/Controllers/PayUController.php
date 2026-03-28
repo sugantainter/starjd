@@ -162,9 +162,7 @@ class PayUController extends Controller
                 }
                 $profile = $user->creatorProfile;
                 if (! $profile) {
-                    $profile = $user->creatorProfile()->create([
-                        'slug' => Str::slug($user->name).'-'.$user->id,
-                    ]);
+                    $profile = $user->creatorProfile()->create([]);
                 }
                 $featuredPayment = FeaturedPayment::create([
                     'creator_id' => $user->id,
