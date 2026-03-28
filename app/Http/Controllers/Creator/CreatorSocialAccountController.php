@@ -72,12 +72,23 @@ class CreatorSocialAccountController extends Controller
             return redirect()->to('/creator/social-accounts?error=platform_not_supported');
         }
 
+        // Force the redirect URL for this specific connection flow
+        $callbackUrl = route('creator.social.callback', ['platform' => $platform]);
+        config(["services.{$platform}.redirect" => $callbackUrl]);
+
         $driver = Socialite::driver($platform);
 
         if ($platform === 'google') {
             $driver->scopes(['https://www.googleapis.com/auth/youtube.readonly', 'email', 'profile']);
         } elseif ($platform === 'facebook') {
-            $driver->scopes(['email', 'public_profile', 'instagram_basic', 'instagram_manage_insights', 'pages_show_list', 'pages_read_engagement']);
+            $driver->scopes([
+                'email', 
+                'public_profile', 
+                'instagram_basic', 
+                'instagram_manage_insights', 
+                'pages_show_list', 
+                'pages_read_engagement'
+            ]);
         }
 
         return $driver->redirect();
@@ -85,10 +96,14 @@ class CreatorSocialAccountController extends Controller
 
     public function callback(Request $request, string $platform, \App\Services\SocialAnalyticsService $analytics)
     {
+        // Must match the redirect URL used in redirect()
+        $callbackUrl = route('creator.social.callback', ['platform' => $platform]);
+        config(["services.{$platform}.redirect" => $callbackUrl]);
+
         try {
             $oauthUser = Socialite::driver($platform)->user();
         } catch (\Throwable $e) {
-            return redirect()->to('/creator/social-accounts?error=oauth_failed');
+            return redirect()->to('/creator/social-accounts?error=oauth_failed&msg=' . urlencode($e->getMessage()));
         }
 
         $user = $request->user();
