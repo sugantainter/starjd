@@ -29,6 +29,25 @@
         <div class="mt-1 text-2xl font-bold text-[#1a1a1a]">{{ connectedSocialCount }}</div>
       </div>
     </div>
+
+    <!-- Social Reach Section -->
+    <div v-if="connectedSocialCount > 0" class="mt-8">
+      <h2 class="text-lg font-semibold text-[#1a1a1a]">Social Audience Reach</h2>
+      <p class="mt-1 text-sm text-[#64748b]">Total combined reach across your connected platforms.</p>
+      <div class="mt-4 grid gap-4 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+        <div 
+          v-for="acc in data.social_accounts.filter(a => a.is_connected && a.followers_count)" 
+          :key="acc.id"
+          class="flex items-center gap-3 rounded-xl border border-[#e2e8f0] bg-white p-4 shadow-sm transition hover:shadow"
+        >
+          <SocialPlatformIcon :platform="acc.platform" :size="40" class="shrink-0" />
+          <div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-[#64748b]">{{ acc.platform }}</div>
+            <div class="mt-0.5 text-xl font-bold text-[#1a1a1a]">{{ formatFollowers(acc.followers_count) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="mt-8">
       <h2 class="text-lg font-semibold text-[#1a1a1a]">Campaigns you applied to</h2>
       <p class="mt-1 text-sm text-[#64748b]">Campaigns you showed interest in and your application status.</p>
@@ -98,6 +117,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
+import SocialPlatformIcon from '../../components/SocialPlatformIcon.vue';
 
 const data = ref(null);
 
@@ -110,6 +130,14 @@ const connectedSocialCount = computed(() => {
   const accounts = data.value?.social_accounts ?? [];
   return accounts.filter((a) => a.is_connected).length;
 });
+
+function formatFollowers(n) {
+  if (n == null || n === '') return '0';
+  const num = Number(n);
+  if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+  if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
+  return num.toLocaleString();
+}
 
 function typeLabel(type) {
   const map = { instagram: 'Instagram', tiktok: 'TikTok', ugc: 'UGC', youtube: 'YouTube' };
