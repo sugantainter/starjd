@@ -45,6 +45,10 @@ class SocialAnalyticsService
                         'username' => $account->username
                     ]);
                     $account->save();
+                    
+                    // Also fetch historical analytics for graphs
+                    $this->updateYouTubeAnalytics($account);
+                    
                     return true;
                 } else {
                     Log::warning("YouTube API returned no items for account {$account->id}");
@@ -60,6 +64,38 @@ class SocialAnalyticsService
         }
 
         return false;
+    }
+
+    private function updateYouTubeAnalytics(SocialAccount $account)
+    {
+        try {
+            $end = now()->toDateString();
+            $start = now()->subDays(30)->toDateString();
+            
+            $res = Http::withToken($account->access_token)
+                ->get('https://youtubeanalytics.googleapis.com/v2/reports', [
+                    'ids' => 'channel==MINE',
+                    'startDate' => $start,
+                    'endDate' => $end,
+                    'metrics' => 'subscribersGained,subscribersLost,views,likes',
+                    'dimensions' => 'day',
+                    'sort' => 'day',
+                ]);
+
+            if ($res->successful()) {
+                $rows = $res->json('rows') ?? [];
+                $account->analytics_data = [
+                    'last_updated' => now()->toIso8601String(),
+                    'history' => $rows, // Format: [ [date, gained, lost, views, likes], ... ]
+                ];
+                $account->save();
+                Log::info("YouTube historical analytics updated for account {$account->id}");
+            } else {
+                Log::error("YouTube Analytics API error for account {$account->id}: " . $res->body());
+            }
+        } catch (\Throwable $e) {
+            Log::error("Failed to fetch YouTube analytics: " . $e->getMessage());
+        }
     }
 
     private function updateFacebookStats(SocialAccount $account): bool

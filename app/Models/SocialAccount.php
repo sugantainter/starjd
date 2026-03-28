@@ -18,6 +18,7 @@ class SocialAccount extends Model
         'token_secret',
         'followers_count',
         'is_connected',
+        'analytics_data',
     ];
 
     protected $hidden = ['access_token', 'refresh_token', 'token_secret'];
@@ -27,6 +28,8 @@ class SocialAccount extends Model
         return [
             'is_connected' => 'boolean',
             'expires_at' => 'datetime',
+            'analytics_data' => 'array',
+            'followers_count' => 'integer',
         ];
     }
 

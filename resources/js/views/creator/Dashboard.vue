@@ -48,6 +48,43 @@
         </div>
       </div>
     </div>
+
+    <!-- Performance Insights section (Graphs) -->
+    <div v-if="youtubeAccount && analyticsHistory.length > 0" class="mt-8">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-lg font-semibold text-[#1a1a1a]">Performance Insights</h2>
+          <p class="mt-1 text-sm text-[#64748b]">Historical growth and engagement for {{ youtubeAccount.username }}</p>
+        </div>
+        <div class="flex gap-2">
+          <button 
+            @click="activeTab = 'views'"
+            class="px-4 py-2 text-sm font-medium rounded-xl transition-all"
+            :class="activeTab === 'views' ? 'bg-[#1a1a1a] text-white' : 'bg-white border border-[#e2e8f0] text-[#64748b] hover:bg-slate-50'"
+          >
+            Views
+          </button>
+          <button 
+            @click="activeTab = 'subscribers'"
+            class="px-4 py-2 text-sm font-medium rounded-xl transition-all"
+            :class="activeTab === 'subscribers' ? 'bg-[#1a1a1a] text-white' : 'bg-white border border-[#e2e8f0] text-[#64748b] hover:bg-slate-50'"
+          >
+            Subscribers
+          </button>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-[#e2e8f0] bg-white p-6 shadow-sm">
+        <div v-if="activeTab === 'views'">
+          <h3 class="text-sm font-semibold text-[#64748b] mb-4 uppercase tracking-wider">Daily Views (Total reach)</h3>
+          <GrowthChart :history="analyticsHistory" :metricIndex="3" metricName="Views" color="#3b82f6" />
+        </div>
+        <div v-else>
+          <h3 class="text-sm font-semibold text-[#64748b] mb-4 uppercase tracking-wider">Net Subscriber Growth</h3>
+          <GrowthChart :history="analyticsHistory" :metricIndex="1" metricName="Gained" color="#ef4444" />
+        </div>
+      </div>
+    </div>
     <div class="mt-8">
       <h2 class="text-lg font-semibold text-[#1a1a1a]">Campaigns you applied to</h2>
       <p class="mt-1 text-sm text-[#64748b]">Campaigns you showed interest in and your application status.</p>
@@ -118,12 +155,23 @@
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import SocialPlatformIcon from '../../components/SocialPlatformIcon.vue';
+import GrowthChart from '../../components/GrowthChart.vue';
 
 const data = ref(null);
+const activeTab = ref('views'); // 'views' or 'subscribers'
+const selectedPlatform = ref('youtube');
 
 onMounted(async () => {
   const res = await axios.get('/api/creator/dashboard', { withCredentials: true });
   data.value = res.data;
+});
+
+const youtubeAccount = computed(() => {
+  return data.value?.social_accounts?.find(a => a.platform === 'youtube' && a.is_connected && a.analytics_data);
+});
+
+const analyticsHistory = computed(() => {
+  return youtubeAccount.value?.analytics_data?.history ?? [];
 });
 
 const connectedSocialCount = computed(() => {

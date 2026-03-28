@@ -79,7 +79,12 @@ class CreatorSocialAccountController extends Controller
         $driver = Socialite::driver($platform);
 
         if ($platform === 'google') {
-            $driver->scopes(['https://www.googleapis.com/auth/youtube.readonly', 'email', 'profile']);
+            $driver->scopes([
+                'https://www.googleapis.com/auth/youtube.readonly', 
+                'https://www.googleapis.com/auth/yt-analytics.readonly',
+                'email', 
+                'profile'
+            ]);
         } elseif ($platform === 'facebook') {
             $driver->scopes([
                 'email', 
