@@ -146,6 +146,7 @@ class SocialAnalyticsService
     private function updateFacebookStats(SocialAccount $account): bool
     {
         try {
+            // 1. Fetch FB User Stats
             $res = Http::withToken($account->access_token)
                 ->get('https://graph.facebook.com/v19.0/me', [
                     'fields' => 'name,followers_count,picture',
@@ -157,13 +158,89 @@ class SocialAnalyticsService
                 $account->followers_count = $data['followers_count'] ?? $account->followers_count;
                 $account->save();
                 
-                // Fetch linked Instagram account for deeper analytics
+                // 2. Discover and update Facebook Pages
+                $pagesRes = Http::withToken($account->access_token)
+                    ->get('https://graph.facebook.com/v19.0/me/accounts', [
+                        'fields' => 'id,name,username,followers_count,access_token',
+                    ]);
+                
+                if ($pagesRes->successful() && !empty($pagesRes->json('data'))) {
+                    $page = $pagesRes->json('data.0'); // Syncing first page for now
+                    $pageId = $page['id'];
+                    $pageToken = $page['access_token'];
+
+                    // 3. Fetch Page Insights (Last 30 days)
+                    $insightsRes = Http::withToken($pageToken)
+                        ->get("https://graph.facebook.com/v19.0/{$pageId}/insights", [
+                            'metric' => 'page_impressions,page_post_engagements,page_views_total',
+                            'period' => 'day',
+                            'since' => now()->subDays(30)->timestamp,
+                            'until' => now()->timestamp,
+                        ]);
+
+                    // 4. Fetch Page Audience Demographics
+                    $demoRes = Http::withToken($pageToken)
+                        ->get("https://graph.facebook.com/v19.0/{$pageId}/insights", [
+                            'metric' => 'page_fans_gender_age',
+                            'period' => 'lifetime',
+                        ]);
+
+                    // 5. Fetch Top Page Posts
+                    $postsRes = Http::withToken($pageToken)
+                        ->get("https://graph.facebook.com/v19.0/{$pageId}/posts", [
+                            'fields' => 'id,message,attachments{media},likes.summary(true),comments.summary(true),created_time',
+                            'limit' => 5,
+                        ]);
+
+                    // Format Demographics (Facebook style)
+                    $formattedDemo = [];
+                    if ($demoRes->successful() && !empty($demoRes->json('data.0.values.0.value'))) {
+                        $values = $demoRes->json('data.0.values.0.value');
+                        $total = array_sum($values);
+                        foreach ($values as $key => $count) {
+                            if (!str_contains($key, '.')) continue;
+                            [$genderCode, $age] = explode('.', $key); // e.g. "M.18-24"
+                            $gender = ($genderCode === 'M') ? 'male' : 'female';
+                            $formattedDemo[] = ['age' . $age, $gender, ($count / $total) * 100];
+                        }
+                    }
+
+                    // Format History
+                    $history = [];
+                    if ($insightsRes->successful()) {
+                        $impressData = collect($insightsRes->json('data'))->firstWhere('name', 'page_impressions')['values'] ?? [];
+                        foreach ($impressData as $val) {
+                            $history[] = [
+                                date('Y-m-d', strtotime($val['end_time'])),
+                                0, // fans gained (can be added later)
+                                0,
+                                $val['value'], // page impressions
+                            ];
+                        }
+                    }
+
+                    $account->analytics_data = array_merge((array)$account->analytics_data, [
+                        'fb_page_id' => $pageId,
+                        'last_updated' => now()->toIso8601String(),
+                        'history' => $history,
+                        'demographics' => $formattedDemo,
+                        'top_videos' => collect($postsRes->json('data', []))->map(fn($p) => [
+                            'id' => $p['id'],
+                            'title' => $p['message'] ?? 'Facebook Post',
+                            'thumbnail' => $p['attachments']['data'][0]['media']['image']['src'] ?? null,
+                            'views' => ($p['likes']['summary']['total_count'] ?? 0) + ($p['comments']['summary']['total_count'] ?? 0),
+                        ])->toArray(),
+                    ]);
+                    $account->save();
+                }
+
+                // Also trigger linked Instagram update 
                 $this->updateInstagramStats($account);
                 
                 return true;
             }
         } catch (\Throwable $e) {
-            Log::error('Facebook Analytics update failed: ' . $e->getMessage());
+            Log::error('Facebook Page Analytics update failed: ' . $e->getMessage());
         }
 
         return false;
