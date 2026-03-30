@@ -186,6 +186,31 @@ class CreatorSocialAccountController extends Controller
         ]);
     }
 
+    public function selectInstagram(Request $request, \App\Services\SocialAnalyticsService $analytics): JsonResponse
+    {
+        $igId = $request->input('ig_id');
+        $account = $request->user()->socialAccounts()->where('platform', 'facebook')->first();
+        if (! $account) {
+            return response()->json(['message' => 'Facebook account not connected'], 422);
+        }
+
+        // Update the account's selected IG ID in metadata
+        $data = (array) $account->analytics_data;
+        $data['ig_id'] = $igId;
+        $account->analytics_data = $data;
+        $account->save();
+
+        // Update its stats
+        $success = $analytics->updateStats($account);
+
+        return response()->json([
+            'success' => $success,
+            'ig_id' => $igId,
+            'followers_count' => $account->followers_count,
+            'username' => $account->username,
+        ]);
+    }
+
     public function disconnect(Request $request, string $platform): JsonResponse
     {
         if (! in_array($platform, self::platforms(), true)) {

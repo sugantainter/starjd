@@ -222,13 +222,22 @@ class SocialAnalyticsService
                         }
                         if (!$reachRes->successful()) Log::warning("FB Page Reach Fetch Error: " . $reachRes->body());
 
-                        // 2. Engagement (Independently)
+                        // 2. Engagement (Independently) - try legacy first for widespread support
                         $engageRes = Http::withToken($pageToken)->get("https://graph.facebook.com/v19.0/{$pageId}/insights", [
-                            'metric' => 'page_engaged_users',
+                            'metric' => 'page_post_engagements',
                             'period' => 'day',
                             'since' => now()->subDays(30)->timestamp,
                             'until' => now()->timestamp,
                         ]);
+                        if (!$engageRes->successful()) {
+                            Log::warning("Legacy Engagement failed, trying modern page_engaged_users...");
+                            $engageRes = Http::withToken($pageToken)->get("https://graph.facebook.com/v19.0/{$pageId}/insights", [
+                                'metric' => 'page_engaged_users',
+                                'period' => 'day',
+                                'since' => now()->subDays(30)->timestamp,
+                                'until' => now()->timestamp,
+                            ]);
+                        }
                         if (!$engageRes->successful()) Log::warning("FB Page Engagement Fetch Error: " . $engageRes->body());
 
                         // 3. Views (Independently)
@@ -342,95 +351,135 @@ class SocialAnalyticsService
 
             if ($pagesRes->successful()) {
                 $pages = $pagesRes->json('data', []);
-                foreach ($pages as $page) {
-                    $ig = $page['instagram_business_account'] ?? null;
-                    if ($ig) {
-                        $igId = $ig['id'];
-                        Log::info("Found IG Business Account: @{$ig['username']} (ID: {$igId})");
-                        
-                        // 2. Fetch IG Reach/Impressions (Last 30 days)
-                        $insightsRes = Http::withToken($account->access_token)
-                            ->get("https://graph.facebook.com/v19.0/{$igId}/insights", [
-                                'metric' => 'reach',
-                                'period' => 'day',
-                                'since' => now()->subDays(30)->timestamp,
-                                'until' => now()->timestamp,
-                            ]);
-
-                        // 3. Fetch IG Audience Demographics
-                        $demoRes = Http::withToken($account->access_token)
-                            ->get("https://graph.facebook.com/v19.0/{$igId}/insights", [
-                                'metric' => 'audience_gender_age',
-                                'period' => 'lifetime',
-                            ]);
-
-                        // 4. Fetch Top Media
-                        $mediaRes = Http::withToken($account->access_token)
-                            ->get("https://graph.facebook.com/v19.0/{$igId}/media", [
-                                'fields' => 'id,caption,media_type,media_url,thumbnail_url,like_count,comments_count,timestamp',
-                                'limit' => 5,
-                            ]);
-
-                        // Format Demographics
-                        $formattedDemo = [];
-                        if ($demoRes->successful() && !empty($demoRes->json('data.0.values.0.value'))) {
-                            $values = $demoRes->json('data.0.values.0.value');
-                            $total = array_sum($values);
-                            foreach ($values as $key => $count) {
-                                [$genderCode, $age] = explode('.', $key);
-                                $gender = ($genderCode === 'M') ? 'male' : 'female';
-                                $formattedDemo[] = ['age' . $age, $gender, ($total > 0 ? ($count / $total) * 100 : 0)];
-                            }
-                        }
-
-                        // Format History
-                        $history = [];
-                        if ($insightsRes->successful() && !empty($insightsRes->json('data'))) {
-                            $reachData = collect($insightsRes->json('data'))->firstWhere('name', 'reach')['values'] ?? [];
-                            foreach ($reachData as $val) {
-                                $history[] = [
-                                    date('Y-m-d', strtotime($val['end_time'])),
-                                    0, 0, $val['value'],
-                                ];
-                            }
-                        }
-
-                        // Auto-connect/update separate Instagram account
-                        $igAccount = \App\Models\SocialAccount::firstOrNew([
-                            'user_id' => $account->user_id,
-                            'platform' => 'instagram',
-                        ]);
-                        $igAccount->username = $ig['username'] ?? $igAccount->username;
-                        $igAccount->access_token = $account->access_token;
-                        $igAccount->followers_count = $ig['followers_count'] ?? $igAccount->followers_count;
-                        $igAccount->is_connected = true;
-                        $igAccount->analytics_data = array_merge((array)$igAccount->analytics_data, [
-                            'ig_id' => $igId,
-                            'last_updated' => now()->toIso8601String(),
-                            'history' => $history,
-                            'demographics' => $formattedDemo,
-                            'top_videos' => collect($mediaRes->json('data', []))->map(fn($m) => [
-                                'id' => $m['id'],
-                                'title' => $m['caption'] ?? 'Media Post',
-                                'thumbnail' => $m['media_url'] ?? $m['thumbnail_url'] ?? null,
-                                'views' => ($m['like_count'] ?? 0) + ($m['comments_count'] ?? 0),
-                            ])->toArray(),
-                        ]);
-                        $igAccount->save();
-                        Log::info("Instagram account card activated for ID {$igId}");
-                        
-                        return true;
+                $discoveredIgs = [];
+                foreach ($pages as $p) {
+                    if (isset($p['instagram_business_account'])) {
+                        $discoveredIgs[] = [
+                            'id' => $p['instagram_business_account']['id'],
+                            'username' => $p['instagram_business_account']['username'],
+                            'followers' => $p['instagram_business_account']['followers_count'] ?? 0,
+                        ];
                     }
                 }
+                
+                // Store discovery bank
+                $account->analytics_data = array_merge((array)$account->analytics_data, [
+                     'discovered_instagrams' => $discoveredIgs,
+                ]);
+                $account->save();
+
+                // If no manual selection exists, pick the first one by followers
+                $selectedIgId = $account->analytics_data['ig_id'] ?? (collect($discoveredIgs)->sortByDesc('followers')->first()['id'] ?? null);
+
+                if ($selectedIgId) {
+                    return $this->performInstagramSync($account, $selectedIgId);
+                }
                 Log::warning("No IG Business accounts linked to any Facebook Page for account {$account->id}");
+                return false;
             } else {
                 Log::error("Failed to fetch FB Pages for IG discovery: {$pagesRes->body()}");
             }
         } catch (\Throwable $e) {
-            Log::error('Instagram detailed analytics failed: ' . $e->getMessage());
+            Log::error('Instagram discovery process failed: ' . $e->getMessage());
         }
 
         return false;
+    }
+
+    private function performInstagramSync(SocialAccount $account, string $igId): bool
+    {
+        try {
+            Log::info("Performing IG sync for IG ID: {$igId}");
+
+            // 1. Fetch IG Reach/Impressions (Last 30 days)
+            $insightsRes = Http::withToken($account->access_token)
+                ->get("https://graph.facebook.com/v19.0/{$igId}/insights", [
+                    'metric' => 'reach',
+                    'period' => 'day',
+                    'since' => now()->subDays(30)->timestamp,
+                    'until' => now()->timestamp,
+                ]);
+
+            // 2. Fetch IG Audience Demographics
+            $demoRes = Http::withToken($account->access_token)
+                ->get("https://graph.facebook.com/v19.0/{$igId}/insights", [
+                    'metric' => 'audience_gender_age',
+                    'period' => 'lifetime',
+                ]);
+
+            // 3. Fetch Top Media
+            $mediaRes = Http::withToken($account->access_token)
+                ->get("https://graph.facebook.com/v19.0/{$igId}/media", [
+                    'fields' => 'id,caption,media_type,media_url,thumbnail_url,like_count,comments_count,timestamp',
+                    'limit' => 5,
+                ]);
+
+            // Format Demographics
+            $formattedDemo = [];
+            if ($demoRes->successful() && !empty($demoRes->json('data.0.values.0.value'))) {
+                $values = $demoRes->json('data.0.values.0.value');
+                $total = array_sum($values);
+                foreach ($values as $key => $count) {
+                    if (!str_contains($key, '.')) continue;
+                    [$genderCode, $age] = explode('.', $key);
+                    $gender = ($genderCode === 'M') ? 'male' : 'female';
+                    $formattedDemo[] = ['age' . $age, $gender, ($total > 0 ? ($count / $total) * 100 : 0)];
+                }
+            }
+
+            // Format History
+            $history = [];
+            if ($insightsRes->successful() && !empty($insightsRes->json('data'))) {
+                $reachData = collect($insightsRes->json('data'))->firstWhere('name', 'reach')['values'] ?? [];
+                foreach ($reachData as $val) {
+                    $history[] = [
+                        date('Y-m-d', strtotime($val['end_time'])),
+                        0, 0, $val['value'],
+                    ];
+                }
+            }
+
+            // Auto-connect/update separate Instagram account
+            $igAccount = \App\Models\SocialAccount::firstOrNew([
+                'user_id' => $account->user_id,
+                'platform' => 'instagram',
+            ]);
+            
+            // Check if separate Instagram SocialAccount needs profile data
+            if (!$igAccount->username || $igAccount->username === 'Instagram User') {
+                $profileRes = Http::withToken($account->access_token)->get("https://graph.facebook.com/v19.0/{$igId}", ['fields' => 'username,followers_count']);
+                $igAccount->username = $profileRes->json('username', 'Instagram User');
+                $igAccount->followers_count = $profileRes->json('followers_count', 0);
+            }
+            
+            $igAccount->access_token = $account->access_token;
+            $igAccount->is_connected = true;
+            $igAccount->analytics_data = array_merge((array)$igAccount->analytics_data, [
+                'ig_id' => $igId,
+                'last_updated' => now()->toIso8601String(),
+                'history' => $history,
+                'demographics' => $formattedDemo,
+                'top_videos' => collect($mediaRes->json('data', []))->map(fn($m) => [
+                    'id' => $m['id'],
+                    'title' => $m['caption'] ?? 'Media Post',
+                    'thumbnail' => $m['media_url'] ?? $m['thumbnail_url'] ?? null,
+                    'views' => ($m['like_count'] ?? 0) + ($m['comments_count'] ?? 0),
+                ])->toArray(),
+            ]);
+            $igAccount->save();
+            
+            // Update mapping id on primary fb account as well to persist selection
+            $data = (array)$account->analytics_data;
+            $data['ig_id'] = $igId;
+            $account->analytics_data = $data;
+            $account->save();
+            
+            Log::info("Instagram account card activated for ID {$igId}");
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('Instagram sync process failed: ' . $e->getMessage());
+            return false;
+        }
     }
 
     private function updateLinkedInStats(SocialAccount $account): bool

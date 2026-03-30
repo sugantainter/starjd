@@ -46,12 +46,43 @@
           <button type="button" class="cursor-link rounded-lg border border-[#e2e8f0] bg-white px-3 py-2 text-sm font-medium text-[#1a1a1a] hover:bg-[#f1f5f9]" @click="startConnect(acc)">{{ acc.is_connected ? 'Edit' : 'Connect' }}</button>
           <button v-if="acc.is_connected && oauthPlatforms.includes(acc.platform)" type="button" class="cursor-link rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50" @click="refreshStats(acc.platform)">Refresh Stats</button>
           <button v-if="acc.platform === 'facebook' && acc.is_connected && acc.analytics_data?.discovered_pages" type="button" class="cursor-link rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50" @click="openPageSelector(acc)">Switch Page</button>
+          <button v-if="acc.platform === 'instagram' && acc.is_connected && hasDiscoveredInstagrams()" type="button" class="cursor-link rounded-lg border border-purple-200 bg-white px-3 py-2 text-sm font-medium text-purple-600 hover:bg-purple-50" @click="openInstagramSelector()">Switch Account</button>
           <button v-if="acc.is_connected" type="button" class="cursor-link rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50" @click="disconnect(acc.platform)">Disconnect</button>
         </div>
       </div>
     </div>
 
-    <!-- Page Selector Modal -->
+    <!-- Instagram Selector Modal -->
+    <div v-if="showInstagramSelector" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+        <h2 class="text-xl font-bold text-[#1a1a1a]">Choose Instagram Profile</h2>
+        <p class="mt-1 text-sm text-[#64748b]">Select the professional profile you want to track.</p>
+        
+        <div class="mt-6 space-y-3 max-h-[400px] overflow-y-auto">
+          <div 
+            v-for="ig in instagramsToSelect" 
+            :key="ig.id"
+            class="flex items-center justify-between gap-4 p-4 rounded-xl border border-[#e2e8f0] hover:border-purple-500 hover:bg-purple-50 transition cursor-pointer"
+            :class="{'border-purple-500 bg-purple-50': ig.id === currentIgId}"
+            @click="selectInstagram(ig.id)"
+          >
+            <div class="min-w-0">
+              <p class="font-semibold text-[#1a1a1a] truncate">@{{ ig.username }}</p>
+              <p class="text-xs text-[#64748b]">{{ formatFollowers(ig.followers) }} followers</p>
+            </div>
+            <div v-if="ig.id === currentIgId" class="text-purple-600">
+              <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <button class="w-full rounded-xl bg-[#1a1a1a] py-3 font-semibold text-white transition hover:bg-black" @click="showInstagramSelector = false">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Selector Modal (Facebook) -->
     <div v-if="showPageSelector" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
         <h2 class="text-xl font-bold text-[#1a1a1a]">Choose Facebook Page</h2>
@@ -98,6 +129,10 @@ const error = ref('');
 const showPageSelector = ref(false);
 const pagesToSelect = ref([]);
 const currentPageId = ref(null);
+
+const showInstagramSelector = ref(false);
+const instagramsToSelect = ref([]);
+const currentIgId = ref(null);
 
 function platformName(platform) {
   return platformDisplayName(platform);
@@ -188,6 +223,31 @@ async function selectPage(pageId) {
     }
   } catch (e) {
     error.value = 'Failed to update page.';
+  }
+}
+
+function openInstagramSelector() {
+  const fbAcc = accounts.value.find(a => a.platform === 'facebook');
+  instagramsToSelect.value = fbAcc?.analytics_data?.discovered_instagrams || [];
+  currentIgId.value = fbAcc?.analytics_data?.ig_id;
+  showInstagramSelector.value = true;
+}
+
+function hasDiscoveredInstagrams() {
+  const fbAcc = accounts.value.find(a => a.platform === 'facebook');
+  return !!fbAcc?.analytics_data?.discovered_instagrams?.length;
+}
+
+async function selectInstagram(igId) {
+  error.value = '';
+  try {
+    const res = await axios.post('/api/creator/social-accounts/facebook/select-instagram', { ig_id: igId }, { withCredentials: true });
+    if (res.data.success) {
+      showInstagramSelector.value = false;
+      await load();
+    }
+  } catch (e) {
+    error.value = 'Failed to update instagram account.';
   }
 }
 
