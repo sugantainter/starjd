@@ -50,59 +50,78 @@
     </div>
 
     <!-- Performance Insights section (Graphs) -->
-    <div v-if="youtubeAccount && analyticsHistory.length > 0" class="mt-8">
-      <div class="flex items-center justify-between mb-4">
+    <div v-if="selectedAccount && analyticsHistory.length > 0" class="mt-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
         <div>
           <h2 class="text-lg font-semibold text-[#1a1a1a]">Performance Insights</h2>
-          <p class="mt-1 text-sm text-[#64748b]">Historical growth and engagement for {{ youtubeAccount.username }}</p>
+          <p class="mt-1 text-sm text-[#64748b]">Select a platform to view your analytics history.</p>
         </div>
+        
+        <!-- Platform Switcher Tabs -->
+        <div class="flex items-center gap-1 p-1 bg-slate-100/50 rounded-2xl border border-[#e2e8f0]">
+          <button 
+            v-for="acc in data.social_accounts.filter(a => a.is_connected && a.analytics_data)"
+            :key="acc.platform"
+            @click="selectedPlatform = acc.platform; activeTab = platformTabs[acc.platform][0].id"
+            class="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition-all"
+            :class="selectedPlatform === acc.platform ? 'bg-white shadow text-[#1a1a1a]' : 'text-[#64748b] hover:text-[#1a1a1a] hover:bg-white/50'"
+          >
+            <SocialPlatformIcon :platform="acc.platform" :size="20" />
+            <span class="capitalize">{{ acc.platform }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Metric Selector and Graph Title -->
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-[#94a3b8]">
+          {{ platformTabs[selectedPlatform]?.find(t => t.id === activeTab)?.label ?? 'Metrics' }} History
+        </h3>
         <div class="flex gap-2">
           <button 
-            @click="activeTab = 'views'"
+            v-for="tab in platformTabs[selectedPlatform]"
+            :key="tab.id"
+            @click="activeTab = tab.id"
             class="px-4 py-2 text-sm font-medium rounded-xl transition-all"
-            :class="activeTab === 'views' ? 'bg-[#1a1a1a] text-white' : 'bg-white border border-[#e2e8f0] text-[#64748b] hover:bg-slate-50'"
+            :class="activeTab === tab.id ? 'bg-[#1a1a1a] text-white' : 'bg-white border border-[#e2e8f0] text-[#64748b] hover:bg-slate-50'"
           >
-            Views
-          </button>
-          <button 
-            @click="activeTab = 'subscribers'"
-            class="px-4 py-2 text-sm font-medium rounded-xl transition-all"
-            :class="activeTab === 'subscribers' ? 'bg-[#1a1a1a] text-white' : 'bg-white border border-[#e2e8f0] text-[#64748b] hover:bg-slate-50'"
-          >
-            Subscribers
+            {{ tab.name }}
           </button>
         </div>
       </div>
 
       <div class="rounded-2xl border border-[#e2e8f0] bg-white p-6 shadow-sm">
-        <div v-if="activeTab === 'views'">
-          <h3 class="text-sm font-semibold text-[#64748b] mb-4 uppercase tracking-wider">Daily Views (Total reach)</h3>
-          <GrowthChart :history="analyticsHistory" :metricIndex="3" metricName="Views" color="#3b82f6" />
-        </div>
-        <div v-else>
-          <h3 class="text-sm font-semibold text-[#64748b] mb-4 uppercase tracking-wider">Net Subscriber Growth</h3>
-          <GrowthChart :history="analyticsHistory" :metricIndex="1" metricName="Gained" color="#ef4444" />
-        </div>
+        <GrowthChart 
+          :history="analyticsHistory" 
+          :metricIndex="activeMetricIndex" 
+          :metricName="activeTabLabel" 
+          :color="selectedPlatform === 'linkedin' ? '#0077b5' : (selectedPlatform === 'youtube' ? '#ef4444' : '#3b82f6')" 
+        />
       </div>
     </div>
 
     <!-- Additional Insights Grid -->
-    <div v-if="youtubeAccount && (topVideos.length > 0 || demographics.age.length > 0)" class="mt-8 grid gap-8 lg:grid-cols-2">
+    <div v-if="selectedAccount && (topContent.length > 0 || demographics.age.length > 0)" class="mt-8 grid gap-8 lg:grid-cols-2">
       <!-- Top Content -->
-      <div v-if="topVideos.length > 0">
+      <div v-if="topContent.length > 0">
         <h2 class="text-lg font-semibold text-[#1a1a1a]">Top Content</h2>
-        <p class="mt-1 text-sm text-[#64748b]">Your best performing videos in the last 60 days.</p>
+        <p class="mt-1 text-sm text-[#64748b]">Your best performing {{ selectedPlatform === 'youtube' ? 'videos' : 'posts' }} recently.</p>
         <div class="mt-4 space-y-3">
-          <div v-for="video in topVideos" :key="video.id" class="flex gap-4 rounded-xl border border-[#e2e8f0] bg-white p-3 transition hover:shadow-md">
-            <img :src="video.thumbnail" alt="" class="h-16 w-28 rounded-lg object-cover bg-slate-100 shadow-inner" />
+          <div v-for="item in topContent" :key="item.id" class="flex gap-4 rounded-xl border border-[#e2e8f0] bg-white p-3 transition hover:shadow-md">
+            <div v-if="item.thumbnail" class="shrink-0">
+               <img :src="item.thumbnail" alt="" class="h-16 w-28 rounded-lg object-cover bg-slate-100 shadow-inner" />
+            </div>
+            <div v-else class="h-16 w-28 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+               <SocialPlatformIcon :platform="selectedPlatform" :size="32" class="opacity-30" />
+            </div>
             <div class="min-w-0 flex-1">
-              <h4 class="truncate font-medium text-[#1a1a1a]" :title="video.title">{{ video.title }}</h4>
+              <h4 class="line-clamp-2 font-medium text-[#1a1a1a]" :title="item.title">{{ item.title }}</h4>
               <div class="mt-1 flex items-center gap-3 text-xs text-[#64748b]">
                 <span class="flex items-center gap-1">
                   <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                  {{ formatFollowers(video.views) }} views
+                  {{ formatFollowers(item.views || item.engagement) }} {{ item.views ? 'views' : 'engagement' }}
                 </span>
-                <a :href="'https://youtube.com/watch?v=' + video.id" target="_blank" class="text-[#3b82f6] hover:underline">Watch</a>
+                <a v-if="item.url" :href="item.url" target="_blank" class="text-[#3b82f6] hover:underline">View</a>
               </div>
             </div>
           </div>
@@ -110,7 +129,7 @@
       </div>
 
       <!-- Audience Demographics -->
-      <div v-if="demographics.age.length > 0">
+      <div v-if="demographics.age && demographics.age.length > 0">
         <h2 class="text-lg font-semibold text-[#1a1a1a]">Audience Demographics</h2>
         <p class="mt-1 text-sm text-[#64748b]">Deep insights into who is watching your content.</p>
         <div class="mt-4 rounded-xl border border-[#e2e8f0] bg-white p-6 grid gap-8 sm:grid-cols-2">
@@ -132,6 +151,7 @@
         </div>
       </div>
     </div>
+... (Campaigns and Collaborations sections) ...
 
     <div class="mt-8">
       <h2 class="text-lg font-semibold text-[#1a1a1a]">Campaigns you applied to</h2>
@@ -208,34 +228,89 @@ import DoughnutChart from '../../components/DoughnutChart.vue';
 import BarChart from '../../components/BarChart.vue';
 
 const data = ref(null);
-const activeTab = ref('views'); // 'views' or 'subscribers'
 const selectedPlatform = ref('youtube');
+const activeTab = ref('views');
+
+const platformTabs = {
+  youtube: [
+    { id: 'views', name: 'Views', label: 'Daily Views', index: 3 },
+    { id: 'subscribers', name: 'Subscribers', label: 'Net Subscriber growth', index: 1 },
+    { id: 'likes', name: 'Likes', label: 'Daily Likes', index: 4 },
+  ],
+  facebook: [
+    { id: 'reach', name: 'Reach', label: 'Daily Reach', index: 3 },
+    { id: 'engagement', name: 'Engagement', label: 'Daily Engagement', index: 1 },
+  ],
+  linkedin: [
+    { id: 'engagement', name: 'Engagement', label: 'Total Engagement', index: 3 },
+    { id: 'likes', name: 'Likes', label: 'Post Likes', index: 1 },
+    { id: 'comments', name: 'Comments', label: 'Post Comments', index: 2 },
+  ],
+  instagram: [
+    { id: 'reach', name: 'Reach', label: 'Account Reach', index: 1 },
+    { id: 'impressions', name: 'Impressions', label: 'Total Impressions', index: 2 },
+  ]
+};
 
 onMounted(async () => {
   const res = await axios.get('/api/creator/dashboard', { withCredentials: true });
   data.value = res.data;
+  
+  // Set default platform based on what's connected
+  if (data.value?.social_accounts) {
+    const connected = data.value.social_accounts.find(a => a.is_connected && a.analytics_data);
+    if (connected) {
+      selectedPlatform.value = connected.platform;
+      activeTab.value = platformTabs[connected.platform]?.[0]?.id || 'views';
+    }
+  }
 });
 
-const youtubeAccount = computed(() => {
-  return data.value?.social_accounts?.find(a => a.platform === 'youtube' && a.is_connected && a.analytics_data);
+const selectedAccount = computed(() => {
+  return data.value?.social_accounts?.find(a => a.platform === selectedPlatform.value && a.is_connected && a.analytics_data);
 });
 
 const analyticsHistory = computed(() => {
-  return youtubeAccount.value?.analytics_data?.history ?? [];
+  return selectedAccount.value?.analytics_data?.history ?? [];
 });
 
-const topVideos = computed(() => {
-  return youtubeAccount.value?.analytics_data?.top_videos ?? [];
+const topContent = computed(() => {
+  const ad = selectedAccount.value?.analytics_data;
+  if (selectedPlatform.value === 'youtube') return ad?.top_videos ?? [];
+  
+  // For other platforms, we might have posts in a different structure or just the history as activity
+  return ad?.top_posts ?? [];
+});
+
+const activeMetricIndex = computed(() => {
+  const tabs = platformTabs[selectedPlatform.value] || [];
+  const tab = tabs.find(t => t.id === activeTab.value);
+  return tab ? tab.index : 3;
+});
+
+const activeTabLabel = computed(() => {
+  const tabs = platformTabs[selectedPlatform.value] || [];
+  const tab = tabs.find(t => t.id === activeTab.value);
+  return tab ? tab.name : 'Metric';
 });
 
 const demographics = computed(() => {
-  const data = youtubeAccount.value?.analytics_data?.demographics ?? [];
+  const ad = selectedAccount.value?.analytics_data;
+  const demoData = ad?.demographics ?? [];
+  if (!demoData.length) return { gender: {}, age: [] };
+
   const genderMap = { male: 0, female: 0 };
   const ageGroups = {};
   
-  data.forEach(row => {
-    genderMap[row[1]] = (genderMap[row[1]] || 0) + row[2];
-    ageGroups[row[0]] = (ageGroups[row[0]] || 0) + row[2];
+  demoData.forEach(row => {
+    // Standardizing demographic data parsing (YouTube: [age, gender, %])
+    if (row.length >= 3) {
+      const age = row[0];
+      const gender = row[1].toLowerCase();
+      const value = parseFloat(row[2]);
+      genderMap[gender] = (genderMap[gender] || 0) + value;
+      ageGroups[age] = (ageGroups[age] || 0) + value;
+    }
   });
   
   return {
