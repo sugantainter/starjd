@@ -92,6 +92,7 @@ class CreatorSocialAccountController extends Controller
                 'public_profile',
                 'pages_show_list',
                 'pages_read_engagement',
+                'read_insights',
                 'instagram_basic',
                 'instagram_manage_insights',
                 'business_management',
