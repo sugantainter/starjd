@@ -93,12 +93,13 @@ async function load() {
   accounts.value = res.data;
 }
 
-const oauthPlatforms = ['facebook', 'instagram', 'youtube'];
+const oauthPlatforms = ['facebook', 'instagram', 'youtube', 'linkedin'];
 
 function startConnect(acc) {
   if (oauthPlatforms.includes(acc.platform)) {
     // Use OAuth flow
-    const driver = acc.platform === 'youtube' ? 'google' : 'facebook';
+    let driver = acc.platform;
+    if (acc.platform === 'youtube') driver = 'google';
     window.location.href = `/creator/social-accounts/${driver}/redirect`;
   } else {
     startEdit(acc);

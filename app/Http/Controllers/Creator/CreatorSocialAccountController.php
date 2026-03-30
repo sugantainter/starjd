@@ -67,7 +67,7 @@ class CreatorSocialAccountController extends Controller
 
     public function redirect(Request $request, string $platform)
     {
-        $allowed = ['facebook', 'google']; // google is used for YouTube
+        $allowed = ['facebook', 'google', 'linkedin']; // google is used for YouTube
         if (! in_array($platform, $allowed, true)) {
             return redirect()->to('/creator/social-accounts?error=platform_not_supported');
         }
@@ -103,6 +103,12 @@ class CreatorSocialAccountController extends Controller
             }
 
             return $builder->redirect();
+        }
+
+        if ($platform === 'linkedin') {
+            return Socialite::driver('linkedin')
+                ->scopes(['openid', 'profile', 'email', 'w_member_social'])
+                ->redirect();
         }
 
         return Socialite::driver($platform)->redirect();

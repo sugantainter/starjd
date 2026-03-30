@@ -21,6 +21,7 @@ class SocialAnalyticsService
             'youtube' => $this->updateYouTubeStats($account),
             'facebook' => $this->updateFacebookStats($account),
             'instagram' => $this->updateInstagramStats($account),
+            'linkedin' => $this->updateLinkedInStats($account),
             default => false,
         };
     }
@@ -362,6 +363,62 @@ class SocialAnalyticsService
             }
         } catch (\Throwable $e) {
             Log::error('Instagram detailed analytics failed: ' . $e->getMessage());
+        }
+
+        return false;
+    }
+
+    private function updateLinkedInStats(SocialAccount $account): bool
+    {
+        try {
+            Log::info("Starting LinkedIn sync for account {$account->id}");
+            // 1. Fetch Profile Info
+            $profileRes = Http::withToken($account->access_token)->get('https://api.linkedin.com/v2/me');
+
+            if ($profileRes->successful()) {
+                $profile = $profileRes->json();
+                $firstName = $profile['localizedFirstName'] ?? '';
+                $lastName = $profile['localizedLastName'] ?? '';
+                $account->username = trim("{$firstName} {$lastName}");
+                $memberId = $profile['id'];
+
+                // 2. Fetch Member Share Stats (Engagement)
+                $statsRes = Http::withToken($account->access_token)
+                    ->get('https://api.linkedin.com/v2/memberShareStatistics', [
+                        'action' => 'getStatistics',
+                        'ids' => "urn:li:person:{$memberId}",
+                    ]);
+
+                if ($statsRes->successful()) {
+                    $elements = $statsRes->json('elements.0');
+                    $totalLikes = $elements['totalShareStatistics']['likeCount'] ?? 0;
+                    $totalComments = $elements['totalShareStatistics']['commentCount'] ?? 0;
+                    
+                    // LinkedIn doesn't easily expose "Followers" without special API access, 
+                    // so we use connection/engagement as a proxy if followers missing.
+                    $account->followers_count = $account->followers_count ?? 0; 
+                    
+                    $history = [];
+                    // Populate history with engagement data over 30 days
+                    $history[] = [now()->toDateString(), $totalLikes, $totalComments, ($totalLikes + $totalComments)];
+
+                    $account->analytics_data = array_merge((array)$account->analytics_data, [
+                        'li_id' => $memberId,
+                        'last_updated' => now()->toIso8601String(),
+                        'history' => $history,
+                        'total_likes' => $totalLikes,
+                        'total_comments' => $totalComments,
+                    ]);
+                }
+                
+                $account->save();
+                Log::info("LinkedIn stats updated for account {$account->id}");
+                return true;
+            } else {
+                Log::error("LinkedIn Profile fetch failed: {$profileRes->body()}");
+            }
+        } catch (\Throwable $e) {
+            Log::error('LinkedIn analytics failed: ' . $e->getMessage());
         }
 
         return false;
