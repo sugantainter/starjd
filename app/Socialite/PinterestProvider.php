@@ -9,7 +9,10 @@ use Illuminate\Support\Arr;
 
 class PinterestProvider extends AbstractProvider implements ProviderInterface
 {
-    protected $scopes = ['user_accounts:read'];
+    protected $scopes = ['user_accounts:read', 'pins:read', 'boards:read'];
+    
+    // Pinterest V5 uses space-separated scopes
+    protected $scopeSeparator = ' ';
 
     protected function getAuthUrl($state)
     {
@@ -45,8 +48,27 @@ class PinterestProvider extends AbstractProvider implements ProviderInterface
 
     protected function getTokenFields($code)
     {
-        return array_merge(parent::getTokenFields($code), [
+        return [
             'grant_type' => 'authorization_code',
+            'code' => $code,
+            'redirect_uri' => $this->redirectUrl,
+        ];
+    }
+
+    public function getAccessTokenResponse($code)
+    {
+        if (empty($this->clientSecret) || $this->clientSecret === 'Add_Secret_From_Pinterest_Dashboard') {
+            throw new \Exception('Pinterest Client Secret is not configured in .env');
+        }
+
+        $response = $this->getHttpClient()->post($this->getTokenUrl(), [
+            'headers' => [
+                'Authorization' => 'Basic ' . base64_encode($this->clientId . ':' . $this->clientSecret),
+                'Content-Type' => 'application/x-www-form-urlencoded',
+            ],
+            'form_params' => $this->getTokenFields($code),
         ]);
+
+        return json_decode($response->getBody(), true);
     }
 }
