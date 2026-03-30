@@ -97,11 +97,6 @@ class CreatorSocialAccountController extends Controller
                 'business_management',
             ]);
 
-            $configId = env('FACEBOOK_CONFIG_ID');
-            if ($configId) {
-                $builder->with(['config_id' => $configId]);
-            }
-
             return $builder->redirect();
         }
 
