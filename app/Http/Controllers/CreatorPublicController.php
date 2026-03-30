@@ -14,7 +14,7 @@ class CreatorPublicController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = CreatorProfile::query()
-            ->with('user.socialAccounts')
+            ->with('user.socialAccounts', 'user.state', 'user.city')
             ->withAvg(['reviews as average_rating' => fn ($q) => $q->where('status', 'approved')], 'rating')
             ->where('is_public', true)
             ->whereNotNull('slug')
@@ -120,6 +120,8 @@ class CreatorPublicController extends Controller
     {
         $profile = CreatorProfile::with([
             'user',
+            'user.state',
+            'user.city',
             'user.packages' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')->with(['packageCategory', 'items']),
             'user.creatorImagePosts' => fn ($q) => $q->orderBy('sort_order')->orderBy('created_at', 'desc'),
             'user.socialAccounts',

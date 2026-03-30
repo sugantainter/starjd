@@ -65,9 +65,21 @@
         </div>
         <textarea v-model="form.bio" rows="4" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#10b981] focus:outline-none focus:ring-1 focus:ring-[#10b981]"></textarea>
       </div>
-      <div>
-        <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Location</label>
-        <input v-model="form.location" type="text" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#10b981] focus:outline-none focus:ring-1 focus:ring-[#10b981]" />
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">State</label>
+          <select v-model="form.state_id" @change="onStateChange" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#10b981] focus:outline-none focus:ring-1 focus:ring-[#10b981]">
+            <option :value="null">Select state</option>
+            <option v-for="s in states" :key="s.id" :value="s.id">{{ s.name }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">City</label>
+          <select v-model="form.city_id" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#10b981] focus:outline-none focus:ring-1 focus:ring-[#10b981]">
+            <option :value="null">Select city</option>
+            <option v-for="c in cities" :key="c.id" :value="c.id">{{ c.name }}</option>
+          </select>
+        </div>
       </div>
       <div>
         <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Category</label>
@@ -144,7 +156,9 @@ import { ref, reactive, onMounted } from 'vue';
 import axios from 'axios';
 
 const profile = ref(null);
-const form = reactive({ slug: '', tagline: '', bio: '', location: '', category: '', gender: '', language: '', min_rate: null, is_public: true });
+const form = reactive({ slug: '', tagline: '', bio: '', location: '', category: '', gender: '', language: '', min_rate: null, is_public: true, state_id: null, city_id: null });
+const states = ref([]);
+const cities = ref([]);
 const filterOptions = reactive({ categories: [], genders: {}, languages: [] });
 const avatarFile = ref(null);
 const avatarPreview = ref('');
@@ -186,8 +200,15 @@ onMounted(async () => {
     axios.get('/api/creator/profile', { withCredentials: true }),
     axios.get('/api/creators/options/filters'),
     axios.get('/api/creator/image-posts', { withCredentials: true }),
+    axios.get('/api/states'),
   ]);
   profile.value = profileRes.data;
+  states.value = statesRes.data;
+  
+  if (profileRes.data.user.state_id) {
+    const res = await axios.get('/api/cities?state_id=' + profileRes.data.user.state_id);
+    cities.value = res.data;
+  }
   avatarLoadError.value = false;
   avatarPreview.value = profileRes.data.avatar_url || '';
   form.slug = profileRes.data.slug ?? '';
@@ -199,6 +220,8 @@ onMounted(async () => {
   form.language = profileRes.data.language ?? '';
   form.min_rate = profileRes.data.min_rate ?? null;
   form.is_public = profileRes.data.is_public ?? true;
+  form.state_id = profileRes.data.user.state_id;
+  form.city_id = profileRes.data.user.city_id;
   filterOptions.categories = optionsRes.data.categories ?? [];
   filterOptions.genders = optionsRes.data.genders ?? {};
   filterOptions.languages = optionsRes.data.languages ?? [];
@@ -208,6 +231,16 @@ onMounted(async () => {
 function onAvatarImageError() {
   avatarLoadError.value = true;
   avatarPreview.value = '';
+}
+
+async function onStateChange() {
+  form.city_id = null;
+  if (form.state_id) {
+    const res = await axios.get('/api/cities?state_id=' + form.state_id);
+    cities.value = res.data;
+  } else {
+    cities.value = [];
+  }
 }
 
 function onAvatarChange(e) {
@@ -267,6 +300,8 @@ async function save() {
       fd.append('language', form.language);
       if (form.min_rate != null) fd.append('min_rate', form.min_rate);
       fd.append('is_public', form.is_public ? '1' : '0');
+      if (form.state_id) fd.append('state_id', form.state_id);
+      if (form.city_id) fd.append('city_id', form.city_id);
       fd.append('avatar', avatarFile.value);
       const r = await axios.post('/api/creator/profile', fd, {
         withCredentials: true,

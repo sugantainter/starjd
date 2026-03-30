@@ -24,7 +24,9 @@ class CreatorProfileController extends Controller
             $profile = $request->user()->creatorProfile()->create([]);
         }
         $this->ensureCreatorProfileHasSlug($request, $profile);
-        $profile->load('user:id,name');
+        $profile->load(['user' => function ($q) {
+            $q->select('id', 'name', 'state_id', 'city_id')->with(['state:id,name', 'city:id,name']);
+        }]);
         return response()->json($this->profileWithAvatarUrl($profile));
     }
 
@@ -49,6 +51,8 @@ class CreatorProfileController extends Controller
             'is_public' => ['nullable', 'boolean'],
             'min_rate' => ['nullable', 'numeric', 'min:0'],
             'engagement_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'state_id' => ['nullable', 'exists:states,id'],
+            'city_id' => ['nullable', 'exists:cities,id'],
         ];
 
         if ($request->hasFile('avatar')) {
@@ -87,6 +91,8 @@ class CreatorProfileController extends Controller
 
         $profile->update($data);
 
+        $request->user()->update($request->only(['state_id', 'city_id']));
+
         // Only treat non-empty slug as an intentional change (empty string = leave current slug).
         if ($request->filled('slug') && $request->input('slug') !== $profile->slug) {
             $request->validate(['slug' => ['required', 'string', 'max:100', 'unique:creator_profiles,slug,' . $profile->id]]);
@@ -95,7 +101,9 @@ class CreatorProfileController extends Controller
 
         $updated = $profile->fresh();
         $this->ensureCreatorProfileHasSlug($request, $updated);
-        $updated->load('user:id,name');
+        $updated->load(['user' => function ($q) {
+            $q->select('id', 'name', 'state_id', 'city_id')->with(['state:id,name', 'city:id,name']);
+        }]);
         return response()->json($this->profileWithAvatarUrl($updated));
     }
 

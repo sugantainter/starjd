@@ -23,7 +23,19 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'fcm_token',
         'avatar',
+        'state_id',
+        'city_id',
     ];
+
+    public function state(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(State::class);
+    }
+
+    public function city(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(City::class);
+    }
 
     /**
      * The attributes that should be hidden for serialization.

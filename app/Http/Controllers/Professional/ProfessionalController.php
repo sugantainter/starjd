@@ -32,8 +32,10 @@ class ProfessionalController extends Controller
             ->get();
 
         return response()->json([
-            'user' => $user->only('id', 'name', 'email', 'role'),
-            'profile' => $profile,
+            'user' => $user->only('id', 'name', 'email', 'role', 'state_id', 'city_id'),
+            'profile' => $profile->load(['user' => function ($q) {
+                $q->select('id', 'name', 'state_id', 'city_id')->with(['state:id,name', 'city:id,name']);
+            }]),
             'stats' => [
                 'listings_count' => $listingsCount,
                 'active_orders_count' => $activeOrdersCount,
@@ -53,11 +55,15 @@ class ProfessionalController extends Controller
             'skills' => 'nullable|array',
             'education' => 'nullable|array',
             'certifications' => 'nullable|array',
+            'state_id' => 'nullable|exists:states,id',
+            'city_id' => 'nullable|exists:cities,id',
         ]);
 
         $profile = $user->professionalProfile ?: new \App\Models\ProfessionalProfile(['user_id' => $user->id]);
-        $profile->fill($data);
+        $profile->fill($request->only(['tagline', 'bio', 'languages', 'skills', 'education', 'certifications']));
         $profile->save();
+
+        $user->update($request->only(['state_id', 'city_id']));
 
         return response()->json([
             'message' => 'Profile updated successfully',

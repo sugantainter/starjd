@@ -9,7 +9,10 @@
         <div class="flex-1">
           <h1 class="text-2xl font-bold text-[#1a1a1a]">{{ profile.user?.name }}</h1>
           <p v-if="profile.tagline" class="mt-1 text-[#64748b]">{{ profile.tagline }}</p>
-          <p v-if="profile.location" class="mt-1 text-sm text-[#64748b]">{{ profile.location }}</p>
+          <p v-if="profile.city_name || profile.state_name" class="mt-1 text-sm text-[#64748b]">
+            {{ profile.city_name }}{{ profile.city_name && profile.state_name ? ', ' : '' }}{{ profile.state_name }}
+          </p>
+          <p v-else-if="profile.location" class="mt-1 text-sm text-[#64748b]">{{ profile.location }}</p>
           <p v-if="profile.category" class="mt-1 text-sm text-[#64748b]">{{ profile.category }}</p>
           <p v-if="profile.bio" class="mt-4 text-[#1a1a1a]">{{ profile.bio }}</p>
           <div v-if="connectedSocialAccounts.length" class="mt-5">

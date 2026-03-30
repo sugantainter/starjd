@@ -13,7 +13,12 @@ const profile = reactive({
   skills: [],
   education: [],
   certifications: [],
+  state_id: null,
+  city_id: null,
 });
+
+const states = ref([]);
+const cities = ref([]);
 
 const newLang = ref({ name: '', level: 'Fluent' });
 const newSkill = ref({ name: '', level: 'Expert' });
@@ -36,6 +41,16 @@ onMounted(async () => {
     const res = await axios.get('/api/professional/dashboard');
     if (res.data.profile) {
       Object.assign(profile, res.data.profile);
+      profile.state_id = res.data.user.state_id;
+      profile.city_id = res.data.user.city_id;
+    }
+
+    const statesRes = await axios.get('/api/states');
+    states.value = statesRes.data;
+
+    if (profile.state_id) {
+      const res = await axios.get('/api/cities?state_id=' + profile.state_id);
+      cities.value = res.data;
     }
   } catch (e) {
     console.error('Failed to load profile', e);
@@ -65,6 +80,16 @@ function addItem(list, item, reset) {
 
 function removeItem(list, index) {
   profile[list].splice(index, 1);
+}
+
+async function onStateChange() {
+  profile.city_id = null;
+  if (profile.state_id) {
+    const res = await axios.get('/api/cities?state_id=' + profile.state_id);
+    cities.value = res.data;
+  } else {
+    cities.value = [];
+  }
 }
 </script>
 
@@ -100,6 +125,22 @@ function removeItem(list, index) {
           <div>
             <label class="block text-sm font-medium text-[#1a1a1a] mb-1">Professional Bio</label>
             <textarea v-model="profile.bio" rows="5" placeholder="Share your experience, passion, and how you help clients achieve their goals..." class="w-full rounded-lg border border-[#e2e8f0] px-4 py-2.5 outline-none focus:border-[#f59e0b] focus:ring-1 focus:ring-[#f59e0b]/20"></textarea>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-[#1a1a1a] mb-1">State</label>
+              <select v-model="profile.state_id" @change="onStateChange" class="w-full rounded-lg border border-[#e2e8f0] px-4 py-2.5 outline-none focus:border-[#f59e0b] focus:ring-1 focus:ring-[#f59e0b]/20">
+                <option :value="null">Select state</option>
+                <option v-for="s in states" :key="s.id" :value="s.id">{{ s.name }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#1a1a1a] mb-1">City</label>
+              <select v-model="profile.city_id" class="w-full rounded-lg border border-[#e2e8f0] px-4 py-2.5 outline-none focus:border-[#f59e0b] focus:ring-1 focus:ring-[#f59e0b]/20">
+                <option :value="null">Select city</option>
+                <option v-for="c in cities" :key="c.id" :value="c.id">{{ c.name }}</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>

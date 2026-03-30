@@ -17,6 +17,9 @@ class BrandProfileController extends Controller
         if (! $profile) {
             $profile = $request->user()->brandProfile()->create([]);
         }
+        $profile->load(['user' => function ($q) {
+            $q->select('id', 'name', 'state_id', 'city_id')->with(['state:id,name', 'city:id,name']);
+        }]);
         return response()->json($profile);
     }
 
@@ -37,6 +40,8 @@ class BrandProfileController extends Controller
             'bio' => ['nullable', 'string', 'max:2000'],
             'industry' => ['nullable', 'string', 'max:255'],
             'hq_location' => ['nullable', 'string', 'max:255'],
+            'state_id' => ['nullable', 'exists:states,id'],
+            'city_id' => ['nullable', 'exists:cities,id'],
         ];
 
         if ($request->hasFile('logo')) {
@@ -66,9 +71,13 @@ class BrandProfileController extends Controller
 
         $profile->update($data);
 
+        $request->user()->update($request->only(['state_id', 'city_id']));
+
         return response()->json([
             'message' => 'Brand profile updated successfully.',
-            'profile' => $profile->fresh(),
+            'profile' => $profile->fresh()->load(['user' => function ($q) {
+                $q->select('id', 'name', 'state_id', 'city_id')->with(['state:id,name', 'city:id,name']);
+            }]),
         ]);
     }
 }

@@ -461,6 +461,8 @@ class AuthController extends Controller
         $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
             'avatar' => ['nullable', 'image', 'max:2048'], // 2MB limit
+            'state_id' => ['nullable', 'exists:states,id'],
+            'city_id' => ['nullable', 'exists:cities,id'],
         ]);
 
         if ($request->has('name')) {
@@ -475,6 +477,9 @@ class AuthController extends Controller
             $path = $request->file('avatar')->store('avatars', 'public');
             $user->avatar = $path;
         }
+
+        if ($request->has('state_id')) $user->state_id = $request->state_id;
+        if ($request->has('city_id')) $user->city_id = $request->city_id;
 
         $user->save();
 
@@ -576,6 +581,10 @@ class AuthController extends Controller
             'role' => $user->role,
             'primary_role' => $primary ? ['id' => $primary->id, 'name' => $primary->name, 'slug' => $primary->slug] : null,
             'roles' => $roles,
+            'state_id' => $user->state_id,
+            'city_id' => $user->city_id,
+            'state' => $user->state,
+            'city' => $user->city,
             'creator_profile' => $user->creatorProfile,
             'brand_profile' => $user->brandProfile,
             'has_paid_access' => \App\Models\AccessPayment::hasPaidAccess($user),

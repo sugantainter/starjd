@@ -28,6 +28,8 @@ class CreatorProfileResource extends JsonResource
             'avatar' => $this->resource->avatar,
             'avatar_url' => $this->resource->avatar_url,
             'location' => $this->resource->location,
+            'state_name' => $user->state?->name,
+            'city_name' => $user->city?->name,
             'tagline' => $this->resource->tagline,
             'category' => $this->resource->category,
             'gender' => $this->resource->gender,

@@ -45,6 +45,22 @@
         </div>
         <textarea v-model="form.bio" rows="4" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]"></textarea>
       </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">State</label>
+          <select v-model="form.state_id" @change="onStateChange" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]">
+            <option :value="null">Select state</option>
+            <option v-for="s in states" :key="s.id" :value="s.id">{{ s.name }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">City</label>
+          <select v-model="form.city_id" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]">
+            <option :value="null">Select city</option>
+            <option v-for="c in cities" :key="c.id" :value="c.id">{{ c.name }}</option>
+          </select>
+        </div>
+      </div>
       <button type="submit" :disabled="loading" class="cursor-link rounded-xl bg-[#e63946] px-6 py-3 font-semibold text-white hover:bg-[#c1121f] disabled:opacity-50">Save</button>
     </form>
   </div>
@@ -55,7 +71,9 @@ import { ref, reactive, onMounted } from 'vue';
 import axios from 'axios';
 
 const profile = ref(null);
-const form = reactive({ company_name: '', website: '', bio: '' });
+const form = reactive({ company_name: '', website: '', bio: '', state_id: null, city_id: null });
+const states = ref([]);
+const cities = ref([]);
 const logoFile = ref(null);
 const logoPreview = ref('');
 const logoInput = ref(null);
@@ -89,6 +107,16 @@ onMounted(async () => {
   form.company_name = data.company_name ?? '';
   form.website = data.website ?? '';
   form.bio = data.bio ?? '';
+  form.state_id = data.user?.state_id ?? null;
+  form.city_id = data.user?.city_id ?? null;
+
+  const statesRes = await axios.get('/api/states');
+  states.value = statesRes.data;
+
+  if (form.state_id) {
+    const res = await axios.get('/api/cities?state_id=' + form.state_id);
+    cities.value = res.data;
+  }
 });
 
 function onLogoChange(e) {
@@ -109,6 +137,16 @@ function onLogoChange(e) {
   reader.readAsDataURL(file);
 }
 
+async function onStateChange() {
+  form.city_id = null;
+  if (form.state_id) {
+    const res = await axios.get('/api/cities?state_id=' + form.state_id);
+    cities.value = res.data;
+  } else {
+    cities.value = [];
+  }
+}
+
 function clearLogo() {
   logoFile.value = null;
   logoPreview.value = profile.value?.logo_url || '';
@@ -125,6 +163,8 @@ async function save() {
       fd.append('company_name', form.company_name);
       fd.append('website', form.website);
       fd.append('bio', form.bio);
+      if (form.state_id) fd.append('state_id', form.state_id);
+      if (form.city_id) fd.append('city_id', form.city_id);
       fd.append('logo', logoFile.value, logoFile.value.name || 'logo');
       const r = await axios.post('/api/brand/profile', fd, {
         withCredentials: true,
