@@ -41,12 +41,8 @@ return [
         'instagram' => 'Instagram',
         'facebook' => 'Facebook',
         'youtube' => 'YouTube',
-        'tiktok' => 'TikTok',
-        'twitter' => 'Twitter / X',
         'linkedin' => 'LinkedIn',
-        'snapchat' => 'Snapchat',
         'pinterest' => 'Pinterest',
-        'other' => 'Other',
     ],
 
     'featured_plans' => [
