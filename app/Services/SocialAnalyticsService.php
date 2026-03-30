@@ -181,34 +181,45 @@ class SocialAnalyticsService
                 // 2. Discover and update Facebook Pages
                 $pagesRes = Http::withToken($account->access_token)
                     ->get('https://graph.facebook.com/v19.0/me/accounts', [
-                        'fields' => 'id,name,username,followers_count,access_token',
+                        'fields' => 'id,name,username,followers_count,access_token,instagram_business_account',
                     ]);
                 
                 if ($pagesRes->successful() && !empty($pagesRes->json('data'))) {
-                    $pageList = $pagesRes->json('data');
-                    Log::info("Discovered " . count($pageList) . " Facebook Page(s)");
+                    $pageList = collect($pagesRes->json('data'));
+                    Log::info("Discovered " . $pageList->count() . " Facebook Page(s)");
                     
-                    $page = $pageList[0]; // Primary page for now
+                    // Smart Selection: Prioritize page with Linked Instagram, then by Follower count
+                    $page = $pageList->sortByDesc(function ($p) {
+                        $pWeight = isset($p['instagram_business_account']) ? 1000000000 : 0;
+                        return $pWeight + ($p['followers_count'] ?? 0);
+                    })->first();
+
                     $pageId = $page['id'];
                     $pageToken = $page['access_token'];
                     $account->followers_count = $page['followers_count'] ?? $account->followers_count;
-                    Log::info("Sycing Page: {$page['name']} (ID: {$pageId}) with {$account->followers_count} followers.");
+                    Log::info("Intelligent Sync Selected Page: {$page['name']} (ID: {$pageId}) with {$account->followers_count} followers. Linked to IG: " . (isset($page['instagram_business_account']) ? 'Yes' : 'No'));
 
-                    // 3. Fetch Page Insights (Last 30 days)
-                    $insightsRes = Http::withToken($pageToken)
-                        ->get("https://graph.facebook.com/v19.0/{$pageId}/insights", [
-                            'metric' => 'page_impressions,page_post_engagements,page_views_total',
-                            'period' => 'day',
-                            'since' => now()->subDays(30)->timestamp,
-                            'until' => now()->timestamp,
-                        ]);
+                    // 3. Fetch Page Insights (Last 30 days) - only if they have enough followers for metrics
+                    $insightsRes = null;
+                    if ($account->followers_count >= 10) {
+                        $insightsRes = Http::withToken($pageToken)
+                            ->get("https://graph.facebook.com/v19.0/{$pageId}/insights", [
+                                'metric' => 'page_impressions,page_post_engagements,page_views_total',
+                                'period' => 'day',
+                                'since' => now()->subDays(30)->timestamp,
+                                'until' => now()->timestamp,
+                            ]);
+                    }
 
-                    // 4. Fetch Page Audience Demographics
-                    $demoRes = Http::withToken($pageToken)
-                        ->get("https://graph.facebook.com/v19.0/{$pageId}/insights", [
-                            'metric' => 'page_fans_gender_age',
-                            'period' => 'lifetime',
-                        ]);
+                    // 4. Fetch Page Audience Demographics (Requires > 100 followers)
+                    $demoRes = null;
+                    if ($account->followers_count >= 100) {
+                        $demoRes = Http::withToken($pageToken)
+                            ->get("https://graph.facebook.com/v19.0/{$pageId}/insights", [
+                                'metric' => 'page_fans_gender_age',
+                                'period' => 'lifetime',
+                            ]);
+                    }
 
                     // 5. Fetch Top Page Posts
                     $postsRes = Http::withToken($pageToken)
@@ -217,10 +228,10 @@ class SocialAnalyticsService
                             'limit' => 5,
                         ]);
 
-                    if ($insightsRes->successful() || $demoRes->successful()) {
+                    if (($insightsRes && $insightsRes->successful()) || ($demoRes && $demoRes->successful())) {
                         // Format Demographics (Facebook style)
                         $formattedDemo = [];
-                        if ($demoRes->successful() && !empty($demoRes->json('data.0.values.0.value'))) {
+                        if ($demoRes && $demoRes->successful() && !empty($demoRes->json('data.0.values.0.value'))) {
                             $values = $demoRes->json('data.0.values.0.value');
                             $total = array_sum($values);
                             foreach ($values as $key => $count) {
@@ -233,7 +244,7 @@ class SocialAnalyticsService
 
                         // Format History
                         $history = [];
-                        if ($insightsRes->successful()) {
+                        if ($insightsRes && $insightsRes->successful()) {
                             $impressData = collect($insightsRes->json('data'))->firstWhere('name', 'page_impressions')['values'] ?? [];
                             foreach ($impressData as $val) {
                                 $history[] = [
@@ -245,6 +256,12 @@ class SocialAnalyticsService
 
                         $account->analytics_data = array_merge((array)$account->analytics_data, [
                             'fb_page_id' => $pageId,
+                            'discovered_pages' => $pageList->map(fn($p) => [
+                                'id' => $p['id'],
+                                'name' => $p['name'],
+                                'followers' => $p['followers_count'] ?? 0,
+                                'has_ig' => isset($p['instagram_business_account'])
+                            ])->toArray(),
                             'last_updated' => now()->toIso8601String(),
                             'history' => $history,
                             'demographics' => $formattedDemo,

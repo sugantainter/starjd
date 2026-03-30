@@ -156,6 +156,35 @@ class CreatorSocialAccountController extends Controller
         ]);
     }
 
+    public function selectPage(Request $request, string $platform, \App\Services\SocialAnalyticsService $analytics): JsonResponse
+    {
+        $account = $request->user()->socialAccounts()->where('platform', 'facebook')->first();
+        if (! $account) {
+            return response()->json(['message' => 'Facebook not connected'], 422);
+        }
+
+        $pageId = $request->input('page_id');
+        if (! $pageId) {
+            return response()->json(['message' => 'Page ID required'], 422);
+        }
+
+        // Update the account's selected page ID in metadata
+        $data = (array) $account->analytics_data;
+        $data['fb_page_id'] = $pageId;
+        $account->analytics_data = $data;
+        $account->save();
+
+        // Re-sync stats for this specific page
+        $success = $analytics->updateStats($account);
+
+        return response()->json([
+            'success' => $success,
+            'page_id' => $pageId,
+            'followers_count' => $account->followers_count,
+            'username' => $account->username,
+        ]);
+    }
+
     public function disconnect(Request $request, string $platform): JsonResponse
     {
         if (! in_array($platform, self::platforms(), true)) {
