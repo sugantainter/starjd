@@ -7,6 +7,7 @@ use App\Models\SocialAccount;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Laravel\Socialite\Two\User as SocialiteUser;
 
 class CreatorSocialAccountController extends Controller
 {
@@ -81,14 +82,15 @@ class CreatorSocialAccountController extends Controller
         config(["services.{$driverName}.redirect" => $callbackUrl]);
 
         if ($driverName === 'google') {
-            return Socialite::driver('google')
-                ->scopes(['yt-analytics.readonly', 'https://www.googleapis.com/auth/youtube.readonly'])
+            /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+            $driver = Socialite::driver('google');
+            return $driver->scopes(['yt-analytics.readonly', 'https://www.googleapis.com/auth/youtube.readonly'])
                 ->with(['access_type' => 'offline', 'prompt' => 'consent'])
                 ->redirect();
         }
 
         if ($driverName === 'facebook') {
-            /** @var \Laravel\Socialite\Two\FacebookProvider $driver */
+            /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
             $driver = Socialite::driver('facebook');
             
             return $driver->scopes([
@@ -102,9 +104,11 @@ class CreatorSocialAccountController extends Controller
                 'business_management',
             ])->redirect();
         }
+
         if ($platform === 'linkedin') {
-            return Socialite::driver('linkedin-openid')
-                ->scopes(['openid', 'profile', 'email', 'w_member_social'])
+            /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+            $driver = Socialite::driver('linkedin-openid');
+            return $driver->scopes(['openid', 'profile', 'email', 'w_member_social'])
                 ->redirect();
         }
 
@@ -119,9 +123,10 @@ class CreatorSocialAccountController extends Controller
 
         try {
             $driverName = ($platform === 'linkedin') ? 'linkedin-openid' : $platform;
+            /** @var SocialiteUser $oauthUser */
             $oauthUser = Socialite::driver($driverName)->user();
         } catch (\Throwable $e) {
-            return redirect()->to('/creator/social-accounts?error=oauth_failed&msg=' . urlencode($e->getMessage()));
+            return redirect()->to('/creator/dashboard?error=oauth_failed&msg=' . urlencode($e->getMessage()));
         }
 
         $user = $request->user();
@@ -140,7 +145,7 @@ class CreatorSocialAccountController extends Controller
 
         $account->save();
 
-        return redirect()->to('/creator/social-accounts?success=connected');
+        return redirect()->to('/creator/dashboard?success=connected');
     }
 
     public function refresh(Request $request, string $platform, \App\Services\SocialAnalyticsService $analytics): JsonResponse

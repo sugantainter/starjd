@@ -1,5 +1,21 @@
 <template>
-  <div>
+  <div class="relative">
+    <!-- Notifications -->
+    <div v-if="notification" class="fixed top-6 right-6 z-[100] animate-in fade-in slide-in-from-top-4 duration-300">
+      <div :class="['rounded-2xl px-6 py-4 shadow-2xl flex items-center gap-3 border transition-all', 
+        notification.type === 'success' ? 'bg-green-50 border-green-200 text-green-900' : 'bg-red-50 border-red-200 text-red-900']">
+        <div v-if="notification.type === 'success'" class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </div>
+        <div v-else class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </div>
+        <div>
+          <p class="font-bold">{{ notification.title }}</p>
+          <p class="text-sm opacity-90">{{ notification.message }}</p>
+        </div>
+      </div>
+    </div>
     <h1 class="text-2xl font-bold text-[#1a1a1a]">Dashboard</h1>
     <p class="mt-1 text-[#64748b]">Welcome back, {{ data?.user?.name }}.</p>
 
@@ -252,17 +268,46 @@ const platformTabs = {
   ]
 };
 
+const notification = ref(null);
+
 onMounted(async () => {
-  const res = await axios.get('/api/creator/dashboard', { withCredentials: true });
-  data.value = res.data;
+  // Professional Feedback: Check for success/error handshake from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('success') || window.location.hash.includes('_=_')) {
+    notification.value = {
+      type: 'success',
+      title: 'Success!',
+      message: 'Social account connected successfully.'
+    };
+    // Professional Cleanup: URL Wash
+    window.history.replaceState({}, document.title, window.location.pathname);
+    setTimeout(() => notification.value = null, 5000);
+  }
   
-  // Set default platform based on what's connected
-  if (data.value?.social_accounts) {
-    const connected = data.value.social_accounts.find(a => a.is_connected && a.analytics_data);
-    if (connected) {
-      selectedPlatform.value = connected.platform;
-      activeTab.value = platformTabs[connected.platform]?.[0]?.id || 'views';
+  if (urlParams.has('error')) {
+    notification.value = {
+      type: 'error',
+      title: 'Connection Failed',
+      message: urlParams.get('msg') ? decodeURIComponent(urlParams.get('msg')) : 'Could not link your social account.'
+    };
+    window.history.replaceState({}, document.title, window.location.pathname);
+    setTimeout(() => notification.value = null, 5000);
+  }
+
+  try {
+    const res = await axios.get('/api/creator/dashboard', { withCredentials: true });
+    data.value = res.data;
+    
+    // Set default platform based on what's connected
+    if (data.value?.social_accounts) {
+      const connected = data.value.social_accounts.find(a => a.is_connected && a.analytics_data);
+      if (connected) {
+        selectedPlatform.value = connected.platform;
+        activeTab.value = platformTabs[connected.platform]?.[0]?.id || 'views';
+      }
     }
+  } catch (err) {
+    console.error('Failed to load dashboard:', err);
   }
 });
 
