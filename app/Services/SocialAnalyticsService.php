@@ -130,6 +130,11 @@ class SocialAnalyticsService
             }
 
             if ($growthRes->successful() || $demoRes->successful()) {
+                Log::info("YouTube analytics payload for account {$account->id}", [
+                    'historyCount' => count($growthRes->json('rows') ?? []),
+                    'demoCount' => count($demoRes->json('rows') ?? []),
+                    'topVideosCount' => count($topVideos)
+                ]);
                 $account->analytics_data = array_merge((array)$account->analytics_data, [
                     'last_updated' => now()->toIso8601String(),
                     'history' => $growthRes->json('rows') ?? [],
@@ -137,7 +142,12 @@ class SocialAnalyticsService
                     'top_videos' => $topVideos,
                 ]);
                 $account->save();
-                Log::info("YouTube expanded analytics updated for account {$account->id}");
+                Log::info("YouTube expanded analytics successfully persisted for account {$account->id}");
+            } else {
+                Log::warning("YouTube analytics fetch returned partial success for account {$account->id}", [
+                    'growth' => $growthRes->status(),
+                    'demo' => $demoRes->status()
+                ]);
             }
         } catch (\Throwable $e) {
             Log::error("Failed to fetch YouTube analytics: " . $e->getMessage());
@@ -390,6 +400,9 @@ class SocialAnalyticsService
                     ]);
 
                 if ($statsRes->successful()) {
+                    $json = $statsRes->json();
+                    Log::info("LinkedIn Stat elements for {$account->id}: ", ['elements' => $json['elements'] ?? []]);
+                    
                     $elements = $statsRes->json('elements.0');
                     $totalLikes = $elements['totalShareStatistics']['likeCount'] ?? 0;
                     $totalComments = $elements['totalShareStatistics']['commentCount'] ?? 0;
@@ -409,10 +422,16 @@ class SocialAnalyticsService
                         'total_likes' => $totalLikes,
                         'total_comments' => $totalComments,
                     ]);
+
+                    Log::info("LinkedIn analytics data mapped for {$account->id}", [
+                        'likes' => $totalLikes,
+                        'comments' => $totalComments,
+                        'memberId' => $memberId
+                    ]);
                 }
                 
                 $account->save();
-                Log::info("LinkedIn stats updated for account {$account->id}");
+                Log::info("LinkedIn stats successfully updated for account {$account->id}");
                 return true;
             } else {
                 Log::error("LinkedIn Profile fetch failed: {$profileRes->body()}");
