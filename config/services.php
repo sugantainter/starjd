@@ -54,6 +54,12 @@ return [
         'redirect' => env('LINKEDIN_REDIRECT_URI'),
     ],
 
+    'linkedin-openid' => [
+        'client_id' => env('LINKEDIN_CLIENT_ID'),
+        'client_secret' => env('LINKEDIN_CLIENT_SECRET'),
+        'redirect' => env('LINKEDIN_REDIRECT_URI'),
+    ],
+
     'youtube' => [
         'api_key' => env('YOUTUBE_API_KEY'),
         'channel_handle' => env('YOUTUBE_CHANNEL_HANDLE', 'StarJDs'),

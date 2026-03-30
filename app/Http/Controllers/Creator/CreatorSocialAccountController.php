@@ -106,8 +106,8 @@ class CreatorSocialAccountController extends Controller
         }
 
         if ($platform === 'linkedin') {
-            return Socialite::driver('linkedin')
-                ->scopes(['openid', 'profile', 'email', 'w_member_social'])
+            return Socialite::driver('linkedin-openid')
+                ->setScopes(['openid', 'profile', 'email', 'w_member_social'])
                 ->redirect();
         }
 
@@ -121,7 +121,8 @@ class CreatorSocialAccountController extends Controller
         config(["services.{$platform}.redirect" => $callbackUrl]);
 
         try {
-            $oauthUser = Socialite::driver($platform)->user();
+            $driverName = ($platform === 'linkedin') ? 'linkedin-openid' : $platform;
+            $oauthUser = Socialite::driver($driverName)->user();
         } catch (\Throwable $e) {
             return redirect()->to('/creator/social-accounts?error=oauth_failed&msg=' . urlencode($e->getMessage()));
         }
