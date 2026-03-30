@@ -32,5 +32,12 @@ class AppServiceProvider extends ServiceProvider
             $email = $notifiable->getEmailForPasswordReset();
             return url('/reset-password?token='.$token.'&email='.urlencode($email));
         });
+
+        // Pinterest Socialite extension
+        $socialite = $this->app->make(\Laravel\Socialite\Contracts\Factory::class);
+        $socialite->extend('pinterest', function ($app) use ($socialite) {
+            $config = $app['config']['services.pinterest'];
+            return $socialite->buildProvider(\App\Socialite\PinterestProvider::class, $config);
+        });
     }
 }

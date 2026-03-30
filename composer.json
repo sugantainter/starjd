@@ -11,7 +11,8 @@
         "laravel/framework": "^11.0",
         "laravel/sanctum": "*",
         "laravel/socialite": "*",
-        "laravel/tinker": "^2.10.1"
+        "laravel/tinker": "^2.10.1",
+        "socialiteproviders/pinterest": "^4.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

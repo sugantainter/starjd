@@ -22,6 +22,7 @@ class SocialAnalyticsService
             'facebook' => $this->updateFacebookStats($account),
             'instagram' => $this->updateInstagramStats($account),
             'linkedin' => $this->updateLinkedInStats($account),
+            'pinterest' => $this->updatePinterestStats($account),
             default => false,
         };
     }
@@ -544,5 +545,60 @@ class SocialAnalyticsService
         }
 
         return false;
+    }
+
+    private function updatePinterestStats(SocialAccount $account): bool
+    {
+        try {
+            $res = Http::withToken($account->access_token)
+                ->get('https://api.pinterest.com/v5/user_account');
+
+            if ($res->successful()) {
+                $user = $res->json();
+                $account->username = $user['username'] ?? $account->username;
+                $account->followers_count = $user['follower_count'] ?? $account->followers_count;
+                
+                // Fetch weekly analytics if professional
+                $analyticsRes = Http::withToken($account->access_token)
+                    ->get('https://api.pinterest.com/v5/user_account/analytics', [
+                        'start_date' => now()->subDays(30)->toDateString(),
+                        'end_date' => now()->toDateString(),
+                        'columns' => 'IMPRESSION,SAVE,CLICKTHROUGH',
+                    ]);
+
+                $history = (array)($account->analytics_data['history'] ?? []);
+                if ($analyticsRes->successful()) {
+                    $stats = $analyticsRes->json('all.summary') ?? [];
+                    Log::info("Pinterest analytics summary for {$account->id}", $stats);
+                    // Add current stats to history
+                    $history[] = [
+                        now()->toDateString(),
+                        $stats['IMPRESSION'] ?? 0,
+                        $stats['SAVE'] ?? 0,
+                        $stats['CLICKTHROUGH'] ?? 0,
+                    ];
+                }
+
+                $account->analytics_data = array_merge((array)$account->analytics_data, [
+                    'profile_image' => $user['profile_image'] ?? null,
+                    'website_url' => $user['website_url'] ?? null,
+                    'last_synced_at' => now()->toIso8601String(),
+                    'history' => array_slice($history, -30), // keep last 30 days
+                ]);
+
+                $account->save();
+                Log::info("Pinterest stats successfully updated for account {$account->id}");
+                return true;
+            }
+            
+            Log::warning("Pinterest stats fetch failed for ID {$account->id}", [
+                'status' => $res->status(),
+                'body' => $res->body()
+            ]);
+            return false;
+        } catch (\Throwable $e) {
+            Log::error("Pinterest stats fetch ERROR for ID {$account->id}: " . $e->getMessage());
+            return false;
+        }
     }
 }

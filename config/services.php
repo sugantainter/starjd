@@ -73,5 +73,11 @@ return [
         'api_key' => env('GEMINI_API_KEY'),
     ],
 
+    'pinterest' => [
+        'client_id' => env('PINTEREST_CLIENT_ID'),
+        'client_secret' => env('PINTEREST_CLIENT_SECRET'),
+        'redirect' => env('PINTEREST_REDIRECT_URI') ?: rtrim(env('APP_URL', 'http://localhost'), '/').'/creator/social-accounts/pinterest/callback',
+    ],
+
     'ai_daily_limit' => 15, // Max AI requests per professional per day
 ];

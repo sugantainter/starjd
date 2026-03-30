@@ -68,7 +68,7 @@ class CreatorSocialAccountController extends Controller
 
     public function redirect(Request $request, string $platform)
     {
-        $allowed = ['facebook', 'google', 'linkedin', 'instagram']; // Map instagram to facebook driver
+        $allowed = ['facebook', 'google', 'linkedin', 'instagram', 'pinterest']; // Map instagram/pinterest drivers
         if (! in_array($platform, $allowed, true)) {
             return redirect()->to('/creator/social-accounts?error=platform_not_supported');
         }
@@ -79,6 +79,8 @@ class CreatorSocialAccountController extends Controller
 
         // Force the redirect URL for this specific connection flow
         $callbackUrl = route('creator.social.callback', ['platform' => $driverName]);
+        if ($platform === 'pinterest') $callbackUrl = route('creator.social.callback', ['platform' => 'pinterest']);
+        
         config(["services.{$driverName}.redirect" => $callbackUrl]);
 
         if ($driverName === 'google') {
@@ -103,6 +105,10 @@ class CreatorSocialAccountController extends Controller
                 'instagram_manage_insights',
                 'business_management',
             ])->redirect();
+        }
+
+        if ($driverName === 'pinterest') {
+             return Socialite::driver('pinterest')->redirect();
         }
 
         if ($platform === 'linkedin') {

@@ -265,6 +265,11 @@ const platformTabs = {
   instagram: [
     { id: 'reach', name: 'Reach', label: 'Account Reach', index: 3 },
     { id: 'impressions', name: 'Impressions', label: 'Total Impressions', index: 2 },
+  ],
+  pinterest: [
+    { id: 'impressions', name: 'Impressions', label: 'Daily Impressions', index: 1 },
+    { id: 'saves', name: 'Saves', label: 'Daily Saves', index: 2 },
+    { id: 'clicks', name: 'Clicks', label: 'Outbound Clicks', index: 3 },
   ]
 };
 
