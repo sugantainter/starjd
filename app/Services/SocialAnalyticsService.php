@@ -382,17 +382,16 @@ class SocialAnalyticsService
     {
         try {
             Log::info("Starting LinkedIn sync for account {$account->id}");
-            // 1. Fetch Profile Info
-            $profileRes = Http::withToken($account->access_token)->get('https://api.linkedin.com/v2/me');
+            // 1. Fetch Profile Info using modern OpenID endpoint
+            $profileRes = Http::withToken($account->access_token)->get('https://api.linkedin.com/v2/userinfo');
 
             if ($profileRes->successful()) {
                 $profile = $profileRes->json();
-                $firstName = $profile['localizedFirstName'] ?? '';
-                $lastName = $profile['localizedLastName'] ?? '';
-                $account->username = trim("{$firstName} {$lastName}");
-                $memberId = $profile['id'];
+                $account->username = $profile['name'] ?? 'LinkedIn Member';
+                $memberId = $profile['sub']; // Person ID in OpenID format
 
                 // 2. Fetch Member Share Stats (Engagement)
+                // Use the person ID from 'sub' to build the URN
                 $statsRes = Http::withToken($account->access_token)
                     ->get('https://api.linkedin.com/v2/memberShareStatistics', [
                         'action' => 'getStatistics',
