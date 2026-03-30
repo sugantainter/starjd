@@ -164,7 +164,7 @@ async function load() {
   accounts.value = res.data;
 }
 
-const oauthPlatforms = ['facebook', 'instagram', 'youtube', 'linkedin'];
+const oauthPlatforms = ['facebook', 'instagram', 'youtube', 'linkedin', 'pinterest'];
 
 function startConnect(acc) {
   if (oauthPlatforms.includes(acc.platform)) {
