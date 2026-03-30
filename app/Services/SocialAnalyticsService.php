@@ -202,13 +202,33 @@ class SocialAnalyticsService
                     // 3. Fetch Page Insights (Last 30 days) - only if they have enough followers for metrics
                     $insightsRes = null;
                     if ($account->followers_count >= 10) {
-                        $insightsRes = Http::withToken($pageToken)
-                            ->get("https://graph.facebook.com/v19.0/{$pageId}/insights", [
-                                'metric' => 'page_reach,page_engaged_users,page_views_total',
-                                'period' => 'day',
-                                'since' => now()->subDays(30)->timestamp,
-                                'until' => now()->timestamp,
-                            ]);
+                        Log::info("Fetching isolated insights for Page {$pageId}...");
+                        // 1. Reach (Independently)
+                        $reachRes = Http::withToken($pageToken)->get("https://graph.facebook.com/v19.0/{$pageId}/insights", [
+                            'metric' => 'page_reach',
+                            'period' => 'day',
+                            'since' => now()->subDays(30)->timestamp,
+                            'until' => now()->timestamp,
+                        ]);
+                        if (!$reachRes->successful()) Log::warning("FB Page Reach Fetch Error: " . $reachRes->body());
+
+                        // 2. Engagement (Independently)
+                        $engageRes = Http::withToken($pageToken)->get("https://graph.facebook.com/v19.0/{$pageId}/insights", [
+                            'metric' => 'page_engaged_users',
+                            'period' => 'day',
+                            'since' => now()->subDays(30)->timestamp,
+                            'until' => now()->timestamp,
+                        ]);
+                        if (!$engageRes->successful()) Log::warning("FB Page Engagement Fetch Error: " . $engageRes->body());
+
+                        // 3. Views (Independently)
+                        $viewsRes = Http::withToken($pageToken)->get("https://graph.facebook.com/v19.0/{$pageId}/insights", [
+                            'metric' => 'page_views_total',
+                            'period' => 'day',
+                            'since' => now()->subDays(30)->timestamp,
+                            'until' => now()->timestamp,
+                        ]);
+                        if (!$viewsRes->successful()) Log::warning("FB Page Views Fetch Error: " . $viewsRes->body());
                     }
 
                     // 4. Fetch Page Audience Demographics (Requires > 100 followers)
@@ -242,9 +262,9 @@ class SocialAnalyticsService
                     }
 
                     $history = [];
-                    if ($insightsRes && $insightsRes->successful()) {
-                        // Use page_reach as the primary reach metric for NPE
-                        $reachData = collect($insightsRes->json('data'))->firstWhere('name', 'page_reach')['values'] ?? [];
+                    if (($reachRes && $reachRes->successful()) || ($engageRes && $engageRes->successful()) || ($viewsRes && $viewsRes->successful())) {
+                        // Pull Reach as primary growth metric
+                        $reachData = $reachRes && $reachRes->successful() ? ($reachRes->json('data.0.values') ?? []) : [];
                         foreach ($reachData as $val) {
                             $history[] = [
                                 date('Y-m-d', strtotime($val['end_time'])),
@@ -276,8 +296,8 @@ class SocialAnalyticsService
                     $account->save();
                     Log::info("Facebook account {$account->id} data persisted (Pages: " . count($account->analytics_data['discovered_pages']) . ")");
 
-                    if (!$insightsRes || !$insightsRes->successful()) {
-                        Log::warning("Facebook Page insights fetch returned status " . ($insightsRes ? $insightsRes->status() : 'skipped') . " for ID {$pageId}");
+                    if (!$reachRes || !$reachRes->successful()) {
+                        Log::warning("Facebook Page reach fetch failed/skipped for ID {$pageId}");
                     }
                 } else {
                     Log::warning("No Facebook Pages discovered for account {$account->id}");
