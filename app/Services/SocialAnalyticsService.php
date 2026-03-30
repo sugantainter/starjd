@@ -204,7 +204,7 @@ class SocialAnalyticsService
                     if ($account->followers_count >= 10) {
                         $insightsRes = Http::withToken($pageToken)
                             ->get("https://graph.facebook.com/v19.0/{$pageId}/insights", [
-                                'metric' => 'page_impressions,page_post_engagements,page_views_total',
+                                'metric' => 'page_reach,page_engaged_users,page_views_total',
                                 'period' => 'day',
                                 'since' => now()->subDays(30)->timestamp,
                                 'until' => now()->timestamp,
@@ -243,8 +243,9 @@ class SocialAnalyticsService
 
                     $history = [];
                     if ($insightsRes && $insightsRes->successful()) {
-                        $impressData = collect($insightsRes->json('data'))->firstWhere('name', 'page_impressions')['values'] ?? [];
-                        foreach ($impressData as $val) {
+                        // Use page_reach as the primary reach metric for NPE
+                        $reachData = collect($insightsRes->json('data'))->firstWhere('name', 'page_reach')['values'] ?? [];
+                        foreach ($reachData as $val) {
                             $history[] = [
                                 date('Y-m-d', strtotime($val['end_time'])),
                                 0, 0, $val['value'],
