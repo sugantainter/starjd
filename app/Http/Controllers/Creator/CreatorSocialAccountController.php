@@ -67,27 +67,31 @@ class CreatorSocialAccountController extends Controller
 
     public function redirect(Request $request, string $platform)
     {
-        $allowed = ['facebook', 'google', 'linkedin']; // google is used for YouTube
+        $allowed = ['facebook', 'google', 'linkedin', 'instagram']; // Map instagram to facebook driver
         if (! in_array($platform, $allowed, true)) {
             return redirect()->to('/creator/social-accounts?error=platform_not_supported');
         }
 
-        // Force the redirect URL for this specific connection flow
-        $callbackUrl = route('creator.social.callback', ['platform' => $platform]);
-        config(["services.{$platform}.redirect" => $callbackUrl]);
+        $driverName = $platform;
+        if ($platform === 'instagram') $driverName = 'facebook';
+        if ($platform === 'youtube') $driverName = 'google';
 
-        if ($platform === 'google') {
+        // Force the redirect URL for this specific connection flow
+        $callbackUrl = route('creator.social.callback', ['platform' => $driverName]);
+        config(["services.{$driverName}.redirect" => $callbackUrl]);
+
+        if ($driverName === 'google') {
             return Socialite::driver('google')
                 ->scopes(['yt-analytics.readonly', 'https://www.googleapis.com/auth/youtube.readonly'])
                 ->with(['access_type' => 'offline', 'prompt' => 'consent'])
                 ->redirect();
         }
 
-        if ($platform === 'facebook') {
+        if ($driverName === 'facebook') {
             /** @var \Laravel\Socialite\Two\FacebookProvider $driver */
             $driver = Socialite::driver('facebook');
             
-            $builder = $driver->scopes([
+            return $driver->scopes([
                 'email',
                 'public_profile',
                 'pages_show_list',
@@ -96,14 +100,11 @@ class CreatorSocialAccountController extends Controller
                 'instagram_basic',
                 'instagram_manage_insights',
                 'business_management',
-            ]);
-
-            return $builder->redirect();
+            ])->redirect();
         }
-
         if ($platform === 'linkedin') {
             return Socialite::driver('linkedin-openid')
-                ->setScopes(['openid', 'profile', 'email', 'w_member_social'])
+                ->scopes(['openid', 'profile', 'email', 'w_member_social'])
                 ->redirect();
         }
 

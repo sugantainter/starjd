@@ -171,6 +171,7 @@ function startConnect(acc) {
     // Use OAuth flow
     let driver = acc.platform;
     if (acc.platform === 'youtube') driver = 'google';
+    if (acc.platform === 'instagram') driver = 'facebook';
     window.location.href = `/creator/social-accounts/${driver}/redirect`;
   } else {
     startEdit(acc);
