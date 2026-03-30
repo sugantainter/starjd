@@ -247,7 +247,7 @@ const platformTabs = {
     { id: 'comments', name: 'Comments', label: 'Post Comments', index: 2 },
   ],
   instagram: [
-    { id: 'reach', name: 'Reach', label: 'Account Reach', index: 1 },
+    { id: 'reach', name: 'Reach', label: 'Account Reach', index: 3 },
     { id: 'impressions', name: 'Impressions', label: 'Total Impressions', index: 2 },
   ]
 };
@@ -276,10 +276,7 @@ const analyticsHistory = computed(() => {
 
 const topContent = computed(() => {
   const ad = selectedAccount.value?.analytics_data;
-  if (selectedPlatform.value === 'youtube') return ad?.top_videos ?? [];
-  
-  // For other platforms, we might have posts in a different structure or just the history as activity
-  return ad?.top_posts ?? [];
+  return ad?.top_videos ?? [];
 });
 
 const activeMetricIndex = computed(() => {

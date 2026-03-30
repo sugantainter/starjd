@@ -228,57 +228,55 @@ class SocialAnalyticsService
                             'limit' => 5,
                         ]);
 
-                    if (($insightsRes && $insightsRes->successful()) || ($demoRes && $demoRes->successful())) {
-                        // Format Demographics (Facebook style)
-                        $formattedDemo = [];
-                        if ($demoRes && $demoRes->successful() && !empty($demoRes->json('data.0.values.0.value'))) {
-                            $values = $demoRes->json('data.0.values.0.value');
-                            $total = array_sum($values);
-                            foreach ($values as $key => $count) {
-                                if (!str_contains($key, '.')) continue;
-                                [$genderCode, $age] = explode('.', $key);
-                                $gender = ($genderCode === 'M') ? 'male' : 'female';
-                                $formattedDemo[] = ['age' . $age, $gender, ($total > 0 ? ($count / $total) * 100 : 0)];
-                            }
+                    // Prepare individual datasets
+                    $formattedDemo = [];
+                    if ($demoRes && $demoRes->successful() && !empty($demoRes->json('data.0.values.0.value'))) {
+                        $values = $demoRes->json('data.0.values.0.value');
+                        $total = array_sum($values);
+                        foreach ($values as $key => $count) {
+                            if (!str_contains($key, '.')) continue;
+                            [$genderCode, $age] = explode('.', $key);
+                            $gender = ($genderCode === 'M') ? 'male' : 'female';
+                            $formattedDemo[] = ['age' . $age, $gender, ($total > 0 ? ($count / $total) * 100 : 0)];
                         }
+                    }
 
-                        // Format History
-                        $history = [];
-                        if ($insightsRes && $insightsRes->successful()) {
-                            $impressData = collect($insightsRes->json('data'))->firstWhere('name', 'page_impressions')['values'] ?? [];
-                            foreach ($impressData as $val) {
-                                $history[] = [
-                                    date('Y-m-d', strtotime($val['end_time'])),
-                                    0, 0, $val['value'],
-                                ];
-                            }
+                    $history = [];
+                    if ($insightsRes && $insightsRes->successful()) {
+                        $impressData = collect($insightsRes->json('data'))->firstWhere('name', 'page_impressions')['values'] ?? [];
+                        foreach ($impressData as $val) {
+                            $history[] = [
+                                date('Y-m-d', strtotime($val['end_time'])),
+                                0, 0, $val['value'],
+                            ];
                         }
+                    }
 
-                        $account->analytics_data = array_merge((array)$account->analytics_data, [
-                            'fb_page_id' => $pageId,
-                            'discovered_pages' => $pageList->map(fn($p) => [
-                                'id' => $p['id'],
-                                'name' => $p['name'],
-                                'followers' => $p['followers_count'] ?? 0,
-                                'has_ig' => isset($p['instagram_business_account'])
-                            ])->toArray(),
-                            'last_updated' => now()->toIso8601String(),
-                            'history' => $history,
-                            'demographics' => $formattedDemo,
-                            'top_videos' => collect($postsRes->json('data', []))->map(fn($p) => [
-                                'id' => $p['id'],
-                                'title' => $p['message'] ?? 'Facebook Post',
-                                'thumbnail' => $p['attachments']['data'][0]['media']['image']['src'] ?? null,
-                                'views' => ($p['likes']['summary']['total_count'] ?? 0) + ($p['comments']['summary']['total_count'] ?? 0),
-                            ])->toArray(),
-                        ]);
-                        $account->save();
-                        Log::info("Facebook Page analytics updated for account {$account->id}");
-                    } else {
-                        Log::warning("Facebook Page insights fetch failed for ID {$pageId}", [
-                            'insights_status' => $insightsRes->status(),
-                            'demo_status' => $demoRes->status(),
-                        ]);
+                    // Always save basic info and discovered pages list even if metrics fail
+                    $account->analytics_data = array_merge((array)$account->analytics_data, [
+                        'fb_page_id' => $pageId,
+                        'discovered_pages' => $pageList->map(fn($p) => [
+                            'id' => $p['id'],
+                            'name' => $p['name'],
+                            'followers' => $p['followers_count'] ?? 0,
+                            'has_ig' => isset($p['instagram_business_account'])
+                        ])->toArray(),
+                        'last_updated' => now()->toIso8601String(),
+                        'history' => !empty($history) ? $history : ($account->analytics_data['history'] ?? []),
+                        'demographics' => !empty($formattedDemo) ? $formattedDemo : ($account->analytics_data['demographics'] ?? []),
+                        'top_videos' => collect($postsRes->json('data', []))->map(fn($p) => [
+                            'id' => $p['id'],
+                            'title' => $p['message'] ?? 'Facebook Post',
+                            'thumbnail' => $p['attachments']['data'][0]['media']['image']['src'] ?? null,
+                            'views' => ($p['likes']['summary']['total_count'] ?? 0) + ($p['comments']['summary']['total_count'] ?? 0),
+                        ])->toArray(),
+                    ]);
+                    
+                    $account->save();
+                    Log::info("Facebook account {$account->id} data persisted (Pages: " . count($account->analytics_data['discovered_pages']) . ")");
+
+                    if (!$insightsRes || !$insightsRes->successful()) {
+                        Log::warning("Facebook Page insights fetch returned status " . ($insightsRes ? $insightsRes->status() : 'skipped') . " for ID {$pageId}");
                     }
                 } else {
                     Log::warning("No Facebook Pages discovered for account {$account->id}");
