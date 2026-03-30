@@ -203,13 +203,23 @@ class SocialAnalyticsService
                     $insightsRes = null;
                     if ($account->followers_count >= 10) {
                         Log::info("Fetching isolated insights for Page {$pageId}...");
-                        // 1. Reach (Independently)
+                        // 1. Reach (Independently) - try modern first, then legacy
                         $reachRes = Http::withToken($pageToken)->get("https://graph.facebook.com/v19.0/{$pageId}/insights", [
-                            'metric' => 'page_reach',
+                            'metric' => 'page_impressions_unique', // Try legacy reach for wider compatibility
                             'period' => 'day',
                             'since' => now()->subDays(30)->timestamp,
                             'until' => now()->timestamp,
                         ]);
+                        
+                        if (!$reachRes->successful()) {
+                           Log::warning("Legacy Reach failed, trying modern page_reach...");
+                           $reachRes = Http::withToken($pageToken)->get("https://graph.facebook.com/v19.0/{$pageId}/insights", [
+                                'metric' => 'page_reach',
+                                'period' => 'day',
+                                'since' => now()->subDays(30)->timestamp,
+                                'until' => now()->timestamp,
+                            ]);
+                        }
                         if (!$reachRes->successful()) Log::warning("FB Page Reach Fetch Error: " . $reachRes->body());
 
                         // 2. Engagement (Independently)
@@ -385,7 +395,16 @@ class SocialAnalyticsService
                             }
                         }
 
-                        $account->analytics_data = array_merge((array)$account->analytics_data, [
+                        // Auto-connect/update separate Instagram account
+                        $igAccount = \App\Models\SocialAccount::firstOrNew([
+                            'user_id' => $account->user_id,
+                            'platform' => 'instagram',
+                        ]);
+                        $igAccount->username = $ig['username'] ?? $igAccount->username;
+                        $igAccount->access_token = $account->access_token;
+                        $igAccount->followers_count = $ig['followers_count'] ?? $igAccount->followers_count;
+                        $igAccount->is_connected = true;
+                        $igAccount->analytics_data = array_merge((array)$igAccount->analytics_data, [
                             'ig_id' => $igId,
                             'last_updated' => now()->toIso8601String(),
                             'history' => $history,
@@ -397,9 +416,9 @@ class SocialAnalyticsService
                                 'views' => ($m['like_count'] ?? 0) + ($m['comments_count'] ?? 0),
                             ])->toArray(),
                         ]);
+                        $igAccount->save();
+                        Log::info("Instagram account card activated for ID {$igId}");
                         
-                        $account->save();
-                        Log::info("Instagram analytics updated for ID {$igId}");
                         return true;
                     }
                 }
