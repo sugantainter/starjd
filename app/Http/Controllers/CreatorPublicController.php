@@ -42,6 +42,14 @@ class CreatorPublicController extends Controller
         if ($request->filled('location')) {
             $query->where('location', 'like', "%{$request->location}%");
         }
+        if ($request->filled('state_id')) {
+            $stateId = (int) $request->state_id;
+            $query->whereHas('user', fn ($u) => $u->where('state_id', $stateId));
+        }
+        if ($request->filled('city_id')) {
+            $cityId = (int) $request->city_id;
+            $query->whereHas('user', fn ($u) => $u->where('city_id', $cityId));
+        }
         if ($request->filled('price_range')) {
             $range = $request->price_range;
             if (str_contains($range, '+')) {

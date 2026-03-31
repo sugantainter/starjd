@@ -103,11 +103,19 @@
       <div class="grid gap-4 sm:grid-cols-2">
         <div>
           <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">City</label>
-          <input v-model="form.city" type="text" maxlength="100" class="w-full rounded-xl border border-[#e5e7eb] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" placeholder="City" />
+          <CitySearchSelect
+            v-model="selectedCityId"
+            :options="cities"
+            :disabled="!selectedStateId"
+            placeholder="Search and select city"
+          />
         </div>
         <div>
           <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">State</label>
-          <input v-model="form.state" type="text" maxlength="100" class="w-full rounded-xl border border-[#e5e7eb] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" placeholder="State" />
+          <select v-model="selectedStateId" @change="onStateChange" class="w-full rounded-xl border border-[#e5e7eb] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]">
+            <option :value="null">Select state</option>
+            <option v-for="s in states" :key="s.id" :value="s.id">{{ s.name }}</option>
+          </select>
         </div>
       </div>
       <div>
@@ -135,15 +143,20 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import RichTextEditor from '../../components/admin/RichTextEditor.vue';
+import CitySearchSelect from '../../components/CitySearchSelect.vue';
 
 const router = useRouter();
 const owners = ref([]);
 const categories = ref([]);
 const amenities = ref([]);
+const states = ref([]);
+const cities = ref([]);
+const selectedStateId = ref(null);
+const selectedCityId = ref(null);
 const loadingOwners = ref(true);
 const loading = ref(false);
 const error = ref('');
@@ -194,21 +207,42 @@ const form = reactive({
 onMounted(async () => {
   loadingOwners.value = true;
   try {
-    const [ownersRes, catRes, amRes] = await Promise.all([
+    const [ownersRes, catRes, amRes, statesRes] = await Promise.all([
       axios.get('/api/admin/studio-owners', { withCredentials: true }),
       axios.get('/api/studios/categories', { withCredentials: true }),
       axios.get('/api/amenities', { withCredentials: true }),
+      axios.get('/api/states'),
     ]);
     owners.value = ownersRes.data ?? [];
     categories.value = catRes.data?.data ?? catRes.data ?? [];
     amenities.value = amRes.data?.data ?? amRes.data ?? [];
+    states.value = statesRes.data ?? [];
   } catch (_) {
     owners.value = [];
     categories.value = [];
     amenities.value = [];
+    states.value = [];
   } finally {
     loadingOwners.value = false;
   }
+});
+
+async function onStateChange() {
+  const state = states.value.find((s) => String(s.id) === String(selectedStateId.value));
+  form.state = state?.name || '';
+  form.city = '';
+  selectedCityId.value = null;
+  if (!selectedStateId.value) {
+    cities.value = [];
+    return;
+  }
+  const res = await axios.get('/api/cities?state_id=' + selectedStateId.value);
+  cities.value = res.data ?? [];
+}
+
+watch(selectedCityId, (val) => {
+  const city = cities.value.find((c) => String(c.id) === String(val));
+  form.city = city?.name || '';
 });
 
 async function submit() {

@@ -55,10 +55,12 @@
         </div>
         <div>
           <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">City</label>
-          <select v-model="form.city_id" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]">
-            <option :value="null">Select city</option>
-            <option v-for="c in cities" :key="c.id" :value="c.id">{{ c.name }}</option>
-          </select>
+          <CitySearchSelect
+            v-model="form.city_id"
+            :options="cities"
+            :disabled="!form.state_id"
+            placeholder="Search and select city"
+          />
         </div>
       </div>
       <button type="submit" :disabled="loading" class="cursor-link rounded-xl bg-[#e63946] px-6 py-3 font-semibold text-white hover:bg-[#c1121f] disabled:opacity-50">Save</button>
@@ -69,6 +71,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import axios from 'axios';
+import CitySearchSelect from '../../components/CitySearchSelect.vue';
 
 const profile = ref(null);
 const form = reactive({ company_name: '', website: '', bio: '', state_id: null, city_id: null });

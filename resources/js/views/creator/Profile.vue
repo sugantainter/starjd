@@ -75,10 +75,12 @@
         </div>
         <div>
           <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">City</label>
-          <select v-model="form.city_id" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#10b981] focus:outline-none focus:ring-1 focus:ring-[#10b981]">
-            <option :value="null">Select city</option>
-            <option v-for="c in cities" :key="c.id" :value="c.id">{{ c.name }}</option>
-          </select>
+          <CitySearchSelect
+            v-model="form.city_id"
+            :options="cities"
+            :disabled="!form.state_id"
+            placeholder="Search and select city"
+          />
         </div>
       </div>
       <div>
@@ -154,6 +156,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import axios from 'axios';
+import CitySearchSelect from '../../components/CitySearchSelect.vue';
 
 const profile = ref(null);
 const form = reactive({ slug: '', tagline: '', bio: '', location: '', category: '', gender: '', language: '', min_rate: null, is_public: true, state_id: null, city_id: null });
@@ -196,7 +199,7 @@ async function suggestAI(type) {
 }
 
 onMounted(async () => {
-  const [profileRes, optionsRes, postsRes] = await Promise.all([
+  const [profileRes, optionsRes, postsRes, statesRes] = await Promise.all([
     axios.get('/api/creator/profile', { withCredentials: true }),
     axios.get('/api/creators/options/filters'),
     axios.get('/api/creator/image-posts', { withCredentials: true }),
