@@ -27,6 +27,7 @@ class CreatorSocialAccountController extends Controller
             'profile_url' => null,
             'followers_count' => null,
             'is_connected' => false,
+            'analytics_data' => null,
         ]);
         foreach ($accounts as $acc) {
             $defaults->transform(function ($item) use ($acc) {
@@ -37,6 +38,7 @@ class CreatorSocialAccountController extends Controller
                         'profile_url' => $acc->profile_url,
                         'followers_count' => $acc->followers_count,
                         'is_connected' => $acc->is_connected,
+                        'analytics_data' => $acc->analytics_data,
                         'id' => $acc->id,
                     ];
                 }

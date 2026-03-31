@@ -150,6 +150,7 @@ Route::middleware('web')->group(function () {
             
             Route::get('social-accounts', [\App\Http\Controllers\Creator\CreatorSocialAccountController::class, 'index']);
             Route::post('social-accounts/sync', [\App\Http\Controllers\Creator\CreatorSocialAccountController::class, 'sync']);
+            Route::post('social-accounts/{platform}/refresh', [\App\Http\Controllers\Creator\CreatorSocialAccountController::class, 'refresh']);
             Route::post('social-accounts/{platform}/select-page', [\App\Http\Controllers\Creator\CreatorSocialAccountController::class, 'selectPage']);
             Route::post('social-accounts/{platform}/select-instagram', [\App\Http\Controllers\Creator\CreatorSocialAccountController::class, 'selectInstagram']);
             Route::delete('social-accounts/{platform}', [\App\Http\Controllers\Creator\CreatorSocialAccountController::class, 'disconnect']);
