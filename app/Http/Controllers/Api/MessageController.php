@@ -145,4 +145,17 @@ class MessageController extends Controller
             'type' => 'text',
         ]);
     }
+
+    /**
+     * Get total unread message count for the user
+     */
+    public function unreadCount(): JsonResponse
+    {
+        $userId = Auth::id();
+        $count = Message::where('receiver_id', $userId)
+            ->whereNull('read_at')
+            ->count();
+
+        return response()->json(['count' => $count]);
+    }
 }

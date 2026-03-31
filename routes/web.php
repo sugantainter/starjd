@@ -152,7 +152,16 @@ Route::prefix('api')->group(function () {
         Route::post('payment/pay', [AccessPaymentController::class, 'pay']);
         Route::get('collaborations', [CollaborationController::class, 'index']);
         Route::post('collaborations', [CollaborationController::class, 'store']);
+        Route::get('conversations', [\App\Http\Controllers\Api\MessageController::class, 'index']);
+        Route::get('messages/unread-count', [\App\Http\Controllers\Api\MessageController::class, 'unreadCount']);
         Route::get('messages', [\App\Http\Controllers\Api\MessageController::class, 'index']);
+        
+        // Notifications
+        Route::get('notifications', [\App\Http\Controllers\Api\NotificationController::class, 'index']);
+        Route::get('notifications/unread-count', [\App\Http\Controllers\Api\NotificationController::class, 'unreadCount']);
+        Route::post('notifications/{id}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
+        Route::post('notifications/read-all', [\App\Http\Controllers\Api\NotificationController::class, 'markAllAsRead']);
+        Route::delete('notifications/{id}', [\App\Http\Controllers\Api\NotificationController::class, 'destroy']);
         Route::get('messages/{otherUserId}', [\App\Http\Controllers\Api\MessageController::class, 'show']);
         Route::post('messages', [\App\Http\Controllers\Api\MessageController::class, 'store']);
         Route::post('collaborations/{collaboration}/accept', [CollaborationController::class, 'accept']);
