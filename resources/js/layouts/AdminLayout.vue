@@ -146,6 +146,10 @@
                 <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                 Help Desk
               </router-link>
+              <router-link to="/admin/messages" class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#e63946]/10 !text-[#e63946]">
+                <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                User Messages
+              </router-link>
             </div>
           </div>
 
@@ -205,7 +209,7 @@ watch(() => route.path, (path) => {
   if (path.startsWith('/admin/categories') || path.startsWith('/admin/hero') || path.startsWith('/admin/banners') || path.startsWith('/admin/testimonials') || path.startsWith('/admin/faqs') || path.startsWith('/admin/steps') || path.startsWith('/admin/partners') || path.startsWith('/admin/services')) navOpen.site = true;
   if (path.startsWith('/admin/studios')) navOpen.studios = true;
   if (path.startsWith('/admin/coupons')) navOpen.commerce = true;
-  if (path.startsWith('/admin/contacts') || path.startsWith('/admin/support')) navOpen.inbox = true;
+  if (path.startsWith('/admin/contacts') || path.startsWith('/admin/support') || path.startsWith('/admin/messages')) navOpen.inbox = true;
   if (path.startsWith('/admin/ai-usage') || path.startsWith('/admin/marketing')) navOpen.system = true;
 
 }, { immediate: true });

@@ -123,6 +123,7 @@ const routes = [
       { path: 'marketing', name: 'admin-marketing', component: () => import('../views/admin/Marketing.vue') },
       { path: 'users', name: 'admin-users', component: () => import('../views/admin/Users.vue') },
       { path: 'users/:id', name: 'admin-user-detail', component: () => import('../views/admin/UserDetail.vue') },
+      { path: 'messages', name: 'admin-messages', component: () => import('../views/admin/Messages.vue') },
     ],
 
   },
