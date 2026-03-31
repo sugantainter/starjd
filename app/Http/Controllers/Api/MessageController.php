@@ -9,6 +9,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification as FirebaseNotification;
 
 class MessageController extends Controller
 {
@@ -27,7 +29,7 @@ class MessageController extends Controller
             ->pluck('id');
 
         $conversations = Message::whereIn('id', $latestMessageIds)
-            ->with(['sender:id,name', 'receiver:id,name'])
+            ->with(['sender:id,name,avatar', 'receiver:id,name,avatar', 'sender.roles', 'receiver.roles'])
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($message) use ($userId) {
@@ -46,8 +48,8 @@ class MessageController extends Controller
                     'time' => $message->created_at->diffForHumans(),
                     'unreadCount' => $unreadCount,
                     'isOnline' => false, // Placeholder
-                    'isBrand' => false, // Could check role
-                    'avatar' => null, // Placeholder
+                    'isBrand' => $otherUser ? $otherUser->hasRole('brand') : false,
+                    'avatar' => $otherUser ? $otherUser->avatar_url : null,
                 ];
             });
 
@@ -114,12 +116,12 @@ class MessageController extends Controller
         if ($receiver && $receiver->fcm_token) {
             try {
                 $messaging = app('firebase.messaging');
-                $notification = \Kreait\Firebase\Messaging\Notification::create(
+                $notification = FirebaseNotification::create(
                     'New Message from ' . $sender->name,
                     $message->body
                 );
 
-                $fcmMessage = \Kreait\Firebase\Messaging\CloudMessage::withTarget('token', $receiver->fcm_token)
+                $fcmMessage = CloudMessage::withTarget('token', $receiver->fcm_token)
                     ->withNotification($notification)
                     ->withData([
                         'type' => 'chat',
