@@ -41,6 +41,7 @@
         <table class="w-full text-left text-sm">
           <thead class="bg-[#f8fafc] text-xs font-semibold uppercase tracking-wider text-[#64748b]">
             <tr>
+              <th class="px-6 py-4">ID</th>
               <th class="px-6 py-4">User</th>
               <th class="px-6 py-4">Role</th>
               <th class="px-6 py-4">Profile Completion</th>
@@ -50,6 +51,7 @@
           </thead>
           <tbody class="divide-y divide-[#e2e8f0]">
             <tr v-if="loading && !users.length" v-for="i in 5" :key="i">
+              <td class="px-6 py-4"><div class="h-4 w-8 animate-pulse rounded bg-[#f1f5f9]"></div></td>
               <td class="px-6 py-4"><div class="h-10 w-48 animate-pulse rounded bg-[#f1f5f9]"></div></td>
               <td class="px-6 py-4"><div class="h-6 w-20 animate-pulse rounded bg-[#f1f5f9]"></div></td>
               <td class="px-6 py-4"><div class="h-4 w-32 animate-pulse rounded bg-[#f1f5f9]"></div></td>
@@ -57,9 +59,12 @@
               <td class="px-6 py-4 text-right"><div class="ml-auto h-8 w-16 animate-pulse rounded bg-[#f1f5f9]"></div></td>
             </tr>
             <tr v-else-if="!users.length">
-              <td colspan="5" class="px-6 py-12 text-center text-[#64748b]">No users found matching your criteria.</td>
+              <td colspan="6" class="px-6 py-12 text-center text-[#64748b]">No users found matching your criteria.</td>
             </tr>
             <tr v-for="user in users" :key="user.id" class="group transition hover:bg-[#f8fafc]">
+              <td class="px-6 py-4 font-mono text-xs font-bold text-[#64748b]">
+                #{{ user.id }}
+              </td>
               <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
                   <div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-[#f1f5f9] ring-2 ring-white">
