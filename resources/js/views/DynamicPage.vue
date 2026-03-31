@@ -159,11 +159,38 @@
                      <input v-model="sidebarSearch" type="text" placeholder="Creators, studios..." class="w-full rounded-xl border border-[#e2e8f0] bg-white px-4 py-2.5 text-sm focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" />
                    </div>
                    <div>
-                     <label class="mb-1 block text-[10px] font-bold uppercase tracking-widest text-[#94a3b8]">Service Type</label>
-                     <select v-model="sidebarCategory" class="w-full rounded-xl border border-[#e2e8f0] bg-white px-4 py-2.5 text-sm focus:border-[#e63946] focus:outline-none">
-                       <option value="">All Services</option>
-                       <option v-for="s in services" :key="s.id" :value="s.slug">{{ s.name }}</option>
-                     </select>
+                    <label class="mb-1 block text-[10px] font-bold uppercase tracking-widest text-[#94a3b8]">Category</label>
+                    <div class="relative">
+                      <input
+                        v-model="categoryQuery"
+                        type="text"
+                        placeholder="All Categories"
+                        class="w-full rounded-xl border border-[#e2e8f0] bg-white px-4 py-2.5 text-sm focus:border-[#e63946] focus:outline-none"
+                        @focus="categoryDropdownOpen = true"
+                        @blur="setTimeout(() => { categoryDropdownOpen = false }, 160)"
+                      />
+                      <div v-if="categoryDropdownOpen" class="absolute z-50 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-[#e2e8f0] bg-white shadow-lg">
+                        <button
+                          type="button"
+                          class="block w-full px-4 py-2 text-left text-sm text-[#1a1a1a] hover:bg-[#f8fafc]"
+                          @mousedown.prevent
+                          @click="selectSidebarCategory('')"
+                        >
+                          All Categories
+                        </button>
+                        <button
+                          v-for="c in filteredCreatorCategories"
+                          :key="c"
+                          type="button"
+                          class="block w-full px-4 py-2 text-left text-sm text-[#1a1a1a] hover:bg-[#f8fafc]"
+                          @mousedown.prevent
+                          @click="selectSidebarCategory(c)"
+                        >
+                          {{ c }}
+                        </button>
+                        <div v-if="!filteredCreatorCategories.length" class="px-4 py-2 text-sm text-[#64748b]">No category found</div>
+                      </div>
+                    </div>
                    </div>
                    <button type="submit" class="w-full rounded-xl bg-[#e63946] py-3 text-sm font-bold text-white shadow-md transition hover:bg-[#c1121f]">
                      Search Now
@@ -190,6 +217,35 @@
                  </div>
                  <router-link to="/blog" class="mt-6 block text-center text-xs font-bold text-[#64748b] hover:text-[#e63946] transition">View all blog posts →</router-link>
                </div>
+
+              <!-- City-based creator search links -->
+              <div v-if="locationName" class="rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm">
+                <h3 class="text-sm font-bold uppercase tracking-wider text-[#1a1a1a]">
+                  Creators in {{ locationName }}
+                </h3>
+                <p class="mt-2 text-xs text-[#64748b]">Quick links to the city-filtered creators search.</p>
+                <div class="mt-4 flex flex-wrap gap-2">
+                  <router-link
+                    :to="{ name: 'creators', query: { location: locationName } }"
+                    class="rounded-full border border-[#e63946] bg-white px-4 py-2 text-xs font-bold text-[#e63946] hover:bg-[#fff1f1] transition"
+                  >
+                    {{ cityName || locationName }}
+                  </router-link>
+                  <router-link
+                    v-if="stateName && stateName !== cityName"
+                    :to="{ name: 'creators', query: { location: stateName } }"
+                    class="rounded-full border border-[#e2e8f0] bg-white px-4 py-2 text-xs font-bold text-[#475569] hover:bg-[#f8fafc] transition"
+                  >
+                    {{ stateName }}
+                  </router-link>
+                  <router-link
+                    to="/creators"
+                    class="rounded-full border border-[#e2e8f0] bg-white px-4 py-2 text-xs font-bold text-[#475569] hover:bg-[#f8fafc] transition"
+                  >
+                    All creators
+                  </router-link>
+                </div>
+              </div>
                
                <!-- Quick Promotion -->
                <div class="relative overflow-hidden rounded-3xl bg-[#1a1a1a] p-8 text-white shadow-xl">
@@ -414,9 +470,12 @@ const campaigns = ref([]);
 const studios = ref([]);
 const blogs = ref([]);
 const services = ref([]);
+const creatorCategories = ref([]);
 
 const sidebarSearch = ref('');
 const sidebarCategory = ref('');
+const categoryQuery = ref('');
+const categoryDropdownOpen = ref(false);
 
 const stats = [
   { value: '2500+', label: 'Local Creators' },
@@ -430,6 +489,20 @@ const locationName = computed(() => {
   if (page.value?.state) return page.value.state.name;
   return '';
 });
+
+const cityName = computed(() => page.value?.city?.name || '');
+const stateName = computed(() => page.value?.state?.name || '');
+const filteredCreatorCategories = computed(() => {
+  const q = categoryQuery.value.trim().toLowerCase();
+  if (!q) return creatorCategories.value;
+  return creatorCategories.value.filter((c) => String(c).toLowerCase().includes(q));
+});
+
+function selectSidebarCategory(category) {
+  sidebarCategory.value = category || '';
+  categoryQuery.value = category || '';
+  categoryDropdownOpen.value = false;
+}
 
 function getServiceIcon(slug) {
   const icons = {
@@ -478,6 +551,15 @@ async function fetchRelatedData() {
     if (!services.value.length) {
       const svRes = await axios.get('/api/services');
       services.value = (svRes.data || []).slice(0, 6);
+    }
+
+    // Fetch creator categories for sidebar search filter
+    if (!creatorCategories.value.length) {
+      const cfRes = await axios.get('/api/creators/options/filters');
+      creatorCategories.value = cfRes.data?.categories ?? [];
+      if (!categoryQuery.value) {
+        categoryQuery.value = sidebarCategory.value || '';
+      }
     }
   } catch (err) {
     console.error('Error fetching related data:', err);

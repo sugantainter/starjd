@@ -131,6 +131,11 @@ Route::middleware('web')->group(function () {
         Route::post('creator/onboarding', [\App\Http\Controllers\Creator\CreatorProfileController::class, 'update']);
         Route::post('brand/onboarding', [\App\Http\Controllers\Brand\BrandProfileController::class, 'update']);
 
+    // Creator profile editor (used by Vue: /api/creator/profile)
+    Route::get('creator/profile', [\App\Http\Controllers\Creator\CreatorProfileController::class, 'show']);
+    Route::put('creator/profile', [\App\Http\Controllers\Creator\CreatorProfileController::class, 'update']);
+    Route::post('creator/profile', [\App\Http\Controllers\Creator\CreatorProfileController::class, 'update']);
+
         // Dashboard Data (Mirroring web routes but for API)
         Route::middleware(['creator', 'paid'])->prefix('creator')->group(function () {
             Route::get('dashboard', [\App\Http\Controllers\Creator\CreatorController::class, 'dashboard']);

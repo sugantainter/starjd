@@ -1,6 +1,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue';
 import axios from 'axios';
+import CitySearchSelect from '../../components/CitySearchSelect.vue';
 
 const loading = ref(true);
 const saving = ref(false);
@@ -136,10 +137,12 @@ async function onStateChange() {
             </div>
             <div>
               <label class="block text-sm font-medium text-[#1a1a1a] mb-1">City</label>
-              <select v-model="profile.city_id" class="w-full rounded-lg border border-[#e2e8f0] px-4 py-2.5 outline-none focus:border-[#f59e0b] focus:ring-1 focus:ring-[#f59e0b]/20">
-                <option :value="null">Select city</option>
-                <option v-for="c in cities" :key="c.id" :value="c.id">{{ c.name }}</option>
-              </select>
+              <CitySearchSelect
+                v-model="profile.city_id"
+                :options="cities"
+                :disabled="!profile.state_id"
+                placeholder="Search and select city"
+              />
             </div>
           </div>
         </div>

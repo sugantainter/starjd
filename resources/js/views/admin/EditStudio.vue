@@ -107,11 +107,19 @@
       <div class="grid gap-4 sm:grid-cols-2">
         <div>
           <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">City</label>
-          <input v-model="form.city" type="text" maxlength="100" class="w-full rounded-xl border border-[#e5e7eb] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" placeholder="City" />
+          <CitySearchSelect
+            v-model="selectedCityId"
+            :options="cities"
+            :disabled="!selectedStateId"
+            placeholder="Search and select city"
+          />
         </div>
         <div>
           <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">State</label>
-          <input v-model="form.state" type="text" maxlength="100" class="w-full rounded-xl border border-[#e5e7eb] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" placeholder="State" />
+          <select v-model="selectedStateId" @change="onStateChange" class="w-full rounded-xl border border-[#e5e7eb] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]">
+            <option :value="null">Select state</option>
+            <option v-for="s in states" :key="s.id" :value="s.id">{{ s.name }}</option>
+          </select>
         </div>
       </div>
       <div>
@@ -150,6 +158,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
 import RichTextEditor from '../../components/admin/RichTextEditor.vue';
+import CitySearchSelect from '../../components/CitySearchSelect.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -159,6 +168,10 @@ const studioSlug = ref('');
 const owners = ref([]);
 const categories = ref([]);
 const amenities = ref([]);
+const states = ref([]);
+const cities = ref([]);
+const selectedStateId = ref(null);
+const selectedCityId = ref(null);
 const loadingOwners = ref(true);
 const loadingStudio = ref(true);
 const loading = ref(false);
@@ -236,14 +249,47 @@ async function loadStudio() {
   loadingStudio.value = true;
   loadError.value = '';
   try {
-    const res = await axios.get('/api/admin/studios/' + studioId.value, { withCredentials: true });
+    const [res, statesRes] = await Promise.all([
+      axios.get('/api/admin/studios/' + studioId.value, { withCredentials: true }),
+      axios.get('/api/states'),
+    ]);
+    states.value = statesRes.data ?? [];
     applyStudio(res.data);
+    const selectedState = states.value.find((s) => String(s.name).toLowerCase() === String(form.state || '').toLowerCase());
+    selectedStateId.value = selectedState?.id ?? null;
+    if (selectedStateId.value) {
+      const cityRes = await axios.get('/api/cities?state_id=' + selectedStateId.value);
+      cities.value = cityRes.data ?? [];
+      const selectedCity = cities.value.find((c) => String(c.name).toLowerCase() === String(form.city || '').toLowerCase());
+      selectedCityId.value = selectedCity?.id ?? null;
+    } else {
+      cities.value = [];
+      selectedCityId.value = null;
+    }
   } catch (e) {
     loadError.value = e.response?.data?.message || 'Failed to load studio.';
   } finally {
     loadingStudio.value = false;
   }
 }
+
+async function onStateChange() {
+  const state = states.value.find((s) => String(s.id) === String(selectedStateId.value));
+  form.state = state?.name || '';
+  form.city = '';
+  selectedCityId.value = null;
+  if (!selectedStateId.value) {
+    cities.value = [];
+    return;
+  }
+  const res = await axios.get('/api/cities?state_id=' + selectedStateId.value);
+  cities.value = res.data ?? [];
+}
+
+watch(selectedCityId, (val) => {
+  const city = cities.value.find((c) => String(c.id) === String(val));
+  form.city = city?.name || '';
+});
 
 onMounted(async () => {
   loadingOwners.value = true;

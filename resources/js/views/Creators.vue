@@ -16,6 +16,14 @@
         </div>
         
         <div class="flex flex-wrap gap-2">
+          <select v-model="filters.state_id" @change="onStateChange" class="rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#fc4402] focus:outline-none bg-white text-sm font-medium">
+            <option :value="''">Any State</option>
+            <option v-for="s in states" :key="s.id" :value="String(s.id)">{{ s.name }}</option>
+          </select>
+          <select v-model="filters.city_id" :disabled="!filters.state_id" class="rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#fc4402] focus:outline-none bg-white text-sm font-medium disabled:opacity-60">
+            <option :value="''">Any City</option>
+            <option v-for="c in cities" :key="c.id" :value="String(c.id)">{{ c.name }}</option>
+          </select>
           <select v-model="filters.category" class="rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#fc4402] focus:outline-none bg-white text-sm font-medium">
             <option value="">All Categories</option>
             <option v-for="c in filterOptions.categories" :key="c" :value="c">{{ c }}</option>
@@ -146,10 +154,12 @@ const loading = ref(false);
 const finished = ref(false);
 const page = ref(1);
 const scrollTrigger = ref(null);
+const states = ref([]);
+const cities = ref([]);
 let observer = null;
 
 const filterOptions = reactive({ categories: [], genders: {}, languages: [], platforms: {} });
-const filters = reactive({ category: '', gender: '', language: '', platform: '', min_rate: '', location: '', price_range: '' });
+const filters = reactive({ category: '', gender: '', language: '', platform: '', min_rate: '', location: '', price_range: '', state_id: '', city_id: '' });
 
 function applyQueryToFilters() {
   const q = route.query;
@@ -160,16 +170,25 @@ function applyQueryToFilters() {
   if (q.platform != null) filters.platform = q.platform;
   if (q.location != null) filters.location = q.location;
   if (q.price_range != null) filters.price_range = q.price_range;
+  if (q.state_id != null) filters.state_id = String(q.state_id);
+  if (q.city_id != null) filters.city_id = String(q.city_id);
   if (q.min_rate != null) filters.min_rate = q.min_rate === '' ? '' : Number(q.min_rate);
 }
 
 onMounted(async () => {
-  const res = await axios.get('/api/creators/options/filters');
-  filterOptions.categories = res.data.categories ?? [];
-  filterOptions.genders = res.data.genders ?? {};
-  filterOptions.languages = res.data.languages ?? [];
-  filterOptions.platforms = res.data.platforms ?? {};
+  const [filtersRes, statesRes] = await Promise.all([
+    axios.get('/api/creators/options/filters'),
+    axios.get('/api/states'),
+  ]);
+  filterOptions.categories = filtersRes.data.categories ?? [];
+  filterOptions.genders = filtersRes.data.genders ?? {};
+  filterOptions.languages = filtersRes.data.languages ?? [];
+  filterOptions.platforms = filtersRes.data.platforms ?? {};
+  states.value = statesRes.data ?? [];
   applyQueryToFilters();
+  if (filters.state_id) {
+    await loadCities(filters.state_id);
+  }
   
   // Initialize Infinite Scroll
   observer = new IntersectionObserver((entries) => {
@@ -203,7 +222,24 @@ function clearFilters() {
   filters.location = '';
   filters.price_range = '';
   filters.min_rate = '';
+  filters.state_id = '';
+  filters.city_id = '';
+  cities.value = [];
   refresh();
+}
+
+async function loadCities(stateId) {
+  if (!stateId) {
+    cities.value = [];
+    return;
+  }
+  const res = await axios.get('/api/cities?state_id=' + stateId);
+  cities.value = res.data ?? [];
+}
+
+async function onStateChange() {
+  filters.city_id = '';
+  await loadCities(filters.state_id);
 }
 
 function refresh() {
@@ -231,6 +267,8 @@ async function load(p = 1) {
     if (filters.location) params.location = filters.location;
     if (filters.price_range) params.price_range = filters.price_range;
     if (filters.min_rate !== '' && filters.min_rate != null) params.min_rate = filters.min_rate;
+    if (filters.state_id) params.state_id = filters.state_id;
+    if (filters.city_id) params.city_id = filters.city_id;
     
     const res = await axios.get('/api/creators', { params });
     const resData = res.data;
