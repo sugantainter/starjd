@@ -19,6 +19,15 @@
             Dashboard
           </router-link>
 
+          <router-link
+            to="/admin/users"
+            class="mb-1 flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]"
+            active-class="!bg-[#e63946]/10 !text-[#e63946]"
+          >
+            <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            Users Analytics
+          </router-link>
+
           <!-- Content -->
           <div class="mt-5">
             <button type="button" class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[#94a3b8]" @click="navOpen.content = !navOpen.content">

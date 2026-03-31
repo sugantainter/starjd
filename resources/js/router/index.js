@@ -121,6 +121,8 @@ const routes = [
       { path: 'support', name: 'admin-support', component: () => import('../views/admin/Support.vue') },
       { path: 'ai-usage', name: 'admin-ai-usage', component: () => import('../views/admin/AIUsage.vue') },
       { path: 'marketing', name: 'admin-marketing', component: () => import('../views/admin/Marketing.vue') },
+      { path: 'users', name: 'admin-users', component: () => import('../views/admin/Users.vue') },
+      { path: 'users/:id', name: 'admin-user-detail', component: () => import('../views/admin/UserDetail.vue') },
     ],
 
   },

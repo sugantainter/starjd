@@ -275,6 +275,11 @@ Route::prefix('api')->group(function () {
         Route::get('marketing/filters', [\App\Http\Controllers\Admin\MarketingController::class, 'getFilters']);
         Route::apiResource('marketing', \App\Http\Controllers\Admin\MarketingController::class)->only(['index', 'store', 'show']);
         Route::post('marketing/{marketing}/send', [\App\Http\Controllers\Admin\MarketingController::class, 'send']);
+
+        // Users
+        Route::get('users', [\App\Http\Controllers\Admin\UserController::class, 'index']);
+        Route::get('users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'show']);
+        Route::patch('users/{user}/status', [\App\Http\Controllers\Admin\UserController::class, 'updateStatus']);
     });
 });
 
