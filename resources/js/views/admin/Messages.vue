@@ -211,6 +211,7 @@
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import axios from 'axios';
 import { useRoute } from 'vue-router';
+import { notify } from '../../lib/notify.js';
 
 const route = useRoute();
 const conversations = ref([]);
@@ -304,7 +305,7 @@ const sendMessage = async () => {
     scrollToBottom();
     loadConversations(true); // Update last message in sidebar
   } catch (err) {
-    alert('Failed to send message.');
+    notify.error('Failed to send message.');
   } finally {
     sending.value = false;
   }

@@ -21,10 +21,19 @@
               <span :class="pkg.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'" class="rounded-full px-2.5 py-0.5 text-xs font-medium">
                 {{ pkg.is_active ? 'Active' : 'Inactive' }}
               </span>
+              <span v-if="pkg.is_negotiable" class="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
+                Negotiable
+              </span>
+              <span v-if="pkg.revisions > 0" class="rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800">
+                {{ pkg.revisions }} {{ pkg.revisions === 1 ? 'Revision' : 'Revisions' }}
+              </span>
+              <span v-else class="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+                0 Revisions
+              </span>
             </div>
             <h3 class="mt-2 font-semibold text-[#1a1a1a]">{{ pkg.name }}</h3>
             <p class="mt-1 text-2xl font-bold text-[#10b981]">₹{{ formatPrice(pkg.price) }}</p>
-            <p v-if="pkg.description" class="mt-2 text-sm text-[#64748b] line-clamp-2">{{ pkg.description }}</p>
+            <RichTextContent v-if="pkg.description" class="mt-2 text-sm text-[#64748b] line-clamp-2" :content="pkg.description" />
             <div v-if="pkg.items?.length" class="mt-3 text-xs text-[#64748b]">
               <span v-for="(it, i) in pkg.items" :key="it.id || i">
                 {{ it.name }}: {{ it.quantity }} × ₹{{ formatPrice(it.unit_price) }} = ₹{{ formatPrice(it.quantity * it.unit_price) }}<span v-if="i < pkg.items.length - 1"> · </span>
@@ -63,6 +72,11 @@
               <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Package name</label>
               <input v-model="modal.name" type="text" required placeholder="e.g. Social Media Bundle" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#10b981] focus:outline-none focus:ring-1 focus:ring-[#10b981]" />
             </div>
+            <div>
+              <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Revisions included</label>
+              <input v-model.number="modal.revisions" type="number" min="0" placeholder="0 for no revisions" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#10b981] focus:outline-none focus:ring-1 focus:ring-[#10b981]" />
+              <p class="mt-1 text-[10px] text-[#64748b]">Number of feedback rounds included in this package.</p>
+            </div>
           </div>
 
           <div>
@@ -100,20 +114,29 @@
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="block text-sm font-medium text-[#1a1a1a]">Description</label>
-              <button type="button" @click="suggestAI('package_description')" :disabled="aiLoading['package_description']" class="text-xs font-semibold text-[#10b981] hover:text-[#059669] flex items-center gap-1 disabled:opacity-50">
-                <span v-if="aiLoading['package_description']" class="h-3 w-3 animate-spin border-2 border-[#10b981] border-t-transparent rounded-full"></span>
-                <span v-else>✨</span> {{ aiLoading['package_description'] ? 'Generating...' : 'Suggest with AI' }}
-              </button>
+              <div class="flex items-center gap-3">
+                <span class="text-[10px] text-[#64748b] font-medium uppercase tracking-wider">{{ modal.description?.length || 0 }} / 500</span>
+                <button type="button" @click="suggestAI('package_description')" :disabled="aiLoading['package_description']" class="text-xs font-semibold text-[#10b981] hover:text-[#059669] flex items-center gap-1 disabled:opacity-50">
+                  <span v-if="aiLoading['package_description']" class="h-3 w-3 animate-spin border-2 border-[#10b981] border-t-transparent rounded-full"></span>
+                  <span v-else>✨</span> {{ aiLoading['package_description'] ? 'Generating...' : 'Suggest with AI' }}
+                </button>
+              </div>
             </div>
-            <textarea v-model="modal.description" rows="3" placeholder="What's included in this package?" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#10b981] focus:outline-none focus:ring-1 focus:ring-[#10b981]"></textarea>
+            <textarea v-model="modal.description" maxlength="500" rows="3" placeholder="What's included in this package?" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#10b981] focus:outline-none focus:ring-1 focus:ring-[#10b981]"></textarea>
           </div>
           <div>
             <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Deliverables / timeline</label>
-            <textarea v-model="modal.deliverables" rows="2" placeholder="e.g. Within 10–20 days" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#10b981] focus:outline-none focus:ring-1 focus:ring-[#10b981]"></textarea>
+            <textarea v-model="modal.deliverables" maxlength="200" rows="2" placeholder="e.g. Within 10–20 days" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#10b981] focus:outline-none focus:ring-1 focus:ring-[#10b981]"></textarea>
           </div>
-          <div class="flex items-center gap-2">
-            <input v-model="modal.is_active" type="checkbox" id="modal_active" class="rounded border-[#e2e8f0] text-[#10b981] focus:ring-[#10b981]" />
-            <label for="modal_active" class="text-sm font-medium text-[#1a1a1a]">Active (visible on profile)</label>
+          <div class="flex flex-wrap gap-4">
+            <div class="flex items-center gap-2">
+              <input v-model="modal.is_active" type="checkbox" id="modal_active" class="rounded border-[#e2e8f0] text-[#10b981] focus:ring-[#10b981]" />
+              <label for="modal_active" class="text-sm font-medium text-[#1a1a1a]">Active (visible on profile)</label>
+            </div>
+            <div class="flex items-center gap-2">
+              <input v-model="modal.is_negotiable" type="checkbox" id="modal_negotiable" class="rounded border-[#e2e8f0] text-[#10b981] focus:ring-[#10b981]" />
+              <label for="modal_negotiable" class="text-sm font-medium text-[#1a1a1a]">Negotiable price</label>
+            </div>
           </div>
           <div class="flex gap-3 pt-2">
             <button type="submit" class="cursor-link rounded-xl bg-[#10b981] px-5 py-2.5 font-semibold text-white hover:bg-[#059669]">Save</button>
@@ -128,6 +151,8 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
 import axios from 'axios';
+import RichTextContent from '../../components/RichTextContent.vue';
+import { notify } from '../../lib/notify.js';
 
 const packages = ref([]);
 const categories = ref([]);
@@ -140,6 +165,8 @@ const modal = reactive({
   description: '',
   deliverables: '',
   is_active: true,
+  is_negotiable: false,
+  revisions: 0,
   items: [],
 });
 const error = ref('');
@@ -157,7 +184,7 @@ async function suggestAI(type) {
       if (type === 'package_description') modal.description = res.data.suggestion;
     }
   } catch (e) {
-    alert(e.response?.data?.error || 'AI suggestion failed.');
+    notify.error(e.response?.data?.error || 'AI suggestion failed.');
   } finally {
     aiLoading[type] = false;
   }
@@ -199,6 +226,8 @@ function openAdd() {
   modal.description = '';
   modal.deliverables = '';
   modal.is_active = true;
+  modal.is_negotiable = false;
+  modal.revisions = 0;
   modal.items = [];
   showModal.value = true;
 }
@@ -211,6 +240,8 @@ function openEdit(pkg) {
   modal.description = pkg.description ?? '';
   modal.deliverables = pkg.deliverables ?? '';
   modal.is_active = pkg.is_active;
+  modal.is_negotiable = pkg.is_negotiable;
+  modal.revisions = pkg.revisions ?? 0;
   modal.items = (pkg.items || []).map((it) => ({
     id: it.id,
     name: it.name,
@@ -229,6 +260,8 @@ function buildPayload() {
     description: modal.description || null,
     deliverables: modal.deliverables || null,
     is_active: modal.is_active,
+    is_negotiable: modal.is_negotiable,
+    revisions: Number(modal.revisions) || 0,
   };
   const validItems = modal.items.filter((it) => it.name && (Number(it.quantity) > 0 || Number(it.unit_price) >= 0));
   if (validItems.length) {

@@ -52,6 +52,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import axios from 'axios';
+import { notify } from '../../lib/notify.js';
 
 const items = ref([]);
 const loading = ref(true);
@@ -133,7 +134,7 @@ async function save() {
     const msg = is413
       ? 'Image or request too large. Use an image under 2 MB.'
       : (e.response?.data?.message || e.response?.data?.errors?.image?.[0] || 'Error saving');
-    alert(msg);
+    notify.error(msg);
   }
 }
 async function remove(item) {
@@ -142,7 +143,7 @@ async function remove(item) {
     await axios.delete(`/api/admin/categories/${item.id}`);
     load();
   } catch (e) {
-    alert(e.response?.data?.message || 'Error deleting');
+    notify.error(e.response?.data?.message || 'Error deleting');
   }
 }
 onMounted(load);

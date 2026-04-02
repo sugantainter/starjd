@@ -1178,7 +1178,7 @@
                                 ✓ Vetted creator network
                             </li>
                             <li class="flex items-center gap-2">
-                                ✓ Escrow payments
+                                ✓ StarJD Secure payments
                             </li>
                             <li class="flex items-center gap-2">
                                 ✓ Campaign tracking
@@ -2420,7 +2420,7 @@ const gridCards = [
     {
         id: 2,
         title: "Secure Payments",
-        desc: "Payments held in escrow until you approve content. Creators get paid on delivery.",
+        desc: "Payments held securely by StarJD until you approve content. Creators get paid on delivery.",
         image: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&h=380&fit=crop",
         url: "#how-it-works",
         cta: "How it works",

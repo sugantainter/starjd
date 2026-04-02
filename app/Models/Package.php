@@ -17,6 +17,8 @@ class Package extends Model
         'deliverables',
         'is_active',
         'sort_order',
+        'is_negotiable',
+        'revisions',
     ];
 
     protected function casts(): array
@@ -24,6 +26,8 @@ class Package extends Model
         return [
             'price' => 'decimal:2',
             'is_active' => 'boolean',
+            'is_negotiable' => 'boolean',
+            'revisions' => 'integer',
         ];
     }
 

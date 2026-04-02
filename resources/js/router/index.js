@@ -56,6 +56,7 @@ const routes = [
       { path: 'collaborations', name: 'creator-collaborations', component: () => import('../views/creator/Collaborations.vue') },
       { path: 'messages', name: 'creator-messages', component: () => import('../views/creator/Messages.vue') },
       { path: 'featured', name: 'creator-featured', component: () => import('../views/creator/Featured.vue') },
+      { path: 'support', name: 'creator-support', component: () => import('../views/Support.vue') },
     ],
   },
   {
@@ -71,6 +72,7 @@ const routes = [
       { path: 'campaigns/:id', name: 'brand-campaign-detail', component: () => import('../views/brand/CampaignDetail.vue') },
       { path: 'collaborations', name: 'brand-collaborations', component: () => import('../views/brand/Collaborations.vue') },
       { path: 'messages', name: 'brand-messages', component: () => import('../views/brand/Messages.vue') },
+      { path: 'support', name: 'brand-support', component: () => import('../views/Support.vue') },
     ],
   },
   {
@@ -79,6 +81,7 @@ const routes = [
     children: [
       { path: '', redirect: '/agency/dashboard' },
       { path: 'dashboard', name: 'agency-dashboard', component: () => import('../views/agency/Dashboard.vue') },
+      { path: 'support', name: 'agency-support', component: () => import('../views/Support.vue') },
     ],
   },
   {
@@ -91,6 +94,7 @@ const routes = [
       { path: 'studios/new', name: 'studio-add', component: () => import('../views/studio/AddStudio.vue') },
       { path: 'studios/:id/edit', name: 'studio-edit', component: () => import('../views/studio/EditStudio.vue') },
       { path: 'bookings', name: 'studio-bookings', component: () => import('../views/studio/Bookings.vue') },
+      { path: 'support', name: 'studio-support', component: () => import('../views/Support.vue') },
     ],
   },
   {
@@ -124,6 +128,7 @@ const routes = [
       { path: 'users', name: 'admin-users', component: () => import('../views/admin/Users.vue') },
       { path: 'users/:id', name: 'admin-user-detail', component: () => import('../views/admin/UserDetail.vue') },
       { path: 'messages', name: 'admin-messages', component: () => import('../views/admin/Messages.vue') },
+      { path: 'withdrawals', name: 'admin-withdrawals', component: () => import('../views/admin/Withdrawals.vue') },
     ],
 
   },
@@ -138,6 +143,7 @@ const routes = [
       { path: 'orders', name: 'professional-orders', component: () => import('../views/professional/Dashboard.vue') }, // Reusing for now
       { path: 'messages', name: 'professional-messages', component: () => import('../views/creator/Messages.vue') }, // Shared messages
       { path: 'earnings', name: 'professional-earnings', component: () => import('../views/professional/Dashboard.vue') }, // Reusing for now
+      { path: 'support', name: 'professional-support', component: () => import('../views/Support.vue') },
     ],
   },
   {

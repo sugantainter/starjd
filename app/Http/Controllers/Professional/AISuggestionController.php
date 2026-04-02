@@ -24,32 +24,32 @@ class AISuggestionController extends Controller
             case 'creator_tagline':
                 $name = $context['name'] ?? 'a professional';
                 $category = $context['category'] ?? 'creative';
-                $prompt = "Generate a short, catchy professional tagline (max 10 words) for a creator named '{$name}' in the category '{$category}'. Return only the tagline.";
+                $prompt = "Generate a short, catchy professional tagline (max 8 words) for a creator named '{$name}' in the category '{$category}'. Return only the tagline.";
                 break;
             case 'creator_bio':
                 $name = $context['name'] ?? 'a professional';
                 $category = $context['category'] ?? 'creative';
                 $tagline = $context['tagline'] ?? '';
-                $prompt = "Write a professional and engaging bio (2-3 paragraphs) for a creator named '{$name}' in the category '{$category}'. " . ($tagline ? "Their tagline is '{$tagline}'." : "") . " Keep it exciting and suitable for a talent marketplace. Return only the bio.";
+                $prompt = "Write a professional, direct, and engaging bio (max 60 words) for a creator named '{$name}' in the category '{$category}'. " . ($tagline ? "Their tagline is '{$tagline}'." : "") . " Keep it professional and suitable for a talent marketplace. Avoid flowery language. Return only the bio.";
                 break;
             case 'brand_bio':
                 $name = $context['company_name'] ?? 'our brand';
-                $prompt = "Write a professional and authoritative brand bio (2-3 paragraphs) for a company named '{$name}' that collaborates with creators and influencers. Return only the bio.";
+                $prompt = "Write a professional and authoritative brand bio (max 80 words) for a company named '{$name}' that collaborates with creators and influencers. Keep it direct and business-like. Return only the bio.";
                 break;
             case 'campaign_description':
                 $brand = $context['company_name'] ?? 'Our Brand';
                 $campaignType = $context['campaign_type'] ?? 'marketing';
-                $prompt = "Write a compelling campaign description for a '{$brand}' campaign on '{$campaignType}'. Describe the goals, what we are looking for in creators, and why they should apply. Return only the description.";
+                $prompt = "Write a clean and direct campaign description for a '{$brand}' campaign on '{$campaignType}'. Describe the goals and what we need from creators. Limit to 100 words. Return only the description.";
                 break;
             case 'studio_description':
                 $name = $context['name'] ?? 'Our Studio';
                 $category = $context['category'] ?? 'Photography';
-                $prompt = "Write a professional studio description for '{$name}', a '{$category}' studio. Highlight the professional atmosphere, equipment possibilities, and why it's great for creative projects. Return only the description.";
+                $prompt = "Write a professional studio description for '{$name}', a '{$category}' studio. Focus on equipment and atmosphere. Max 80 words. Return only the description.";
                 break;
             case 'package_description':
                 $name = $context['name'] ?? 'Service Package';
                 $category = $context['category'] ?? 'Creative Service';
-                $prompt = "Write a detailed and persuasive description for a service package called '{$name}' in the '{$category}' category. Explain the value and what the client gets. Return only the description.";
+                $prompt = "Write a clean, professional, and concise description for a service package called '{$name}' for '{$category}'. Focus on deliverables and value. Max 60 words. Avoid fluff. Return only the description.";
                 break;
             default:
                 return response()->json(['error' => 'Invalid suggestion type'], 400);
@@ -251,8 +251,9 @@ class AISuggestionController extends Controller
         ]);
         $service = Service::find($request->service_id);
         $slug = $service ? $service->slug : 'default';
+        $prompt = "Write a professional service description for a '{$service->name}' service gig titled '{$request->title}'. Use bullet points for features. Tone: Professional and direct. Limit to 150 words.";
 
-        $aiResult = $this->generateWithAI("Write a professional service description for a gig titled '{$request->title}' in the category '{$service->name}'. Use bullet points for features. Tone: Professional and persuasive. Max 1000 chars.", 'description');
+        $aiResult = $this->generateWithAI($prompt, 'description');
         if ($aiResult) {
             return response()->json(['description' => $aiResult]);
         }

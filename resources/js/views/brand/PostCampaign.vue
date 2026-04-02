@@ -104,6 +104,7 @@
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import axios from 'axios';
 import PostCampaignFlow from '../../components/brand/PostCampaignFlow.vue';
+import { notify } from '../../lib/notify.js';
 
 const loading = ref(true);
 const loadingMore = ref(false);
@@ -153,7 +154,7 @@ async function openCampaign(c) {
     await axios.patch('/api/brand/campaigns/' + c.id, { status: 'open' }, { withCredentials: true });
     await loadCampaigns();
   } catch (e) {
-    alert(e.response?.data?.message || 'Failed to publish campaign.');
+    notify.error(e.response?.data?.message || 'Failed to publish campaign.');
   }
 }
 

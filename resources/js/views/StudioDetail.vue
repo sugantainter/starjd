@@ -79,12 +79,7 @@
 
       <div class="lg:col-span-1">
         <div class="sticky top-24">
-          <div class="mb-3 flex flex-wrap items-end gap-2">
-            <div class="min-w-[140px] flex-1">
-              <label class="mb-1 block text-xs font-medium text-[#64748b]">Coupon code</label>
-              <input v-model="couponCode" type="text" placeholder="Optional" class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-sm" @change="fetchPrice" />
-            </div>
-          </div>
+          <div class="mb-3 flex flex-wrap items-end gap-2"></div>
           <BookingWidget
             :studio="studio"
             :breakdown="priceBreakdown"
@@ -114,6 +109,7 @@ import BookingWidget from '../components/studio/BookingWidget.vue';
 import ReviewList from '../components/studio/ReviewList.vue';
 import AvailabilityCalendar from '../components/studio/AvailabilityCalendar.vue';
 import RichTextContent from '../components/RichTextContent.vue';
+import { notify } from '../lib/notify.js';
 
 const route = useRoute();
 const studio = ref(null);
@@ -124,7 +120,6 @@ const bookingStart = ref('09:00');
 const bookingEnd = ref('10:00');
 const priceBreakdown = ref(null);
 const bookingInProgress = ref(false);
-const couponCode = ref('');
 
 const similarStudios = computed(() => studio.value?.similar_studios ?? []);
 
@@ -158,7 +153,6 @@ async function fetchPrice() {
       start_time: bookingStart.value,
       end_time: bookingEnd.value,
     };
-    if (couponCode.value?.trim()) params.coupon_code = couponCode.value.trim();
     const res = await axios.get('/api/bookings/calculate', { params });
     priceBreakdown.value = res.data;
   } catch {
@@ -166,7 +160,7 @@ async function fetchPrice() {
   }
 }
 
-watch([bookingDate, bookingStart, bookingEnd, couponCode], () => fetchPrice());
+watch([bookingDate, bookingStart, bookingEnd], () => fetchPrice());
 
 const payuForm = ref(null);
 const payuUrl = ref('');
@@ -183,16 +177,15 @@ async function onBook() {
       end_time: bookingEnd.value,
       cancellation_policy: 'moderate',
     };
-    if (couponCode.value?.trim()) bookPayload.coupon_code = couponCode.value.trim();
     const bookRes = await axios.post('/api/bookings', bookPayload, { withCredentials: true });
     const booking = bookRes.data?.booking;
     if (!booking?.id || booking.amount == null) {
-      alert('Booking created. Complete payment from your account.');
+      notify.success('Booking created. Complete payment from your account.');
       return;
     }
 
     if (booking.status === 'confirmed') {
-      alert('Success! Your booking is confirmed with 100% discount.');
+      notify.success('Success! Your booking is confirmed with 100% discount.');
       location.href = '/dashboard/bookings';
       return;
     }
@@ -208,7 +201,7 @@ async function onBook() {
       if (payuForm.value) payuForm.value.submit();
     });
   } catch (e) {
-    alert(e.response?.data?.message || 'Booking failed. Are you logged in?');
+    notify.error(e.response?.data?.message || 'Booking failed. Are you logged in?');
     bookingInProgress.value = false;
   }
 }

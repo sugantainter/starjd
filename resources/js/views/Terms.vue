@@ -12,7 +12,7 @@
 
           <h2 class="mt-10 text-2xl font-bold text-[#1a1a1a]">About StarJD and Our Website</h2>
           <p class="mt-2 text-[#6b7280]">
-            StarJD is an online platform that connects creators (influencers, content creators) with brands for collaboration and influencer marketing. Our website and services include: public pages (home, about, blog, services, videos, creators), registration and login (including social login via Google and Facebook), creator and brand dashboards, creator discovery, packages and pricing, collaborations and messaging, payments and escrow where applicable, contact forms, and any other features we add. All of these are part of the website and our services for the purpose of these Terms.
+            StarJD is an online platform that connects creators (influencers, content creators) with brands for collaboration and influencer marketing. Our website and services include: public pages (home, about, blog, services, videos, creators), registration and login (including social login via Google and Facebook), creator and brand dashboards, creator discovery, packages and pricing, collaborations and messaging, payments and security where applicable, contact forms, and any other features we add. All of these are part of the website and our services for the purpose of these Terms.
           </p>
 
           <h2 class="mt-10 text-2xl font-bold text-[#1a1a1a]">Eligibility and Account</h2>

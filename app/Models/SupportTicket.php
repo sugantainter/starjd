@@ -13,11 +13,17 @@ class SupportTicket extends Model
 
     protected $fillable = [
         'user_id',
+        'collaboration_id',
         'ticket_id',
         'subject',
         'priority',
         'status',
     ];
+
+    public function collaboration(): BelongsTo
+    {
+        return $this->belongsTo(Collaboration::class);
+    }
 
     public function user(): BelongsTo
     {

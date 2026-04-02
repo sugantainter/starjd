@@ -88,6 +88,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
 import axios from 'axios';
+import { notify } from '../../lib/notify.js';
 
 const loading = ref(true);
 const uploadingWallpaper = ref(false);
@@ -120,7 +121,7 @@ async function onWallpaperFileSelect(e) {
       form.wallpaper_images = list;
     }
   } catch (err) {
-    alert(err.response?.data?.message || 'Upload failed');
+    notify.error(err.response?.data?.message || 'Upload failed');
   } finally {
     uploadingWallpaper.value = false;
   }
@@ -134,7 +135,7 @@ async function onCascadeFileSelect(e, i) {
     const url = await uploadFile(file);
     if (url && form.cascade_images[i]) form.cascade_images[i].src = url;
   } catch (err) {
-    alert(err.response?.data?.message || 'Upload failed');
+    notify.error(err.response?.data?.message || 'Upload failed');
   } finally {
     uploadingCascadeIndex.value = null;
   }
@@ -211,9 +212,9 @@ async function save() {
   };
   try {
     await axios.put('/api/admin/hero', payload);
-    alert('Hero section saved.');
+    notify.success('Hero section saved.');
   } catch (e) {
-    alert(e.response?.data?.message || 'Error saving');
+    notify.error(e.response?.data?.message || 'Error saving');
   }
 }
 

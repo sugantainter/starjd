@@ -23,7 +23,7 @@
             <span v-if="campaign.applications_count != null">{{ campaign.applications_count }} applied</span>
           </div>
           <div v-if="campaign.description" class="mt-6 prose prose-[#475569] max-w-none">
-            <p class="whitespace-pre-wrap text-[#475569]">{{ campaign.description }}</p>
+            <RichTextContent class="text-[#475569]" :content="campaign.description" />
           </div>
           <div v-if="campaign.embed_url" class="mt-6">
             <div
@@ -69,7 +69,7 @@
           </div>
           <div v-if="campaign.deliverables" class="mt-6">
             <h3 class="text-sm font-semibold text-[#1a1a1a]">Deliverables</h3>
-            <p class="mt-1 whitespace-pre-wrap text-sm text-[#64748b]">{{ campaign.deliverables }}</p>
+            <RichTextContent class="mt-1 text-sm text-[#64748b]" :content="campaign.deliverables" />
           </div>
           <div v-if="campaign.targeting && hasTargeting(campaign.targeting)" class="mt-6">
             <h3 class="text-sm font-semibold text-[#1a1a1a]">Targeting</h3>
@@ -181,6 +181,7 @@
 import { ref, reactive, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
+import RichTextContent from '../components/RichTextContent.vue';
 
 const route = useRoute();
 const campaign = ref(null);

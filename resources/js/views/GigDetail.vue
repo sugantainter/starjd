@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
+import RichTextContent from '../components/RichTextContent.vue';
 
 const route = useRoute();
 const loading = ref(true);
@@ -69,7 +70,7 @@ function formatCurrency(amt) {
         <!-- About Gig -->
         <div class="space-y-4">
           <h2 class="text-2xl font-bold text-[#1a1a1a]">About this gig</h2>
-          <div class="prose max-w-none text-[#475569] leading-relaxed whitespace-pre-wrap">{{ gig.description }}</div>
+          <RichTextContent class="prose max-w-none text-[#475569] leading-relaxed" :content="gig.description" />
         </div>
 
         <!-- FAQ -->
@@ -130,7 +131,7 @@ function formatCurrency(amt) {
               <div class="text-2xl font-bold text-[#1a1a1a]">{{ formatCurrency(activePackage?.price) }}</div>
             </div>
             
-            <p class="text-sm text-[#475569] leading-relaxed">{{ activePackage?.description }}</p>
+            <RichTextContent v-if="activePackage" class="text-sm text-[#475569] leading-relaxed" :content="activePackage.description" />
             
             <div class="flex items-center gap-6 text-sm font-bold text-[#1a1a1a]">
               <div class="flex items-center gap-2">

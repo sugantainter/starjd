@@ -56,15 +56,26 @@ class CreatorProfileDetailResource extends JsonResource
             ] : null,
         ];
 
+        $brandId = $request->user()?->role === 'brand' ? $request->user()->id : null;
+        $activePackageIds = $brandId ? \App\Models\Collaboration::where('brand_id', $brandId)
+            ->where('creator_id', $user->id)
+            ->whereIn('status', ['pending', 'accepted', 'paid', 'revision_requested', 'delivered'])
+            ->pluck('package_id')
+            ->filter()
+            ->toArray() : [];
+
         if ($this->resource->relationLoaded('user')) {
             $user = $this->resource->user;
             if ($user && $user->relationLoaded('packages')) {
                 $data['packages'] = $user->packages->map(fn ($p) => [
                     'id' => $p->id,
+                    'is_requested' => in_array($p->id, $activePackageIds),
                     'name' => $p->name,
                     'price' => (float) $p->price,
                     'description' => $p->description,
                     'deliverables' => $p->deliverables,
+                    'revisions' => (int) $p->revisions,
+                    'is_negotiable' => (bool) $p->is_negotiable,
                     'category' => $p->packageCategory?->name,
                     'items' => $p->items->map(fn ($i) => [
                         'name' => $i->name,

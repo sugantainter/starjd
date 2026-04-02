@@ -17,8 +17,9 @@
           </div>
           <div class="rounded-2xl border border-[#e5e7eb] bg-[#fafaf9] p-6">
             <h3 class="font-semibold text-[#1a1a1a]">Secure Payments</h3>
-            <p class="mt-2 text-sm text-[#6b7280]">Get paid when brands approve. Escrow protection for both sides.</p>
+            <p class="mt-2 text-sm text-[#6b7280]">Get paid when brands approve. StarJD protection for both sides.</p>
           </div>
+
           <div class="rounded-2xl border border-[#e5e7eb] bg-[#fafaf9] p-6">
             <h3 class="font-semibold text-[#1a1a1a]">Direct Messaging</h3>
             <p class="mt-2 text-sm text-[#6b7280]">Chat with brands, receive briefs, and accept only what you want.</p>

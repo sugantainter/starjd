@@ -14,7 +14,7 @@
           </p>
           <p v-else-if="profile.location" class="mt-1 text-sm text-[#64748b]">{{ profile.location }}</p>
           <p v-if="profile.category" class="mt-1 text-sm text-[#64748b]">{{ profile.category }}</p>
-          <p v-if="profile.bio" class="mt-4 text-[#1a1a1a]">{{ profile.bio }}</p>
+          <RichTextContent v-if="profile.bio" class="mt-4 text-[#1a1a1a]" :content="profile.bio" />
           <div v-if="connectedSocialAccounts.length" class="mt-5">
             <p class="mb-3 text-sm font-medium text-[#64748b]">Connect & reach</p>
             <div class="flex flex-wrap gap-3">
@@ -63,41 +63,81 @@
     <div class="mt-8">
       <h2 class="text-xl font-semibold text-[#1a1a1a]">Packages & rates</h2>
       <p class="mt-1 text-sm text-[#64748b]">Collaboration packages with transparent pricing.</p>
-      <div class="mt-4 space-y-4">
-        <div v-for="pkg in packages" :key="pkg.id" class="rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-sm">
-          <div class="flex flex-wrap items-center gap-2">
-            <span
-              v-if="pkg.package_category || pkg.category"
-              class="rounded-full bg-[#fc4402]/10 px-2.5 py-0.5 text-xs font-medium text-[#e63d02]"
+      <div class="mt-6 flex flex-nowrap gap-6 overflow-x-auto pb-4 -mx-1 px-1 snap-x">
+        <div 
+          v-for="pkg in packages" 
+          :key="pkg.id" 
+          class="w-[320px] shrink-0 rounded-2xl border border-[#e2e8f0] bg-white p-6 shadow-sm transition hover:shadow-md flex flex-col snap-start"
+        >
+          <div class="flex-1">
+            <div class="flex items-center justify-between mb-2">
+              <span v-if="pkg.package_category || pkg.category" class="rounded-full bg-[#fc4402]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#fc4402]">
+                {{ pkg.package_category?.name || pkg.category }}
+              </span>
+              <span v-if="pkg.is_negotiable" class="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-600 border border-blue-100">
+                Negotiable
+              </span>
+            </div>
+            
+            <h3 class="text-xl font-bold text-[#1a1a1a]">{{ pkg.name }}</h3>
+            <div class="mt-2 text-3xl font-extrabold text-[#fc4402]">₹{{ formatPrice(pkg.price) }}</div>
+            
+            <div v-if="pkg.items?.length" class="mt-6 space-y-2">
+              <div v-for="(it, i) in pkg.items" :key="i" class="flex items-center gap-2 text-sm text-[#475569]">
+                <svg class="h-4 w-4 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                <span class="flex-1 truncate">{{ it.name }}</span>
+                <span v-if="it.quantity > 1" class="text-xs font-semibold text-[#94a3b8]">x{{ it.quantity }}</span>
+              </div>
+            </div>
+
+            <RichTextContent 
+              v-if="pkg.description" 
+              class="mt-6 text-sm text-[#64748b] leading-relaxed" 
+              :class="{ 'line-clamp-4': !expandedPackages.has(pkg.id) }"
+              :content="pkg.description" 
+            />
+            <button 
+              v-if="pkg.description && pkg.description.length > 200"
+              type="button"
+              @click="toggleExpand(pkg.id)"
+              class="mt-2 text-xs font-bold text-[#fc4402] hover:underline focus:outline-none"
             >
-              {{ pkg.package_category?.name || pkg.category }}
-            </span>
+              {{ expandedPackages.has(pkg.id) ? 'Show less' : 'Read more' }}
+            </button>
+            
+            <div v-if="pkg.deliverables || pkg.revisions != null" class="mt-4 flex flex-wrap items-center gap-4 text-[11px] font-semibold text-[#64748b]">
+                <div v-if="pkg.deliverables" class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-50 border border-slate-100">
+                    <svg class="h-3.5 w-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    {{ pkg.deliverables }}
+                </div>
+                <div v-if="pkg.revisions > 0" class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-purple-50 border border-purple-100 text-purple-700">
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                    {{ pkg.revisions === 20 ? 'Unlimited' : pkg.revisions }} Revisions
+                </div>
+                <div v-else class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-50 border border-slate-100 text-slate-400">
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                    0 Revisions
+                </div>
+            </div>
           </div>
-          <h3 class="mt-2 font-semibold text-[#1a1a1a]">{{ pkg.name }}</h3>
-          <div class="mt-1 text-2xl font-bold text-[#fc4402]">₹{{ formatPrice(pkg.price) }}</div>
-          <div v-if="pkg.items?.length" class="mt-3 rounded-lg bg-[#f8fafc] px-4 py-3 text-sm">
-            <table class="w-full text-left text-[#64748b]">
-              <thead>
-                <tr class="border-b border-[#e2e8f0]">
-                  <th class="pb-2 font-medium text-[#1a1a1a]">Item</th>
-                  <th class="pb-2 text-right font-medium text-[#1a1a1a]">Qty</th>
-                  <th class="pb-2 text-right font-medium text-[#1a1a1a]">Unit price</th>
-                  <th class="pb-2 text-right font-medium text-[#1a1a1a]">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(it, i) in pkg.items" :key="i" class="border-b border-[#e2e8f0] last:border-0">
-                  <td class="py-2">{{ it.name }}</td>
-                  <td class="py-2 text-right">{{ it.quantity }}</td>
-                  <td class="py-2 text-right">₹{{ formatPrice(it.unit_price) }}</td>
-                  <td class="py-2 text-right font-medium">₹{{ formatPrice(it.quantity * it.unit_price) }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <p v-if="pkg.description" class="mt-3 text-sm text-[#64748b]">{{ pkg.description }}</p>
-          <p v-if="pkg.deliverables" class="mt-1 text-xs text-[#94a3b8]">Deliverables: {{ pkg.deliverables }}</p>
-          <button v-if="isBrand" type="button" class="mt-4 cursor-link rounded-lg bg-[#fc4402] px-4 py-2 text-sm font-medium text-white hover:bg-[#e63d02]" @click="openCollab(pkg)">Collaborate</button>
+
+          <button 
+            v-if="isBrand && !pkg.is_requested" 
+            type="button" 
+            class="mt-8 w-full cursor-link rounded-xl bg-[#fc4402] py-3 text-sm font-bold text-white shadow-lg shadow-[#fc4402]/20 transition-all hover:bg-[#e63d02] hover:scale-[1.02] active:scale-95" 
+            @click="openCollab(pkg)"
+          >
+            Collaborate Now
+          </button>
+          <button 
+            v-else-if="isBrand && pkg.is_requested" 
+            disabled 
+            type="button" 
+            class="mt-8 w-full rounded-xl bg-slate-100 py-3 text-sm font-bold text-slate-400 border border-slate-200 cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+            Request Sent
+          </button>
         </div>
       </div>
       <p v-if="isBrand && !packages.length" class="mt-4 text-[#64748b]">No packages listed. Contact the creator directly.</p>
@@ -212,31 +252,28 @@
             <div class="rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-4 py-2 text-sm">{{ selectedPackage?.name }} – ₹{{ selectedPackage?.price }}</div>
           </div>
           <div>
-            <label class="mb-1 block text-sm font-medium">Amount (₹)</label>
-            <input v-model.number="collabForm.amount" type="number" step="0.01" min="0" required class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#fc4402] focus:outline-none focus:ring-1 focus:ring-[#fc4402]" />
-          </div>
-          <div>
-            <label class="mb-1 block text-sm font-medium">Coupon code (optional)</label>
-            <input v-model="collabForm.coupon_code" type="text" placeholder="e.g. SAVE20" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#fc4402] focus:outline-none focus:ring-1 focus:ring-[#fc4402]" />
-          </div>
-          
-          <!-- Available Coupons -->
-          <div v-if="availableCoupons.length" class="space-y-2">
-            <p class="text-[10px] font-bold text-[#94a3b8] uppercase">Applicable Offers</p>
-            <div class="grid grid-cols-1 gap-2">
-              <div v-for="c in availableCoupons" :key="c.id" 
-                class="flex items-center justify-between rounded-lg border border-dashed border-[#fc4402]/30 bg-[#fc4402]/5 px-3 py-2 cursor-pointer hover:bg-[#fc4402]/10"
-                @click="collabForm.coupon_code = c.code"
-              >
-                <div>
-                  <span class="font-mono text-sm font-bold text-[#fc4402]">{{ c.code }}</span>
-                  <p class="text-[10px] text-[#64748b] leading-tight">{{ c.description }}</p>
-                </div>
-                <span class="shrink-0 text-[10px] font-bold text-[#fc4402] bg-white border border-[#fc4402]/20 px-1.5 py-0.5 rounded">
-                  {{ c.discount_type === 'percent' ? c.discount_value + '%' : '₹' + c.discount_value }} OFF
-                </span>
+            <div class="mb-1 flex items-center justify-between">
+              <label class="text-sm font-semibold text-[#1a1a1a]">Collaboration Amount (₹)</label>
+              <span v-if="selectedPackage?.is_negotiable" class="rounded-lg bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-600 border border-blue-100">Negotiable</span>
+            </div>
+            <div class="relative group">
+              <input 
+                v-model.number="collabForm.amount" 
+                type="number" 
+                step="0.01" 
+                min="0" 
+                required 
+                :disabled="!selectedPackage?.is_negotiable"
+                class="w-full rounded-2xl border border-slate-200 bg-white px-5 py-4 text-xl font-bold text-[#1a1a1a] shadow-sm transition-all focus:border-[#fc4402] focus:outline-none focus:ring-4 focus:ring-[#fc4402]/10 disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed" 
+                :placeholder="formatPrice(selectedPackage?.price)"
+              />
+              <div v-if="!selectedPackage?.is_negotiable" class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-[#94a3b8]">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                <span class="text-[10px] font-bold uppercase tracking-wider">Fixed</span>
               </div>
             </div>
+            <p v-if="selectedPackage?.is_negotiable" class="mt-2 text-xs text-blue-600 font-medium">You can propose a different amount for this negotiable package.</p>
+            <p v-else class="mt-2 text-xs text-[#64748b]">This package has a fixed marketplace rate.</p>
           </div>
           <div>
             <label class="mb-1 block text-sm font-medium">Notes (optional)</label>
@@ -264,19 +301,29 @@ import SocialPlatformIcon from '../components/SocialPlatformIcon.vue';
 import GrowthChart from '../components/GrowthChart.vue';
 import DoughnutChart from '../components/DoughnutChart.vue';
 import BarChart from '../components/BarChart.vue';
+import RichTextContent from '../components/RichTextContent.vue';
 import { platformDisplayName } from '../lib/socialPlatforms.js';
+import { notify } from '../lib/notify.js';
+const expandedPackages = ref(new Set());
+
+function toggleExpand(id) {
+  if (expandedPackages.value.has(id)) {
+    expandedPackages.value.delete(id);
+  } else {
+    expandedPackages.value.add(id);
+  }
+}
 
 const route = useRoute();
 const profile = ref(null);
 const loading = ref(true);
 const showModal = ref(false);
 const selectedPackage = ref(null);
-const collabForm = reactive({ amount: 0, brand_notes: '', coupon_code: '' });
+const collabForm = reactive({ amount: 0, brand_notes: '' });
 const error = ref('');
 const loadingCollab = ref(false);
 const isBrand = ref(false);
 const isLoggedIn = ref(false);
-const availableCoupons = ref([]);
 
 const selectedPlatform = ref('');
 
@@ -309,15 +356,6 @@ const activeDemographics = computed(() => {
     age: Object.entries(ageGroups).sort((a, b) => b[1] - a[1])
   };
 });
-
-async function loadCoupons() {
-  try {
-    const { data } = await axios.get('/api/coupons', { params: { applicable_to: 'collaboration' } });
-    availableCoupons.value = data || [];
-  } catch (e) {
-    console.error('Failed to load coupons', e);
-  }
-}
 
 const platformFee = computed(() => {
   const amt = Number(collabForm.amount);
@@ -398,7 +436,6 @@ onMounted(async () => {
     isLoggedIn.value = false;
     isBrand.value = false;
   }
-  loadCoupons();
 });
 
 watch(selectedPackage, (p) => {
@@ -409,7 +446,6 @@ function openCollab(pkg) {
   selectedPackage.value = pkg;
   collabForm.amount = Number(pkg.price);
   collabForm.brand_notes = '';
-  collabForm.coupon_code = '';
   error.value = '';
   showModal.value = true;
 }
@@ -423,10 +459,15 @@ async function submitCollab() {
       package_id: selectedPackage.value?.id ?? null,
       amount: collabForm.amount,
       brand_notes: collabForm.brand_notes || null,
-      coupon_code: collabForm.coupon_code?.trim() || null,
     }, { withCredentials: true });
+
+    if (selectedPackage.value) {
+      selectedPackage.value.is_requested = true;
+    }
+
     showModal.value = false;
-    alert('Collaboration request sent. Check your Brand dashboard for updates.');
+    notify.success('Collaboration request sent. Check your Brand dashboard for updates.');
+
   } catch (e) {
     if (e.response?.status === 401 || e.response?.status === 403) {
       window.location.href = '/login?redirect=' + encodeURIComponent(route.fullPath);

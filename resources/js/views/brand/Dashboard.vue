@@ -157,13 +157,43 @@
       <ul v-else class="mt-4 space-y-2">
         <li v-for="c in data.collaborations" :key="c.id" class="rounded-xl border border-[#e2e8f0] bg-white p-4 shadow-sm">
           <div class="flex items-center justify-between">
-            <div>
-              <span class="font-medium text-[#1a1a1a]">{{ c.creator?.name }}</span>
-              <span class="text-[#64748b]"> – ₹{{ c.amount }} ({{ c.status }})</span>
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold">{{ c.creator?.name?.charAt(0) }}</div>
+              <div>
+                <span class="font-medium text-[#1a1a1a]">{{ c.creator?.name }}</span>
+                <span class="text-[#64748b]"> – ₹{{ c.amount }}</span>
+              </div>
             </div>
+            <span :class="c.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-500'" class="text-[10px] uppercase font-black px-2 py-0.5 rounded border">{{ c.status }}</span>
           </div>
         </li>
       </ul>
+    </div>
+
+    <!-- Help Desk & Disputes -->
+    <div class="mt-10 mb-10">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-[#1a1a1a]">Help Desk & Dispute Mediation</h2>
+        <router-link to="/brand/support" class="text-sm font-medium text-[#3b82f6] hover:underline">View all tickets</router-link>
+      </div>
+      <div v-if="!data?.tickets?.length" class="mt-4 rounded-xl border border-dashed border-[#e2e8f0] bg-white p-8 text-center text-[#94a3b8] shadow-sm">
+        No active support tickets or disputes.
+      </div>
+      <div v-else class="mt-4 grid gap-4 lg:grid-cols-2">
+          <div v-for="t in data.tickets.slice(0, 4)" :key="t.id" @click="$router.push('/brand/support')" class="cursor-pointer group relative overflow-hidden rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-sm transition hover:shadow-md">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-black tracking-widest text-[#94a3b8] uppercase">{{ t.ticket_id }}</span>
+                <div :class="t.status === 'resolved' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'" class="rounded-lg px-2 py-0.5 text-[9px] font-black uppercase tracking-wider">
+                    {{ t.status }}
+                </div>
+            </div>
+            <h4 class="font-bold text-[#1a1a1a] group-hover:text-blue-600 transition-colors">{{ t.subject }}</h4>
+            <p class="mt-1 text-xs text-[#64748b]">{{ t.messages_recent?.message || 'Awaiting admin response...' }}</p>
+            <div class="mt-4 flex items-center gap-2 text-[10px] text-[#94a3b8]">
+                <span>Updated {{ formatDate(t.updated_at) }}</span>
+            </div>
+          </div>
+      </div>
     </div>
   </div>
 </template>
@@ -172,6 +202,7 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import PostCampaignFlow from '../../components/brand/PostCampaignFlow.vue';
+import { notify } from '../../lib/notify.js';
 
 const data = ref(null);
 
@@ -215,7 +246,7 @@ async function openCampaign(c) {
     await axios.patch('/api/brand/campaigns/' + c.id, { status: 'open' }, { withCredentials: true });
     await loadDashboard();
   } catch (e) {
-    alert(e.response?.data?.message || 'Failed to publish campaign.');
+    notify.error(e.response?.data?.message || 'Failed to publish campaign.');
   }
 }
 

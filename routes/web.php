@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\PartnerController as AdminPartnerController;
 use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
 use App\Http\Controllers\Admin\SupportAdminController;
 use App\Http\Controllers\Admin\AIUsageController as AdminAIUsageController;
+use App\Http\Controllers\Admin\PayoutRequestController as AdminPayoutRequestController;
 
 use App\Http\Controllers\Api\AppConfigController;
 use App\Http\Controllers\Api\PageController as ApiPageController;
@@ -63,6 +64,7 @@ use App\Http\Controllers\StudioOwner\StudioOwnerStudioImageController;
 use App\Http\Controllers\StudioOwner\StudioOwnerAvailabilityController;
 use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\Professional\AISuggestionController;
+use App\Http\Controllers\BankAccountController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
@@ -71,15 +73,7 @@ use Illuminate\Support\Facades\Storage;
 | Storage files (when public/storage symlink is missing or broken, e.g. on Windows)
 |--------------------------------------------------------------------------
 */
-Route::get('/storage/{path}', function (string $path) {
-    $path = str_replace(['..', '\\'], '', $path);
-    if ($path === '' || ! Storage::disk('public')->exists($path)) {
-        abort(404);
-    }
-    $fullPath = Storage::disk('public')->path($path);
-    $mime = Storage::disk('public')->mimeType($path) ?: 'application/octet-stream';
-    return response()->file($fullPath, ['Content-Type' => $mime]);
-})->where('path', '.*')->name('storage.serve');
+Route::get('/storage/{path}', \App\Http\Controllers\FileAccessController::class)->where('path', '.*')->name('storage.serve');
 
 /*
 |--------------------------------------------------------------------------
@@ -139,6 +133,7 @@ Route::prefix('api')->group(function () {
 
     Route::middleware(['auth:web'])->group(function () {
         Route::get('me', [AuthController::class, 'me']);
+        Route::apiResource('bank-accounts', BankAccountController::class)->only(['index', 'store', 'destroy']);
         Route::post('/ai-suggest/faqs', [AISuggestionController::class, 'generateFAQs']);
         Route::post('/ai-suggest/pricing', [AISuggestionController::class, 'generatePricing']);
         Route::post('/ai-suggest/generic', [AISuggestionController::class, 'suggest']);
@@ -165,9 +160,17 @@ Route::prefix('api')->group(function () {
         Route::get('messages/{otherUserId}', [\App\Http\Controllers\Api\MessageController::class, 'show']);
         Route::post('messages', [\App\Http\Controllers\Api\MessageController::class, 'store']);
         Route::post('collaborations/{collaboration}/accept', [CollaborationController::class, 'accept']);
+        Route::post('collaborations/{collaboration}/reject', [CollaborationController::class, 'reject']);
         Route::post('collaborations/{collaboration}/pay', [CollaborationController::class, 'pay']);
+        Route::post('collaborations/{collaboration}/revision', [CollaborationController::class, 'requestRevision']);
+        Route::post('collaborations/{collaboration}/deliver', [CollaborationController::class, 'deliver']);
+        Route::post('collaborations/{collaboration}/complete', [CollaborationController::class, 'complete']);
+        Route::post('collaborations/{collaboration}/reject-delivery', [CollaborationController::class, 'rejectDelivery']);
+        Route::get('collaborations/{collaboration}/file', \App\Http\Controllers\FileAccessController::class);
         Route::post('payment/payu/create', [PayUController::class, 'create']);
+
         Route::get('payment/coupon/validate', [PayUController::class, 'validateCoupon']);
+        Route::post('collaborations/{collaboration}/claim-settlement', [CollaborationController::class, 'claimSettlement']);
     });
 
     Route::middleware(['auth:web', 'verified', 'creator', 'paid'])->prefix('creator')->group(function () {
@@ -231,6 +234,8 @@ Route::prefix('api')->group(function () {
     });
 
     Route::middleware(['auth:web', 'verified', 'admin'])->prefix('admin')->group(function () {
+        Route::get('payout-requests', [AdminPayoutRequestController::class, 'index']);
+        Route::post('payout-requests/{payoutRequest}/process', [AdminPayoutRequestController::class, 'process']);
         Route::get('user', fn () => response()->json(request()->user()));
         Route::get('dashboard', [DashboardController::class, 'index']);
         Route::get('roles', fn () => response()->json(\App\Models\Role::whereNotIn('slug', ['admin', 'customer'])->orderBy('name')->get(['id', 'name', 'slug'])));
@@ -273,6 +278,7 @@ Route::prefix('api')->group(function () {
         Route::get('support/tickets/{ticket}', [SupportAdminController::class, 'show']);
         Route::post('support/tickets/{ticket}/reply', [SupportAdminController::class, 'reply']);
         Route::patch('support/tickets/{ticket}/status', [SupportAdminController::class, 'updateStatus']);
+        Route::post('support/tickets/{ticket}/settle', [SupportAdminController::class, 'settle']);
 
         // AI Usage
         Route::get('ai/usage', [AdminAIUsageController::class, 'index']);

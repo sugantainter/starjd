@@ -198,6 +198,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
+import { notify } from '../../lib/notify.js';
 
 const loading = ref(true);
 const creating = ref(false);
@@ -269,7 +270,7 @@ const loadData = async () => {
     filterData.value = fRes.data;
   } catch (e) {
     console.error('Failed to load marketing data', e);
-    alert('Failed to load marketing data. Please check your credentials.');
+    notify.error('Failed to load marketing data. Please check your credentials.');
   } finally {
     loading.value = false;
   }
@@ -285,7 +286,7 @@ const createCampaign = async () => {
     showCreateModal.value = false;
     form.value = { title: '', content: '', type: 'both', target_type: 'all', target_id: null };
   } catch (e) {
-    alert('Error creating campaign. Please try again.');
+    notify.error('Error creating campaign. Please try again.');
     console.error('Error creating campaign:', e);
   } finally {
     creating.value = false;
@@ -300,7 +301,7 @@ const sendCampaign = async (campaign) => {
     const res = await axios.post(`/api/admin/marketing/${campaign.id}/send`);
     campaign.status = res.data.campaign.status;
   } catch (e) {
-    alert('Failed to send campaign.');
+    notify.error('Failed to send campaign.');
   } finally {
     sendingId.value = null;
     loadData(); // Refresh to get updated stats

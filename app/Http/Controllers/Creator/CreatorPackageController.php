@@ -37,6 +37,8 @@ class CreatorPackageController extends Controller
             'description' => ['nullable', 'string'],
             'deliverables' => ['nullable', 'string'],
             'is_active' => ['nullable', 'boolean'],
+            'is_negotiable' => ['nullable', 'boolean'],
+            'revisions' => ['nullable', 'integer', 'min:0'],
             'items' => ['nullable', 'array'],
             'items.*.name' => ['required_with:items', 'string', 'max:255'],
             'items.*.quantity' => ['required_with:items', 'integer', 'min:1'],
@@ -51,6 +53,8 @@ class CreatorPackageController extends Controller
             'description' => $request->description,
             'deliverables' => $request->deliverables,
             'is_active' => $request->boolean('is_active', true),
+            'is_negotiable' => $request->boolean('is_negotiable', false),
+            'revisions' => (int) $request->input('revisions', 0),
             'sort_order' => $max + 1,
         ]);
 
@@ -71,6 +75,8 @@ class CreatorPackageController extends Controller
             'description' => ['nullable', 'string'],
             'deliverables' => ['nullable', 'string'],
             'is_active' => ['nullable', 'boolean'],
+            'is_negotiable' => ['nullable', 'boolean'],
+            'revisions' => ['nullable', 'integer', 'min:0'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'items' => ['nullable', 'array'],
             'items.*.id' => ['sometimes', 'integer', 'exists:package_items,id'],
@@ -80,7 +86,7 @@ class CreatorPackageController extends Controller
         ]);
 
         $package->update($request->only([
-            'package_category_id', 'name', 'price', 'description', 'deliverables', 'is_active', 'sort_order',
+            'package_category_id', 'name', 'price', 'description', 'deliverables', 'is_active', 'sort_order', 'is_negotiable', 'revisions'
         ]));
 
         $this->syncItems($package, $request->input('items', []));

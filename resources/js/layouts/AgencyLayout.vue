@@ -9,6 +9,7 @@
         </router-link>
         <nav class="space-y-1">
           <router-link to="/agency/dashboard" class="block rounded-lg px-3 py-2 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#7c3aed]/10 !text-[#7c3aed]">Dashboard</router-link>
+          <router-link to="/agency/support" class="block rounded-lg px-3 py-2 text-sm text-[#64748b] transition hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" active-class="!bg-[#7c3aed]/10 !text-[#7c3aed]">Help & Support</router-link>
         </nav>
         <div class="mt-auto pt-6">
           <p class="mb-2 px-3 text-xs text-[#94a3b8]">StarJD powered by Suganta International</p>

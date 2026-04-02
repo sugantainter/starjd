@@ -11,9 +11,14 @@ use Illuminate\Support\Str;
 
 class SupportController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index(): JsonResponse
     {
-        $tickets = SupportTicket::where('user_id', $request->user()->id)
+        $userId = auth()->id();
+        
+        $tickets = SupportTicket::where('user_id', $userId)
+            ->orWhereHas('collaboration', function ($q) use ($userId) {
+                $q->where('creator_id', $userId);
+            })
             ->withCount('messages')
             ->orderByDesc('updated_at')
             ->get();
@@ -52,11 +57,14 @@ class SupportController extends Controller
 
     public function show(SupportTicket $ticket): JsonResponse
     {
-        if ($ticket->user_id !== auth()->id()) {
+        $userId = auth()->id();
+        $isCreator = $ticket->collaboration && $ticket->collaboration->creator_id === $userId;
+
+        if ($ticket->user_id !== $userId && !$isCreator) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $ticket->load(['messages.user:id,name']);
+        $ticket->load(['messages.user:id,name', 'collaboration.package']);
         $ticket->messages->each(fn ($message) => $message->user?->append('avatar_url'));
 
         return response()->json($ticket);
@@ -64,8 +72,15 @@ class SupportController extends Controller
 
     public function sendMessage(Request $request, SupportTicket $ticket): JsonResponse
     {
-        if ($ticket->user_id !== $request->user()->id) {
+        $userId = $request->user()->id;
+        $isCreator = $ticket->collaboration && $ticket->collaboration->creator_id === $userId;
+
+        if ($ticket->user_id !== $userId && !$isCreator) {
             return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        if (in_array($ticket->status, ['closed', 'resolved'])) {
+            return response()->json(['message' => 'This ticket is closed and cannot be replied to. Please raise a new ticket if needed.'], 403);
         }
 
         $request->validate([

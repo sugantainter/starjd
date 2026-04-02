@@ -461,7 +461,7 @@ Make smarter marketing decisions with transparent reporting, streamlined analyti
                       </div>
                       <div class="rounded-xl bg-[#f3f4f6] p-2">
                         <p class="text-[11px] text-[#6b7280]">Payments</p>
-                        <p class="text-xs font-semibold text-emerald-600">Escrow‑protected payouts</p>
+                        <p class="text-xs font-semibold text-emerald-600">StarJD Protected Payouts</p>
                       </div>
                     </div>
                   </div>
@@ -721,7 +721,7 @@ Make smarter marketing decisions with transparent reporting, streamlined analyti
                   </span>
                 </summary>
                 <p class="mt-3 text-xs text-[#6b7280] md:text-sm">
-                  Payments are held in secure escrow until content is delivered and approved. Standard terms, usage rights and
+                  Payments are held securely by StarJD until content is delivered and approved. Standard terms, usage rights and
                   delivery windows are included in every brief, so you don’t chase paperwork.
                 </p>
               </details>

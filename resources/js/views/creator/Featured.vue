@@ -27,19 +27,10 @@
           <div v-if="couponApplied && selected?.id === plan.id" class="mt-1 text-sm text-[#10b981]">Discount applied</div>
           <div class="mt-1 text-sm text-[#64748b]">{{ plan.duration_days }} days</div>
           <p class="mt-3 text-xs text-[#64748b]">Your profile appears at the top of Discover for this period.</p>
-        </button>
-      </div>
-    </div>
-
-    <div class="mt-6 flex flex-wrap items-end gap-2">
-      <div class="min-w-[180px] flex-1">
-        <label class="mb-1 block text-sm font-medium text-[#64748b]">Coupon code (optional)</label>
-        <input v-model="couponCode" type="text" placeholder="e.g. SAVE20" class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-[#1a1a1a]" />
-      </div>
-      <button type="button" class="rounded-lg border border-[#e2e8f0] px-4 py-2 text-sm hover:bg-[#f1f5f9]" @click="applyCoupon">Apply</button>
-    </div>
-    <p v-if="couponError" class="mt-1 text-sm text-red-600">{{ couponError }}</p>
-    <p v-if="couponApplied" class="mt-1 text-sm text-[#10b981]">Coupon applied. Pay ₹{{ finalAmount }}</p>
+                 Pay ₹{{ displayPrice(plan) }}
+               </button>
+             </div>
+           </div>
 
     <div class="mt-8 flex flex-wrap items-center gap-4">
       <button
@@ -67,16 +58,11 @@ const status = ref(null);
 const selected = ref(null);
 const loading = ref(false);
 const error = ref('');
-const couponCode = ref('');
-const couponError = ref('');
-const couponApplied = ref(false);
-const finalAmount = ref(null);
 const payuForm = ref(null);
 const payuUrl = ref('');
 const payuParams = ref({});
 
 function displayPrice(plan) {
-  if (couponApplied.value && selected.value?.id === plan.id && finalAmount.value != null) return finalAmount.value;
   return plan.price;
 }
 
@@ -98,37 +84,15 @@ onMounted(async () => {
   }
 });
 
-async function applyCoupon() {
-  if (!couponCode.value.trim() || !selected.value) return;
-  couponError.value = '';
-  try {
-    const res = await axios.get('/api/payment/coupon/validate', {
-      params: { code: couponCode.value.trim(), amount: selected.value.price, applicable_to: 'featured' },
-      withCredentials: true,
-    });
-    if (res.data?.valid && res.data?.data) {
-      couponApplied.value = true;
-      finalAmount.value = res.data.data.final_amount;
-      couponError.value = '';
-    }
-  } catch (e) {
-    couponApplied.value = false;
-    finalAmount.value = null;
-    couponError.value = e.response?.data?.message || 'Invalid coupon';
-  }
-}
-
 async function pay() {
   if (!selected.value) return;
   loading.value = true;
   error.value = '';
-  const amount = couponApplied.value && finalAmount.value != null ? finalAmount.value : selected.value.price;
   try {
     const res = await axios.post('/api/payment/payu/create', {
       type: 'featured',
       plan_id: selected.value.id,
-      amount: Number(amount),
-      coupon_code: couponCode.value.trim() || undefined,
+      amount: Number(selected.value.price),
     }, { withCredentials: true });
     payuUrl.value = res.data.payment_url;
     payuParams.value = res.data.params || {};
