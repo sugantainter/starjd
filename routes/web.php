@@ -166,7 +166,7 @@ Route::prefix('api')->group(function () {
         Route::post('collaborations/{collaboration}/deliver', [CollaborationController::class, 'deliver']);
         Route::post('collaborations/{collaboration}/complete', [CollaborationController::class, 'complete']);
         Route::post('collaborations/{collaboration}/reject-delivery', [CollaborationController::class, 'rejectDelivery']);
-        Route::get('collaborations/{collaboration}/file', \App\Http\Controllers\FileAccessController::class);
+        Route::get('collaborations/{collaboration}/file', [CollaborationController::class, 'previewFile']);
         Route::post('payment/payu/create', [PayUController::class, 'create']);
 
         Route::get('payment/coupon/validate', [PayUController::class, 'validateCoupon']);

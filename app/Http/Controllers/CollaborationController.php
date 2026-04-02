@@ -8,6 +8,8 @@ use App\Models\CreatorProfile;
 use App\Models\PlatformSetting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class CollaborationController extends Controller
 {
@@ -194,6 +196,47 @@ class CollaborationController extends Controller
         \Log::info('Collaboration record updated', ['collaboration_id' => $collaboration->id, 'status' => 'delivered']);
 
         return response()->json($collaboration);
+    }
+
+    public function previewFile(Request $request, Collaboration $collaboration): JsonResponse
+    {
+        $user = $request->user();
+        $isAdmin = $user && $user->role === 'admin';
+        $isBrand = $user && $collaboration->brand_id === $user->id;
+        $isCreator = $user && $collaboration->creator_id === $user->id;
+
+        if (! $isAdmin && ! $isBrand && ! $isCreator) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        if (! $collaboration->deliverable_content) {
+            return response()->json(['message' => 'No deliverable found'], 404);
+        }
+
+        $targetPath = $collaboration->deliverable_content;
+        $basename = basename($targetPath);
+        $candidates = array_values(array_unique(array_filter([
+            $targetPath,
+            $basename,
+            str_starts_with($targetPath, 'project_deliverables/') ? Str::after($targetPath, 'project_deliverables/') : null,
+            'project_deliverables/' . $basename,
+        ])));
+
+        $finalPath = null;
+        foreach ($candidates as $candidate) {
+            if (Storage::disk('gcs')->exists($candidate)) {
+                $finalPath = $candidate;
+                break;
+            }
+        }
+
+        if (! $finalPath) {
+            return response()->json(['message' => 'Deliverable not found in cloud storage'], 404);
+        }
+
+        return response()->json([
+            'url' => Storage::disk('gcs')->temporaryUrl($finalPath, now()->addMinutes(10)),
+        ]);
     }
 
     public function complete(Request $request, Collaboration $collaboration): JsonResponse

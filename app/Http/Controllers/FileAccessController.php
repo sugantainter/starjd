@@ -13,23 +13,36 @@ class FileAccessController extends Controller
     {
         $user = auth()->user();
         $path = str_replace(['..', '\\'], '', $path);
+        $basename = basename($path);
 
         // Logic check: only proceed if it is a collaboration deliverable 
         // OR a public file (to replace the shadowed public storage route)
-        
-        $collaboration = Collaboration::where('deliverable_content', 'like', '%' . $path)->first();
+
+        $collaboration = Collaboration::query()
+            ->where('deliverable_content', 'like', '%' . $path)
+            ->orWhere('deliverable_content', 'like', '%' . $basename)
+            ->first();
 
         if ($collaboration) {
             \Log::info('Collaboration file matched', ['id' => $collaboration->id, 'path' => $path]);
             
-            // Smarter GCS check: try both prefixed and raw paths to avoid .env mismatch failures
+            // Smarter GCS check: try common path variants to avoid prefix/storage format mismatches
             $targetPath = $collaboration->deliverable_content;
-            if (Storage::disk('gcs')->exists($targetPath)) {
-                $finalPath = $targetPath;
-            } elseif (str_starts_with($targetPath, 'project_deliverables/') && Storage::disk('gcs')->exists(Str::after($targetPath, 'project_deliverables/'))) {
-                $finalPath = Str::after($targetPath, 'project_deliverables/');
-            } else {
-                $finalPath = null;
+            $candidates = array_values(array_unique(array_filter([
+                $targetPath,
+                $path,
+                $basename,
+                str_starts_with($targetPath, 'project_deliverables/') ? Str::after($targetPath, 'project_deliverables/') : null,
+                str_starts_with($path, 'project_deliverables/') ? Str::after($path, 'project_deliverables/') : null,
+                'project_deliverables/' . $basename,
+            ])));
+
+            $finalPath = null;
+            foreach ($candidates as $candidate) {
+                if (Storage::disk('gcs')->exists($candidate)) {
+                    $finalPath = $candidate;
+                    break;
+                }
             }
 
             if ($finalPath) {

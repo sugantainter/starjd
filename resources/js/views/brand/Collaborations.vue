@@ -377,11 +377,16 @@ function isImage(url) {
     return /\.(jpg|jpeg|png|webp|gif)$/i.test(url);
 }
 
-function openPreview(c) {
-    previewUrl.value = '/storage/' + c.deliverable_content;
+async function openPreview(c) {
+  try {
+    const res = await axios.get(`/api/collaborations/${c.id}/file`, { withCredentials: true });
+    previewUrl.value = res.data.url;
     const ext = c.deliverable_content.split('.').pop().toLowerCase();
     previewType.value = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext) ? 'image' : (ext === 'pdf' ? 'pdf' : 'video');
     showPreviewModal.value = true;
+  } catch (e) {
+    notify.error(e.response?.data?.message || 'Unable to open secure preview.');
+  }
 }
 
 function openClaimModal(c) {
