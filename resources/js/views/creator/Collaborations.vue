@@ -298,9 +298,7 @@
         <div class="relative w-full h-full flex flex-col items-center justify-center transition-all duration-700 animate-in fade-in zoom-in-95">
            <div class="relative max-w-full max-h-full rounded-[40px] overflow-hidden shadow-[0_64px_128px_-32px_rgba(0,0,0,0.8)] border border-white/10">
               <img v-if="previewType === 'image'" :src="previewUrl" class="max-w-full max-h-[80vh] object-contain" @contextmenu.prevent />
-              <video v-else-if="previewType === 'video'" controls controlsList="nodownload" class="max-w-full max-h-[80vh]" @contextmenu.prevent>
-                <source :src="previewUrl" />
-              </video>
+              <SecureVideoPlayer v-else-if="previewType === 'video'" :src="previewUrl" />
               <iframe v-else-if="previewType === 'pdf'" :src="previewUrl + '#toolbar=0'" class="w-[80vw] h-[80vh] border-none bg-slate-800"></iframe>
            </div>
            <div class="mt-12 px-8 py-4 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 text-white/60 text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-4">
@@ -318,6 +316,7 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { notify } from '../../lib/notify.js';
 import BankManager from '../../components/common/BankManager.vue';
+import SecureVideoPlayer from '../../components/common/SecureVideoPlayer.vue';
 
 const list = ref([]);
 const error = ref('');
@@ -365,11 +364,25 @@ function isStepActive(status, idx) {
   return currentStep === idx;
 }
 
-function openPreview(c) {
-    previewUrl.value = '/storage/' + c.deliverable_content;
+async function openPreview(c) {
+  try {
+    const res = await axios.get(`/api/collaborations/${c.id}/file`, { withCredentials: true });
+    if (res.data.ready === false) {
+      notify.info(res.data.message || 'Preview is not ready yet.');
+      return;
+    }
+    const token = res.data.preview_token;
+    if (!token) {
+      notify.error('Unable to open secure preview.');
+      return;
+    }
+    previewUrl.value = `${res.data.url}?preview_token=${encodeURIComponent(token)}`;
     const ext = c.deliverable_content.split('.').pop().toLowerCase();
     previewType.value = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext) ? 'image' : (ext === 'pdf' ? 'pdf' : 'video');
     showPreviewModal.value = true;
+  } catch (e) {
+    notify.error(e.response?.data?.message || 'Unable to open secure preview.');
+  }
 }
 
 function handleFileChange(e) {
@@ -427,11 +440,25 @@ async function submitDelivery() {
       }
     });
     
-    notify.success('Project delivered successfully.');
+    const fname = deliveryFile.value?.name || '';
+    const isVid = /\.(mp4|mov|m4v|avi|mkv)$/i.test(fname);
+    notify.success(
+      isVid
+        ? 'Delivered. A watermarked, lower-resolution preview is generating for the brand (usually 1–3 minutes).'
+        : 'Project delivered successfully.'
+    );
     showDeliverModal.value = false;
     await load();
   } catch (e) {
-    notify.error(e.response?.data?.message || 'Failed to submit delivery.');
+    const msg = String(e.response?.data?.message || '');
+    const payloadTooLarge =
+      e.response?.status === 413 ||
+      /post data is too large/i.test(msg);
+    notify.error(
+      payloadTooLarge
+        ? 'Upload was blocked by the server (limit below 100MB). If this persists after retrying, contact support.'
+        : (msg || 'Failed to submit delivery.')
+    );
   } finally {
     submittingDelivery.value = false;
   }
