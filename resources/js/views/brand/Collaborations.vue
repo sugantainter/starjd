@@ -104,6 +104,12 @@
                         <div class="flex-1">
                             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest line-clamp-1">Secure Project Deliverable</p>
                             <p class="text-sm font-bold text-slate-700 truncate max-w-xs">{{ c.deliverable_content.split('/').pop() }}</p>
+                            <p v-if="c.status === 'delivered' && isVideoFile(c.deliverable_content) && c.deliverable_preview_status === 'processing'" class="text-[10px] font-bold text-amber-600 mt-1.5 uppercase tracking-wide">
+                              Preparing lower-resolution watermarked preview (1–3 min)…
+                            </p>
+                            <p v-if="c.status === 'delivered' && isVideoFile(c.deliverable_content) && c.deliverable_preview_status === 'failed'" class="text-[10px] font-bold text-red-600 mt-1.5">
+                              Preview encoding failed — contact support.
+                            </p>
                             <div class="mt-2 flex items-center gap-4">
                                 <button v-if="c.status === 'delivered' || c.status === 'completed' || c.status === 'resolved'" 
                                         @click="openPreview(c)" 
@@ -111,13 +117,13 @@
                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                                    Secure Preview
                                 </button>
-                                <a v-if="c.status === 'completed' || c.status === 'resolved'" 
-                                   :href="c.deliverable_content" 
-                                   download 
-                                   class="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline flex items-center gap-1.5">
+                                <button v-if="c.status === 'completed' || c.status === 'resolved'" 
+                                   type="button"
+                                   @click="downloadDeliverable(c)"
+                                   class="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline flex items-center gap-1.5 bg-transparent border-none cursor-pointer p-0 font-inherit">
                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                                    Download Final
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -260,9 +266,7 @@
         <div class="relative w-full h-full flex flex-col items-center justify-center transition-all duration-700 animate-in fade-in zoom-in-95">
            <div class="relative max-w-full max-h-full rounded-[40px] overflow-hidden shadow-[0_64px_128px_-32px_rgba(0,0,0,0.8)] border border-white/10">
               <img v-if="previewType === 'image'" :src="previewUrl" class="max-w-full max-h-[80vh] object-contain" @contextmenu.prevent />
-              <video v-else-if="previewType === 'video'" controls controlsList="nodownload" class="max-w-full max-h-[80vh]" @contextmenu.prevent>
-                <source :src="previewUrl" />
-              </video>
+              <SecureVideoPlayer v-else-if="previewType === 'video'" :src="previewUrl" />
               <iframe v-else-if="previewType === 'pdf'" :src="previewUrl + '#toolbar=0'" class="w-[80vw] h-[80vh] border-none bg-slate-800"></iframe>
               
               <!-- Watermark Overlay -->
@@ -319,6 +323,7 @@ import { ref, reactive, nextTick, onMounted } from 'vue';
 import axios from 'axios';
 import { notify } from '../../lib/notify.js';
 import BankManager from '../../components/common/BankManager.vue';
+import SecureVideoPlayer from '../../components/common/SecureVideoPlayer.vue';
 
 const list = ref([]);
 const error = ref('');
@@ -377,15 +382,47 @@ function isImage(url) {
     return /\.(jpg|jpeg|png|webp|gif)$/i.test(url);
 }
 
+function isVideoFile(path) {
+    if (!path) return false;
+    return /\.(mp4|mov|m4v|avi|mkv)$/i.test(path);
+}
+
 async function openPreview(c) {
   try {
     const res = await axios.get(`/api/collaborations/${c.id}/file`, { withCredentials: true });
-    previewUrl.value = res.data.url;
+    if (res.data.ready === false) {
+      notify.info(res.data.message || 'Preview is not ready yet. Please try again in a minute.');
+      return;
+    }
+    const token = res.data.preview_token;
+    if (!token) {
+      notify.error('Unable to open secure preview.');
+      return;
+    }
+    previewUrl.value = `${res.data.url}?preview_token=${encodeURIComponent(token)}`;
     const ext = c.deliverable_content.split('.').pop().toLowerCase();
     previewType.value = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext) ? 'image' : (ext === 'pdf' ? 'pdf' : 'video');
     showPreviewModal.value = true;
   } catch (e) {
     notify.error(e.response?.data?.message || 'Unable to open secure preview.');
+  }
+}
+
+async function downloadDeliverable(c) {
+  try {
+    const res = await axios.get(`/api/collaborations/${c.id}/file`, {
+      params: { intent: 'download' },
+      withCredentials: true,
+    });
+    const token = res.data.preview_token;
+    if (!token) {
+      notify.error('Unable to start download.');
+      return;
+    }
+    const url = `${res.data.url}?preview_token=${encodeURIComponent(token)}&download=1`;
+    window.location.assign(url);
+  } catch (e) {
+    notify.error(e.response?.data?.message || 'Download failed.');
   }
 }
 

@@ -220,9 +220,7 @@
 
         <div class="absolute inset-0 flex items-center justify-center p-4 text-white">
            <img v-if="previewType === 'image'" :src="previewUrl" class="max-w-full max-h-full object-contain" @contextmenu.prevent />
-           <video v-else-if="previewType === 'video'" controls controlsList="nodownload" disablePictureInPicture class="max-w-full max-h-full" @contextmenu.prevent>
-             <source :src="previewUrl" />
-           </video>
+           <SecureVideoPlayer v-else-if="previewType === 'video'" :src="previewUrl" video-class="max-h-full max-w-full" wrapper-class="max-w-full max-h-full" />
            <iframe v-else-if="previewType === 'pdf'" :src="previewUrl + '#toolbar=0'" class="w-full h-full border-none" @contextmenu.prevent></iframe>
            <div v-else class="text-center p-12">
                <p class="text-lg font-bold">This file type must be downloaded to review.</p>
@@ -249,6 +247,7 @@ import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import axios from 'axios';
 import { notify } from '../../lib/notify.js';
 import AdminConfirmModal from '../../components/admin/AdminConfirmModal.vue';
+import SecureVideoPlayer from '../../components/common/SecureVideoPlayer.vue';
 
 const tickets = ref([]);
 const selectedTicket = ref(null);
@@ -265,7 +264,7 @@ const previewType = ref('');
 let pollingInterval = null;
 
 function openSecurePreview(c) {
-    const fileUrl = `/api/collaborations/${c.id}/file`;
+    const fileUrl = `/api/collaborations/${c.id}/file/stream`;
     const fileName = (c.deliverable_content || '').toLowerCase();
     
     if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || fileName.endsWith('.png') || fileName.endsWith('.webp')) {

@@ -110,15 +110,15 @@
                       <p class="text-[10px] font-bold text-[#64748b]">Project Price</p>
                       <p class="text-xs font-black text-slate-900">₹{{ selectedTicket.collaboration.amount }}</p>
                   </div>
-                  <a 
-                    v-if="selectedTicket.collaboration.delivery_file" 
-                    :href="'/api/collaborations/' + selectedTicket.collaboration.id + '/file'" 
-                    target="_blank"
+                  <button 
+                    v-if="selectedTicket.collaboration.deliverable_content" 
+                    type="button"
+                    @click="openCollaborationDeliverablePreview"
                     class="rounded-xl bg-white border border-[#cbd5e1] px-4 py-2 text-xs font-bold text-[#1e293b] shadow-sm hover:bg-[#1a1a1a] hover:text-white transition-all flex items-center gap-2"
                   >
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                     Secure Preview
-                  </a>
+                  </button>
               </div>
           </div>
           
@@ -232,6 +232,27 @@ function statusClass(s) {
   if (s === 'in_progress') return 'bg-amber-100 text-amber-700';
   if (s === 'resolved') return 'bg-emerald-100 text-emerald-700 border border-emerald-200';
   return 'bg-slate-100 text-slate-600';
+}
+
+async function openCollaborationDeliverablePreview() {
+  const collab = selectedTicket.value?.collaboration;
+  if (!collab?.id) return;
+  try {
+    const res = await axios.get(`/api/collaborations/${collab.id}/file`, { withCredentials: true });
+    if (res.data.ready === false) {
+      notify.info(res.data.message || 'Preview is not ready yet.');
+      return;
+    }
+    const token = res.data.preview_token;
+    if (!token) {
+      notify.error('Unable to open deliverable preview.');
+      return;
+    }
+    const url = `${res.data.url}?preview_token=${encodeURIComponent(token)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  } catch (e) {
+    notify.error(e.response?.data?.message || 'Unable to open deliverable preview.');
+  }
 }
 
 async function loadTickets(background = false) {

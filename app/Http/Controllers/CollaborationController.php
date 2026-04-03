@@ -2,14 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\GenerateDeliverablePreview;
 use App\Models\Collaboration;
 use App\Models\Coupon;
 use App\Models\CreatorProfile;
 use App\Models\PlatformSetting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use League\Flysystem\PathPrefixer;
+use Spatie\GoogleCloudStorage\GoogleCloudStorageAdapter;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 class CollaborationController extends Controller
 {
@@ -163,16 +169,21 @@ class CollaborationController extends Controller
 
         \Log::info('Project delivery started', ['collaboration_id' => $collaboration->id, 'file' => $request->file('deliverable_file')->getClientOriginalName()]);
 
+        $file = $request->file('deliverable_file');
+        $ext = strtolower((string) $file->getClientOriginalExtension());
+        $isVideo = (bool) preg_match('/^(mp4|mov|m4v|avi|mkv)$/', $ext);
+        $oldPreviewPath = $collaboration->deliverable_preview_path;
+
         try {
-            $file = $request->file('deliverable_file');
             // We use the folder name explicitly so it matches the FileAccessController filter
-            $path = \Illuminate\Support\Facades\Storage::disk('gcs')->putFile('project_deliverables', $file);
-            
+            $path = Storage::disk('gcs')->putFile('project_deliverables', $file);
+
             if ($path === false) {
                 \Log::error('GCS Storage explicitly returned FALSE', [
                     'bucket' => config('filesystems.disks.gcs.bucket'),
                     'project' => config('filesystems.disks.gcs.project_id'),
                 ]);
+
                 return response()->json(['message' => 'Upload failed: Cloud storage rejected the file. Please check bucket permissions and ensure it has no "Uniform" access restrictions on public objects.'], 500);
             }
 
@@ -181,9 +192,17 @@ class CollaborationController extends Controller
             \Log::error('Project delivery upload failed', [
                 'message' => $e->getMessage(),
                 'collaboration_id' => $collaboration->id,
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Failed to upload to cloud storage: ' . $e->getMessage()], 500);
+
+            return response()->json(['message' => 'Failed to upload to cloud storage: '.$e->getMessage()], 500);
+        }
+
+        if ($oldPreviewPath) {
+            try {
+                Storage::disk('gcs')->delete($oldPreviewPath);
+            } catch (\Throwable) {
+            }
         }
 
         $collaboration->update([
@@ -191,11 +210,17 @@ class CollaborationController extends Controller
             'deliverable_type' => 'file',
             'deliverable_content' => $path,
             'delivered_at' => now(),
+            'deliverable_preview_path' => null,
+            'deliverable_preview_status' => $isVideo ? 'processing' : 'ready',
         ]);
-        
+
+        if ($isVideo) {
+            GenerateDeliverablePreview::dispatch($collaboration->id)->afterCommit();
+        }
+
         \Log::info('Collaboration record updated', ['collaboration_id' => $collaboration->id, 'status' => 'delivered']);
 
-        return response()->json($collaboration);
+        return response()->json($collaboration->fresh());
     }
 
     public function previewFile(Request $request, Collaboration $collaboration): JsonResponse
@@ -209,34 +234,362 @@ class CollaborationController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        if (! $collaboration->deliverable_content) {
-            return response()->json(['message' => 'No deliverable found'], 404);
+        if ($isBrand
+            && $collaboration->status === 'delivered'
+            && $this->isDeliverableVideoCollaboration($collaboration)
+            && $request->query('intent') !== 'download') {
+            if ($collaboration->deliverable_preview_status === 'processing') {
+                return response()->json([
+                    'ready' => false,
+                    'deliverable_preview_status' => 'processing',
+                    'message' => 'A watermarked, lower-resolution preview is being prepared (usually 1–3 minutes). Please try again shortly.',
+                ]);
+            }
+            if ($collaboration->deliverable_preview_status === 'failed') {
+                return response()->json([
+                    'ready' => false,
+                    'deliverable_preview_status' => 'failed',
+                    'message' => 'We could not generate a protected preview (video processing failed). Install ffmpeg on the server, or contact support.',
+                ]);
+            }
         }
 
-        $targetPath = $collaboration->deliverable_content;
+        $finalPath = $this->resolveDeliverableGcsPath($collaboration);
+        if (! $finalPath) {
+            return response()->json([
+                'message' => $collaboration->deliverable_content
+                    ? 'Deliverable not found in cloud storage'
+                    : 'No deliverable found',
+            ], 404);
+        }
+
+        $streamPath = '/api/collaborations/'.$collaboration->id.'/file/stream';
+
+        $payload = [
+            'u' => (int) $user->id,
+            'c' => (int) $collaboration->id,
+            'e' => now()->addMinutes(25)->timestamp,
+        ];
+
+        if ($request->query('intent') === 'download') {
+            $canDownload = $isAdmin || $isCreator
+                || ($isBrand && in_array($collaboration->status, ['completed', 'resolved'], true));
+            if (! $canDownload) {
+                return response()->json(['message' => 'You are not allowed to download this file yet.'], 403);
+            }
+            $payload['d'] = 1;
+        }
+
+        $previewToken = Crypt::encryptString(json_encode($payload, JSON_THROW_ON_ERROR));
+
+        return response()->json([
+            'ready' => true,
+            'url' => $streamPath,
+            'preview_token' => $previewToken,
+            'deliverable_preview_status' => $collaboration->deliverable_preview_status,
+        ]);
+    }
+
+    /**
+     * Stream deliverable bytes through the app so the browser never sees a raw GCS signed URL.
+     * Requires an authenticated session plus a short-lived preview_token (except admins).
+     */
+    public function streamDeliverable(Request $request, Collaboration $collaboration): Response
+    {
+        $user = $request->user();
+        $isAdmin = $user && $user->role === 'admin';
+        $isBrand = $user && $collaboration->brand_id === $user->id;
+        $isCreator = $user && $collaboration->creator_id === $user->id;
+
+        if (! $isAdmin && ! $isBrand && ! $isCreator) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $wantsDownload = $request->boolean('download');
+        if ($wantsDownload && $isBrand && ! in_array($collaboration->status, ['completed', 'resolved'], true)) {
+            return response()->json(['message' => 'Download is available after the project is completed.'], 403);
+        }
+
+        if (! $isAdmin) {
+            $tokenResponse = $this->validateStreamPreviewToken($request, $collaboration, $wantsDownload, (int) $user->id);
+            if ($tokenResponse !== null) {
+                return $tokenResponse;
+            }
+        }
+
+        if ($isBrand && ! $wantsDownload && $collaboration->status === 'delivered'
+            && $this->isDeliverableVideoCollaboration($collaboration)) {
+            if ($collaboration->deliverable_preview_status === 'processing') {
+                return response()->json([
+                    'message' => 'A watermarked preview is still being generated. Please wait and try again.',
+                ], 503);
+            }
+            if ($collaboration->deliverable_preview_status === 'failed') {
+                return response()->json([
+                    'message' => 'Protected preview is unavailable. Contact support or ask the creator to re-upload the video.',
+                ], 503);
+            }
+        }
+
+        [$finalPath, $dispositionBasename] = $this->resolveStreamTarget(
+            $collaboration,
+            $wantsDownload,
+            (bool) $isAdmin,
+            (bool) $isBrand,
+            (bool) $isCreator
+        );
+
+        if (! $finalPath) {
+            abort(404, $collaboration->deliverable_content
+                ? 'Deliverable not found in cloud storage'
+                : 'No deliverable found');
+        }
+
+        $disk = Storage::disk('gcs');
+        if (! $disk instanceof GoogleCloudStorageAdapter) {
+            abort(500, 'Cloud storage is not configured for secure streaming.');
+        }
+
+        $size = $disk->size($finalPath);
+        $mime = $disk->mimeType($finalPath) ?: 'application/octet-stream';
+
+        $gcsConfig = config('filesystems.disks.gcs');
+        $root = (string) ($gcsConfig['root'] ?? $gcsConfig['path_prefix'] ?? '');
+        $objectKey = (new PathPrefixer($root))->prefixPath($finalPath);
+        $storageObject = $disk->getClient()->bucket($gcsConfig['bucket'])->object($objectKey);
+
+        $baseHeaders = [
+            'Content-Type' => $mime,
+            'Accept-Ranges' => 'bytes',
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
+        ];
+
+        $dispositionType = $wantsDownload
+            ? ResponseHeaderBag::DISPOSITION_ATTACHMENT
+            : ResponseHeaderBag::DISPOSITION_INLINE;
+        $baseHeaders['Content-Disposition'] = (new Response)->headers->makeDisposition(
+            $dispositionType,
+            $dispositionBasename,
+            preg_replace('/[^A-Za-z0-9_.-]/', '_', $dispositionBasename)
+        );
+
+        if ($request->isMethod('HEAD')) {
+            return response('', 200, $baseHeaders + [
+                'Content-Length' => (string) $size,
+            ]);
+        }
+
+        $rangeHeader = $request->header('Range');
+        $range = $rangeHeader ? $this->parseSingleByteRange($rangeHeader, $size) : null;
+
+        if ($range === 'unsatisfiable') {
+            return response('', 416, $baseHeaders + [
+                'Content-Range' => 'bytes */'.$size,
+            ]);
+        }
+
+        if ($range !== null) {
+            [$start, $end] = $range;
+            $length = $end - $start + 1;
+            $rangeSpec = $start.'-'.$end;
+
+            return response()->stream(function () use ($storageObject, $rangeSpec) {
+                $stream = $storageObject->downloadAsStream([
+                    'restOptions' => [
+                        'headers' => [
+                            'Range' => 'bytes='.$rangeSpec,
+                        ],
+                    ],
+                ]);
+                while (! $stream->eof()) {
+                    echo $stream->read(65536);
+                }
+            }, 206, $baseHeaders + [
+                'Content-Length' => (string) $length,
+                'Content-Range' => 'bytes '.$start.'-'.$end.'/'.$size,
+            ]);
+        }
+
+        return response()->stream(function () use ($disk, $finalPath) {
+            $stream = $disk->readStream($finalPath);
+            fpassthru($stream);
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }, 200, $baseHeaders + [
+            'Content-Length' => (string) $size,
+        ]);
+    }
+
+    /**
+     * @return string|null Logical path on the gcs disk, or null if missing
+     */
+    private function resolveDeliverableGcsPath(Collaboration $collaboration): ?string
+    {
+        return $this->resolveLogicalGcsPath($collaboration->deliverable_content);
+    }
+
+    private function resolveLogicalGcsPath(?string $targetPath): ?string
+    {
+        if (! $targetPath) {
+            return null;
+        }
+
         $basename = basename($targetPath);
         $candidates = array_values(array_unique(array_filter([
             $targetPath,
             $basename,
             str_starts_with($targetPath, 'project_deliverables/') ? Str::after($targetPath, 'project_deliverables/') : null,
-            'project_deliverables/' . $basename,
+            'project_deliverables/'.$basename,
         ])));
 
-        $finalPath = null;
         foreach ($candidates as $candidate) {
             if (Storage::disk('gcs')->exists($candidate)) {
-                $finalPath = $candidate;
-                break;
+                return $candidate;
             }
         }
 
-        if (! $finalPath) {
-            return response()->json(['message' => 'Deliverable not found in cloud storage'], 404);
+        return null;
+    }
+
+    private function isDeliverableVideoCollaboration(Collaboration $collaboration): bool
+    {
+        $path = $collaboration->deliverable_content ?? '';
+
+        return (bool) preg_match('/\.(mp4|mov|m4v|avi|mkv)$/i', $path);
+    }
+
+    /**
+     * @return array{0: string|null, 1: string}
+     */
+    private function resolveStreamTarget(
+        Collaboration $collaboration,
+        bool $wantsDownload,
+        bool $isAdmin,
+        bool $isBrand,
+        bool $isCreator
+    ): array {
+        $originalBasename = basename($collaboration->deliverable_content ?? 'deliverable');
+
+        if ($wantsDownload) {
+            return [$this->resolveLogicalGcsPath($collaboration->deliverable_content), $originalBasename];
         }
 
-        return response()->json([
-            'url' => Storage::disk('gcs')->temporaryUrl($finalPath, now()->addMinutes(10)),
-        ]);
+        if ($isAdmin || $isCreator) {
+            return [$this->resolveLogicalGcsPath($collaboration->deliverable_content), $originalBasename];
+        }
+
+        if ($isBrand) {
+            if (in_array($collaboration->status, ['completed', 'resolved'], true)) {
+                return [$this->resolveLogicalGcsPath($collaboration->deliverable_content), $originalBasename];
+            }
+
+            if ($collaboration->status === 'delivered' && $this->isDeliverableVideoCollaboration($collaboration)) {
+                if ($collaboration->deliverable_preview_status === 'ready' && $collaboration->deliverable_preview_path) {
+                    $previewLogical = $this->resolveLogicalGcsPath($collaboration->deliverable_preview_path);
+                    if ($previewLogical) {
+                        return [$previewLogical, basename($previewLogical)];
+                    }
+                }
+            }
+        }
+
+        return [$this->resolveLogicalGcsPath($collaboration->deliverable_content), $originalBasename];
+    }
+
+    private function validateStreamPreviewToken(Request $request, Collaboration $collaboration, bool $wantsDownload, int $userId): ?JsonResponse
+    {
+        $payload = $this->decodePreviewToken($request->query('preview_token'));
+        if ($payload === null) {
+            return response()->json([
+                'message' => 'This media URL is not valid on its own. Sign in and open the preview from your StarJD collaboration or support ticket.',
+            ], 403);
+        }
+        if ((int) ($payload['u'] ?? 0) !== $userId) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        if ((int) ($payload['c'] ?? 0) !== (int) $collaboration->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        if ((int) ($payload['e'] ?? 0) < now()->timestamp) {
+            return response()->json([
+                'message' => 'This preview link has expired. Close it and open the file again from your dashboard.',
+            ], 403);
+        }
+        if ($wantsDownload && empty($payload['d'])) {
+            return response()->json([
+                'message' => 'Use the Download button on the collaboration page to download this file.',
+            ], 403);
+        }
+
+        return null;
+    }
+
+    private function decodePreviewToken(?string $token): ?array
+    {
+        if ($token === null || $token === '') {
+            return null;
+        }
+        try {
+            $raw = Crypt::decryptString($token);
+            $data = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+
+            return is_array($data) ? $data : null;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * @return array{0: int, 1: int}|null|'unsatisfiable'
+     */
+    private function parseSingleByteRange(string $rangeHeader, int $fileSize): array|string|null
+    {
+        $rangeHeader = trim($rangeHeader);
+        if ($rangeHeader === '' || ! preg_match('/^bytes=/i', $rangeHeader)) {
+            return null;
+        }
+        if (! preg_match('/bytes=(.+)$/i', $rangeHeader, $m)) {
+            return null;
+        }
+        $range = trim($m[1]);
+        if (str_contains($range, ',')) {
+            return null;
+        }
+        if (! preg_match('/^(\d*)-(\d*)$/', $range, $parts)) {
+            return null;
+        }
+
+        $startRaw = $parts[1];
+        $endRaw = $parts[2];
+
+        if ($startRaw === '' && $endRaw === '') {
+            return null;
+        }
+
+        if ($startRaw === '') {
+            $suffixLen = (int) $endRaw;
+            if ($suffixLen <= 0) {
+                return null;
+            }
+            $start = max(0, $fileSize - $suffixLen);
+            $end = $fileSize - 1;
+        } elseif ($endRaw === '') {
+            $start = (int) $startRaw;
+            $end = $fileSize - 1;
+        } else {
+            $start = (int) $startRaw;
+            $end = (int) $endRaw;
+        }
+
+        if ($fileSize === 0 || $start > $end || $start >= $fileSize) {
+            return 'unsatisfiable';
+        }
+
+        $end = min($end, $fileSize - 1);
+
+        return [$start, $end];
     }
 
     public function complete(Request $request, Collaboration $collaboration): JsonResponse

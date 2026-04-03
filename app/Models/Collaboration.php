@@ -23,6 +23,8 @@ class Collaboration extends Model
         'revision_notes',
         'deliverable_type',
         'deliverable_content',
+        'deliverable_preview_path',
+        'deliverable_preview_status',
         'delivered_at',
         'completed_at',
         'max_revisions',
