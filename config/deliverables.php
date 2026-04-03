@@ -17,7 +17,16 @@ return [
     |--------------------------------------------------------------------------
     | Watermark (burned into preview transcode only)
     |--------------------------------------------------------------------------
+    |
+    | Logo is preferred when the file exists (default: public/logo.png).
+    | Text + font are used only as a fallback if the logo file is missing.
+    |
     */
+    'watermark_logo' => env('DELIVERABLE_WATERMARK_LOGO', public_path('logo.png')),
+
+    /** Max width in pixels for the logo overlay (height scales). */
+    'watermark_logo_width' => (int) env('DELIVERABLE_WATERMARK_LOGO_WIDTH', 220),
+
     'watermark_font' => env(
         'DELIVERABLE_WATERMARK_FONT',
         '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
