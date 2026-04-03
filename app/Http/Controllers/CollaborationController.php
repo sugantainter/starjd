@@ -7,6 +7,7 @@ use App\Models\Collaboration;
 use App\Models\Coupon;
 use App\Models\CreatorProfile;
 use App\Models\PlatformSetting;
+use App\Notifications\CollaborationNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -22,13 +23,13 @@ class CollaborationController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        if ($user->role === 'brand') {
-            $items = $user->collaborationsAsBrand()->with(['creator', 'creator.creatorProfile', 'package', 'payoutRequests'])->latest()->get();
-        } elseif ($user->role === 'creator') {
-            $items = $user->collaborationsAsCreator()->with(['brand', 'brand.brandProfile', 'package', 'payoutRequests'])->latest()->get();
-        } else {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        
+        $items = Collaboration::where('brand_id', $user->id)
+            ->orWhere('creator_id', $user->id)
+            ->with(['brand', 'brand.brandProfile', 'creator', 'creator.creatorProfile', 'package', 'payoutRequests'])
+            ->latest()
+            ->get();
+            
         return response()->json($items);
     }
 
@@ -98,6 +99,7 @@ class CollaborationController extends Controller
             return response()->json(['message' => 'Collaboration cannot be updated'], 422);
         }
         $collaboration->update(['status' => 'accepted']);
+        $this->notify($collaboration, 'brand', 'accepted');
         $collaboration->load(['brand', 'package']);
         return response()->json($collaboration);
     }
@@ -112,6 +114,7 @@ class CollaborationController extends Controller
         }
         // Stub: mark as paid (replace with Stripe/Connect later)
         $collaboration->update(['status' => 'paid', 'paid_at' => now()]);
+        $this->notify($collaboration, 'creator', 'paid');
         $collaboration->load(['creator', 'package']);
         return response()->json($collaboration);
     }
@@ -135,6 +138,7 @@ class CollaborationController extends Controller
             'status' => 'revision_requested',
             'revision_notes' => $request->notes,
         ]);
+        $this->notify($collaboration, 'creator', 'revision_requested');
 
         $collaboration->load(['creator', 'package']);
         return response()->json($collaboration);
@@ -149,6 +153,7 @@ class CollaborationController extends Controller
             return response()->json(['message' => 'Collaboration cannot be rejected'], 422);
         }
         $collaboration->update(['status' => 'rejected', 'rejected_at' => now()]);
+        $this->notify($collaboration, 'brand', 'rejected');
         return response()->json($collaboration);
     }
 
@@ -219,6 +224,7 @@ class CollaborationController extends Controller
         }
 
         \Log::info('Collaboration record updated', ['collaboration_id' => $collaboration->id, 'status' => 'delivered']);
+        $this->notify($collaboration, 'brand', 'delivered');
 
         return response()->json($collaboration->fresh());
     }
@@ -606,6 +612,7 @@ class CollaborationController extends Controller
             'status' => 'completed',
             'completed_at' => now(),
         ]);
+        $this->notify($collaboration, 'creator', 'complete');
 
         return response()->json($collaboration);
     }
@@ -628,6 +635,7 @@ class CollaborationController extends Controller
             'status' => 'disputed',
             'revision_notes' => "Work rejected by brand. Reason: {$request->reason}. Notes: {$request->notes}",
         ]);
+        $this->notify($collaboration, 'creator', 'disputed');
 
         // Create a professional Support Ticket for mediation
         $ticket = \App\Models\SupportTicket::create([
@@ -696,5 +704,15 @@ class CollaborationController extends Controller
         ]);
 
         return response()->json(['message' => 'Claim request submitted to admin for processing.']);
+    }
+
+    private function notify(Collaboration $collaboration, string $recipientType, string $event)
+    {
+        $recipient = $recipientType === 'brand' ? $collaboration->brand : $collaboration->creator;
+        if (!$recipient) return;
+
+        $notification = new CollaborationNotification($collaboration, $event);
+        $recipient->notify($notification);
+        $notification->sendPush($recipient);
     }
 }
