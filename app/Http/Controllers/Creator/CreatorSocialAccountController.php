@@ -70,7 +70,7 @@ class CreatorSocialAccountController extends Controller
 
     public function redirect(Request $request, string $platform)
     {
-        $allowed = ['facebook', 'google', 'linkedin', 'instagram', 'pinterest']; // Map instagram/pinterest drivers
+        $allowed = ['facebook', 'google', 'linkedin', 'instagram', 'pinterest', 'youtube']; 
         if (! in_array($platform, $allowed, true)) {
             return redirect()->to('/creator/social-accounts?error=platform_not_supported');
         }
@@ -88,7 +88,7 @@ class CreatorSocialAccountController extends Controller
         if ($driverName === 'google') {
             /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
             $driver = Socialite::driver('google');
-            return $driver->scopes(['yt-analytics.readonly', 'https://www.googleapis.com/auth/youtube.readonly'])
+            return $driver->scopes(['https://www.googleapis.com/auth/yt-analytics.readonly', 'https://www.googleapis.com/auth/youtube.readonly'])
                 ->with(['access_type' => 'offline', 'prompt' => 'consent'])
                 ->redirect();
         }
@@ -139,8 +139,8 @@ class CreatorSocialAccountController extends Controller
 
         $user = $request->user();
         
-        // Map google to youtube for storage
-        $savePlatform = ($platform === 'google') ? 'youtube' : $platform;
+        // Map google/youtube to youtube for storage
+        $savePlatform = ($platform === 'google' || $platform === 'youtube') ? 'youtube' : $platform;
 
         $account = $user->socialAccounts()->firstOrNew(['platform' => $savePlatform]);
         $account->access_token = $oauthUser->token;

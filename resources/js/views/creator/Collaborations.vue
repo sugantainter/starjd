@@ -192,8 +192,12 @@
                      </div>
                   </div>
 
-                   <div v-else-if="c.status === 'rejected'" class="px-6 py-3 bg-red-50 text-red-600 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-red-100">
-                     Rejected
+                   <div v-else-if="c.status === 'rejected'" class="flex flex-col items-end gap-2">
+                      <div class="px-6 py-3 bg-red-50 text-red-600 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-red-100 flex items-center gap-2">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                        Rejected
+                      </div>
+                      <p v-if="c.rejection_reason" class="text-[9px] font-medium text-slate-400 italic">Reason: {{ c.rejection_reason }}</p>
                    </div>
                 </div>
               </div>
@@ -308,6 +312,36 @@
            </div>
         </div>
     </div>
+
+    <!-- Rejection Reason Modal -->
+    <div v-if="showRejectModal" class="fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4" @click.self="showRejectModal = false">
+      <div class="w-full max-w-lg overflow-hidden rounded-[40px] bg-white shadow-2xl animate-in zoom-in-95 duration-500">
+        <div class="px-10 py-8 border-b border-slate-50 bg-red-50 text-red-900">
+          <h2 class="text-2xl font-black uppercase tracking-tighter">Decline Project</h2>
+          <p class="text-[10px] font-bold uppercase tracking-widest mt-2 text-red-600">Please provide a reason for declining</p>
+        </div>
+        <div class="p-10 space-y-6">
+          <div>
+            <label class="block text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3 ml-1">Select Reason</label>
+            <div class="grid grid-cols-1 gap-2">
+               <button v-for="r in commonReasons" :key="r" @click="rejectionReason = r" :class="rejectionReason === r ? 'bg-red-600 text-white border-red-600' : 'bg-slate-50 text-slate-600 border-slate-100 hover:bg-slate-100'" class="px-6 py-3 rounded-2xl border text-[11px] font-black uppercase tracking-wider transition-all text-left">
+                  {{ r }}
+               </button>
+            </div>
+          </div>
+          <div v-if="rejectionReason === 'Other'">
+            <label class="block text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2 ml-1">Custom Reason</label>
+            <textarea v-model="customReason" class="w-full min-h-[100px] rounded-3xl border-none bg-slate-50 focus:ring-2 focus:ring-red-100 p-6 text-sm font-medium text-slate-700 resize-none" placeholder="Explain why you are declining..."></textarea>
+          </div>
+          <div class="flex gap-4 pt-4">
+            <button @click="confirmReject" :disabled="submittingReject || !rejectionReason || (rejectionReason === 'Other' && !customReason.trim())" class="flex-1 h-16 rounded-2xl bg-red-600 text-white font-black uppercase tracking-widest shadow-xl shadow-red-200 transition-all active:scale-95 disabled:opacity-40">
+              {{ submittingReject ? 'Declining...' : 'Confirm Decline' }}
+            </button>
+            <button @click="showRejectModal = false" class="px-10 h-16 rounded-2xl border border-slate-200 text-slate-600 font-black uppercase tracking-widest hover:bg-slate-50 transition active:scale-95">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -333,6 +367,20 @@ const uploadPercentage = ref(0);
 const showPreviewModal = ref(false);
 const previewUrl = ref('');
 const previewType = ref('');
+
+const showRejectModal = ref(false);
+const rejectingCollab = ref(null);
+const rejectionReason = ref('');
+const customReason = ref('');
+const submittingReject = ref(false);
+
+const commonReasons = [
+  "Not enough budget for this project",
+  "Timeline doesn't match my availability",
+  "Brand mismatch with my content style",
+  "Requirement is unclear",
+  "Other"
+];
 
 const steps = ['Request', 'Accepted', 'Paid', 'Delivered', 'Completed'];
 
@@ -481,14 +529,29 @@ async function accept(c) {
 }
 
 async function reject(c) {
-  if(!confirm('Are you sure you want to reject this project?')) return;
+  rejectingCollab.value = c;
+  rejectionReason.value = '';
+  customReason.value = '';
+  showRejectModal.value = true;
+}
+
+async function confirmReject() {
+  if (!rejectingCollab.value) return;
+  const c = rejectingCollab.value;
+  const reason = rejectionReason.value === 'Other' ? customReason.value : rejectionReason.value;
+  
+  submittingReject.value = true;
   error.value = '';
   try {
-    await axios.post('/api/collaborations/' + c.id + '/reject', {}, { withCredentials: true });
+    await axios.post('/api/collaborations/' + c.id + '/reject', { reason }, { withCredentials: true });
     notify.success('Project declined.');
+    showRejectModal.value = false;
     await load();
   } catch (e) {
     error.value = e.response?.data?.message || 'Failed to reject.';
+    notify.error(error.value);
+  } finally {
+    submittingReject.value = false;
   }
 }
 

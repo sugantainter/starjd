@@ -152,8 +152,45 @@ class CollaborationController extends Controller
         if ($collaboration->status !== 'pending') {
             return response()->json(['message' => 'Collaboration cannot be rejected'], 422);
         }
-        $collaboration->update(['status' => 'rejected', 'rejected_at' => now()]);
+
+        $request->validate([
+            'reason' => ['required', 'string', 'max:500'],
+        ]);
+
+        $collaboration->update([
+            'status' => 'rejected',
+            'rejected_at' => now(),
+            'rejection_reason' => $request->reason,
+        ]);
+
         $this->notify($collaboration, 'brand', 'rejected');
+        return response()->json($collaboration);
+    }
+
+    public function resend(Request $request, Collaboration $collaboration): JsonResponse
+    {
+        if ($collaboration->brand_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        if ($collaboration->status !== 'rejected') {
+            return response()->json(['message' => 'Only rejected collaborations can be resent'], 422);
+        }
+        if ($collaboration->resend_count >= 3) {
+            return response()->json(['message' => 'Maximum resend limit reached (3 times)'], 422);
+        }
+
+        $collaboration->increment('resend_count');
+        $collaboration->update([
+            'status' => 'pending',
+            'rejected_at' => null,
+            // Keep the old reason in record or clear it? User said "shown on brand dashboard and brand can also chek the reasona and can resend".
+            // If we resend, we probably want to clear it so creator can set a new one if rejected again.
+            // But maybe keep it so creator sees why they rejected last time?
+            // Usually, we clear it for the NEW attempt.
+            'rejection_reason' => null,
+        ]);
+
+        $this->notify($collaboration, 'creator', 'pending');
         return response()->json($collaboration);
     }
 

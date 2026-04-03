@@ -32,6 +32,8 @@ class Collaboration extends Model
         'resolved_creator_amount',
         'brand_claimed',
         'creator_claimed',
+        'rejection_reason',
+        'resend_count',
     ];
 
     protected function casts(): array
@@ -49,6 +51,7 @@ class Collaboration extends Model
             'delivered_at' => 'datetime',
             'completed_at' => 'datetime',
             'revision_count' => 'integer',
+            'resend_count' => 'integer',
         ];
     }
 

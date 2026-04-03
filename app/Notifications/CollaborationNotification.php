@@ -82,6 +82,10 @@ class CollaborationNotification extends Notification implements ShouldQueue
                 return "Brand has approved your work. The project is completed!";
             case 'disputed':
                 return "Brand has raised a dispute for the recent delivery. Admin will review soon.";
+            case 'rejected':
+                return "Your collaboration request has been declined by the creator.";
+            case 'pending':
+                return "Brand has resent the collaboration request. Please review it again.";
             default:
                 return "Update on collaboration #" . $this->collaboration->id;
         }

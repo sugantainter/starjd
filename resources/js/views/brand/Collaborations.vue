@@ -194,10 +194,36 @@
                         </div>
                    </div>
 
-                   <div v-else-if="['paid', 'revision_requested'].includes(c.status)" class="px-6 py-3 bg-blue-50 text-blue-600 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-blue-100 flex items-center gap-2">
-                       <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-ping"></span>
-                       Creator is Working
-                   </div>
+                    <div v-if="c.status === 'rejected'" class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between p-8 bg-red-50/50 rounded-[40px] border border-red-100/50">
+                        <div class="flex gap-5">
+                            <div class="h-14 w-14 shrink-0 rounded-2xl bg-red-600 flex items-center justify-center text-white shadow-lg shadow-red-200">
+                                <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-red-600 mb-1">Request Declined by Creator</p>
+                                <p class="text-sm font-bold text-red-900 leading-relaxed italic">"{{ c.rejection_reason || 'No reason provided' }}"</p>
+                                <p v-if="c.resend_count > 0" class="text-[9px] font-black text-red-400 uppercase tracking-widest mt-2">
+                                    Resent {{ c.resend_count }} / 3 times
+                                </p>
+                            </div>
+                        </div>
+                        <div class="shrink-0">
+                            <button 
+                              v-if="c.resend_count < 3" 
+                              @click="resendRequest(c)" 
+                              class="h-14 px-8 rounded-2xl bg-slate-900 text-white font-black uppercase tracking-widest hover:bg-black shadow-xl shadow-slate-200 transition active:scale-95"
+                            >
+                              Resend Request
+                            </button>
+                            <div v-else class="px-6 py-3 bg-red-100 text-red-700 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-red-200">
+                              Max resends reached
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else-if="['paid', 'revision_requested'].includes(c.status)" class="px-6 py-3 bg-blue-50 text-blue-600 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-blue-100 flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-ping"></span>
+                        Creator is Working
+                    </div>
                 </div>
               </div>
             </div>
@@ -494,6 +520,17 @@ async function submitRevision() {
     notify.error('Action failed.');
   } finally {
     submittingRev.value = false;
+  }
+}
+
+async function resendRequest(c) {
+  if (!confirm('Are you sure you want to resend this request? You can resend a maximum of 3 times.')) return;
+  try {
+    await axios.post(`/api/collaborations/${c.id}/resend`, {}, { withCredentials: true });
+    notify.success('Request resent to creator.');
+    await load();
+  } catch (e) {
+    notify.error(e.response?.data?.message || 'Failed to resend request.');
   }
 }
 

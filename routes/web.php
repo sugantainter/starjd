@@ -161,6 +161,7 @@ Route::prefix('api')->group(function () {
         Route::post('messages', [\App\Http\Controllers\Api\MessageController::class, 'store']);
         Route::post('collaborations/{collaboration}/accept', [CollaborationController::class, 'accept']);
         Route::post('collaborations/{collaboration}/reject', [CollaborationController::class, 'reject']);
+        Route::post('collaborations/{collaboration}/resend', [CollaborationController::class, 'resend']);
         Route::post('collaborations/{collaboration}/pay', [CollaborationController::class, 'pay']);
         Route::post('collaborations/{collaboration}/revision', [CollaborationController::class, 'requestRevision']);
         Route::post('collaborations/{collaboration}/deliver', [CollaborationController::class, 'deliver']);
