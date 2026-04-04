@@ -60,11 +60,10 @@ class BrandProfileController extends Controller
 
         if ($request->hasFile('logo')) {
             if ($profile->logo) {
-                Storage::disk('public')->delete($profile->logo);
+                Storage::delete($profile->logo);
             }
             $path = $request->file('logo')->store(
-                'profiles/logos/' . $user->id,
-                'public'
+                'profiles/logos/' . $user->id
             );
             $data['logo'] = $path;
         }

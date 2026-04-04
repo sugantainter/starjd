@@ -195,7 +195,7 @@ function openForm(item = null) {
         form.role = item.role || "";
         form.quote = item.quote || "";
         form.avatar = null;
-        avatarPreview.value = item.avatar ? "/storage/" + item.avatar : "";
+        avatarPreview.value = item.avatar_url || "";
     } else {
         form.name = form.role = form.quote = "";
         form.avatar = null;
@@ -220,8 +220,7 @@ function clearAvatar() {
     form.avatar = null;
     avatarPreview.value = "";
     if (editing.value) {
-        avatarPreview.value = editing.value.avatar
-            ? "/storage/" + editing.value.avatar
+            ? editing.value.avatar_url
             : "";
     }
 }

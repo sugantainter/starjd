@@ -472,9 +472,9 @@ class AuthController extends Controller
         if ($request->hasFile('avatar')) {
             // Delete old avatar if it exists locally
             if ($user->avatar && !str_starts_with($user->avatar, 'http')) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->avatar);
+                \Illuminate\Support\Facades\Storage::delete($user->avatar);
             }
-            $path = $request->file('avatar')->store('avatars', 'public');
+            $path = $request->file('avatar')->store('avatars');
             $user->avatar = $path;
         }
 

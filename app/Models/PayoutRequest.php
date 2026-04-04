@@ -21,6 +21,13 @@ class PayoutRequest extends Model
         'receipt_url',
         'processed_at'
     ];
+    
+    protected $appends = ['receipt_full_url'];
+
+    public function getReceiptFullUrlAttribute(): ?string
+    {
+        return $this->receipt_url ? \Illuminate\Support\Facades\Storage::url($this->receipt_url) : null;
+    }
 
     protected $casts = [
         'processed_at' => 'datetime',

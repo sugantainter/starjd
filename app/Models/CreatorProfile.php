@@ -135,11 +135,8 @@ class CreatorProfile extends Model
             return null;
         }
 
-        // Use relative URL so the image is always requested from the same origin as the page
-        // (avoids APP_URL / protocol issues and works behind proxies). Requires public/storage
-        // symlink: run `php artisan storage:link` on the server.
-        $path = '/storage/' . ltrim($this->avatar, '/');
+        $url = \Illuminate\Support\Facades\Storage::url($this->avatar);
         $ts = $this->updated_at?->timestamp ?? time();
-        return $path . (str_contains($path, '?') ? '&' : '?') . 't=' . $ts;
+        return $url . (str_contains($url, '?') ? '&' : '?') . 't=' . $ts;
     }
 }

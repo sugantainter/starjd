@@ -27,6 +27,10 @@ class PayoutRequestController extends Controller
             ])
             ->orderByDesc('created_at')
             ->get()
+            ->map(function($p) {
+                $p->receipt_full_url = $p->receipt_url ? \Illuminate\Support\Facades\Storage::url($p->receipt_url) : null;
+                return $p;
+            })
         );
     }
 
@@ -45,9 +49,9 @@ class PayoutRequestController extends Controller
 
         if ($request->hasFile('receipt_file')) {
             if ($payoutRequest->receipt_url) {
-                Storage::disk('public')->delete($payoutRequest->receipt_url);
+                Storage::delete($payoutRequest->receipt_url);
             }
-            $data['receipt_url'] = $request->file('receipt_file')->store('receipts', 'public');
+            $data['receipt_url'] = $request->file('receipt_file')->store('receipts');
         }
 
         if ($request->status === 'paid' && !$payoutRequest->processed_at) {

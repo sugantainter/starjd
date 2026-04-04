@@ -78,6 +78,11 @@ class FileAccessController extends Controller
         }
 
         // If not a collaboration file, fall back to PUBLIC storage behavior
+        // Check default cloud storage first (now that it's migrated)
+        if (Storage::exists($path)) {
+            return redirect(Storage::url($path));
+        }
+
         if (Storage::disk('public')->exists($path)) {
             $path_full = Storage::disk('public')->path($path);
             $mime = Storage::disk('public')->mimeType($path) ?: 'application/octet-stream';

@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('FILESYSTEM_DISK', 'local'),
+    'default' => env('FILESYSTEM_DISK', 'gcs'),
 
     /*
     |--------------------------------------------------------------------------
@@ -68,7 +68,7 @@ return [
             'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET'),
             'path_prefix' => env('GOOGLE_CLOUD_STORAGE_PATH_PREFIX', null),
             'storage_api_uri' => env('GOOGLE_CLOUD_STORAGE_API_URI', null),
-            'visibility' => 'private',
+            'visibility' => 'public',
             'throw' => false,
             'report' => false,
         ],

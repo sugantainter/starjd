@@ -33,7 +33,7 @@ class CategoryController extends Controller
         ]);
         if ($request->hasFile('image')) {
             $request->validate(['image' => ['image', 'mimes:jpeg,png,jpg,webp', 'max:' . self::IMAGE_MAX_KB]]);
-            $data['image'] = $request->file('image')->store('categories', 'public');
+            $data['image'] = $request->file('image')->store('categories');
         } else {
             $data['image'] = null;
         }
@@ -62,9 +62,9 @@ class CategoryController extends Controller
         if ($request->hasFile('image')) {
             $request->validate(['image' => ['image', 'mimes:jpeg,png,jpg,webp', 'max:' . self::IMAGE_MAX_KB]]);
             if ($row->image && ! str_starts_with($row->image, 'http')) {
-                Storage::disk('public')->delete($row->image);
+                Storage::delete($row->image);
             }
-            $data['image'] = $request->file('image')->store('categories', 'public');
+            $data['image'] = $request->file('image')->store('categories');
         }
         $data['updated_at'] = now();
         DB::table('categories')->where('id', $category)->update($data);
@@ -77,7 +77,7 @@ class CategoryController extends Controller
     {
         $row = DB::table('categories')->where('id', $category)->first();
         if ($row && $row->image && ! str_starts_with($row->image, 'http')) {
-            Storage::disk('public')->delete($row->image);
+            Storage::delete($row->image);
         }
         DB::table('categories')->where('id', $category)->delete();
         return response()->json(['message' => 'Deleted']);
@@ -91,6 +91,6 @@ class CategoryController extends Controller
         if (str_starts_with($image, 'http')) {
             return $image;
         }
-        return asset('storage/' . $image);
+        return Storage::url($image);
     }
 }

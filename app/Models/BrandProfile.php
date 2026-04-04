@@ -23,7 +23,7 @@ class BrandProfile extends Model
             return null;
         }
 
-        $url = \Illuminate\Support\Facades\Storage::disk('public')->url($this->logo);
+        $url = \Illuminate\Support\Facades\Storage::url($this->logo);
         $ts = $this->updated_at?->timestamp;
 
         return $ts ? $url . (str_contains($url, '?') ? '&' : '?') . 't=' . $ts : $url;

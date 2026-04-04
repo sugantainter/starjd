@@ -24,6 +24,6 @@ class CreatorImagePost extends Model
 
     public function getImageUrlAttribute(): string
     {
-        return Storage::disk('public')->url($this->image);
+        return Storage::url($this->image);
     }
 }

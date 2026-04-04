@@ -179,7 +179,7 @@ class User extends Authenticatable implements MustVerifyEmail
             if (str_starts_with($this->avatar, 'http')) {
                 return $this->avatar;
             }
-            return '/storage/' . ltrim($this->avatar, '/');
+            return \Illuminate\Support\Facades\Storage::url($this->avatar);
         }
         return null;
     }

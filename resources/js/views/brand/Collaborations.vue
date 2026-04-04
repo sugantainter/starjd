@@ -40,7 +40,7 @@
               <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-5">
                   <div class="h-16 w-16 shrink-0 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center overflow-hidden">
-                    <img v-if="c.creator?.profile?.avatar" :src="c.creator.profile.avatar" class="h-full w-full object-cover" />
+                    <img v-if="c.creator?.profile?.avatar_url" :src="c.creator.profile.avatar_url" class="h-full w-full object-cover" />
                     <span v-else class="text-2xl font-black text-slate-300 uppercase">{{ c.creator?.name?.charAt(0) }}</span>
                   </div>
                   <div>
@@ -187,7 +187,7 @@
                             </button>
                         </div>
                         <div v-if="c.payout_requests?.find(p => p.type === 'brand_refund')?.receipt_url" class="mt-4 pt-4 border-t border-amber-100">
-                           <a :href="'/storage/' + c.payout_requests.find(p => p.type === 'brand_refund').receipt_url" target="_blank" class="text-[9px] font-black text-amber-700 uppercase tracking-widest hover:underline flex items-center gap-1.5 justify-center">
+                           <a v-if="c.payout_requests?.find(p => p.type === 'brand_refund')?.receipt_full_url" :href="c.payout_requests.find(p => p.type === 'brand_refund').receipt_full_url" target="_blank" class="text-[9px] font-black text-amber-700 uppercase tracking-widest hover:underline flex items-center gap-1.5 justify-center">
                               <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                               Download Receipt Notice
                            </a>

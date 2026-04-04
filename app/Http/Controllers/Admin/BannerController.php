@@ -58,8 +58,8 @@ class BannerController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('banners', 'public');
-            return response()->json(['url' => Storage::disk('public')->url($path)]);
+            $path = $request->file('image')->store('banners');
+            return response()->json(['url' => Storage::url($path)]);
         }
 
         return response()->json(['message' => 'No file uploaded'], 400);

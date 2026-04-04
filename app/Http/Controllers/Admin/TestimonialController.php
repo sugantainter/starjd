@@ -13,6 +13,10 @@ class TestimonialController extends Controller
     public function index(): JsonResponse
     {
         $items = DB::table('testimonials')->orderBy('sort_order')->get();
+        $items->transform(function ($item) {
+            $item->avatar_url = $item->avatar ? \Illuminate\Support\Facades\Storage::url($item->avatar) : null;
+            return $item;
+        });
         return response()->json($items);
     }
 
@@ -30,7 +34,7 @@ class TestimonialController extends Controller
         // Handle avatar file upload
         if ($request->hasFile('avatar')) {
             $file = $request->file('avatar');
-            $path = $file->store('testimonials', 'public');
+            $path = $file->store('testimonials');
             $data['avatar'] = $path;
         }
         
@@ -53,12 +57,12 @@ class TestimonialController extends Controller
         if ($request->hasFile('avatar')) {
             // Delete old avatar if exists
             $oldTestimonial = DB::table('testimonials')->where('id', $testimonial)->first();
-            if ($oldTestimonial && $oldTestimonial->avatar && Storage::disk('public')->exists($oldTestimonial->avatar)) {
-                Storage::disk('public')->delete($oldTestimonial->avatar);
+            if ($oldTestimonial && $oldTestimonial->avatar && Storage::exists($oldTestimonial->avatar)) {
+                Storage::delete($oldTestimonial->avatar);
             }
             
             $file = $request->file('avatar');
-            $path = $file->store('testimonials', 'public');
+            $path = $file->store('testimonials');
             $data['avatar'] = $path;
         }
         

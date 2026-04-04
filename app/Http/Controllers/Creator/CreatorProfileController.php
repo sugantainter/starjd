@@ -78,13 +78,12 @@ class CreatorProfileController extends Controller
 
         if ($request->hasFile('avatar')) {
             if ($profile->avatar) {
-                Storage::disk('public')->delete($profile->avatar);
+                Storage::delete($profile->avatar);
             }
             $dir = 'profiles/avatars/' . $request->user()->id;
-            Storage::disk('public')->makeDirectory($dir);
-            $path = $request->file('avatar')->store($dir, 'public');
-            if (! $path || ! Storage::disk('public')->exists($path)) {
-                throw new HttpException(500, 'Profile photo could not be saved. Check that storage/app/public is writable and run: php artisan storage:link');
+            $path = $request->file('avatar')->store($dir);
+            if (! $path) {
+                throw new HttpException(500, 'Profile photo could not be saved to cloud storage.');
             }
             $data['avatar'] = $path;
         }
@@ -126,10 +125,9 @@ class CreatorProfileController extends Controller
     {
         $data = $profile->toArray();
         if (! empty($profile->avatar)) {
-            $base = request()->getSchemeAndHttpHost();
-            $path = '/storage/' . ltrim($profile->avatar, '/');
+            $url = Storage::url($profile->avatar);
             $ts = $profile->updated_at?->timestamp ?? time();
-            $data['avatar_url'] = $base . $path . (str_contains($path, '?') ? '&' : '?') . 't=' . $ts;
+            $data['avatar_url'] = $ts ? $url . (str_contains($url, '?') ? '&' : '?') . 't=' . $ts : $url;
         } else {
             $data['avatar_url'] = null;
         }

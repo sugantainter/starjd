@@ -218,16 +218,13 @@ class CollaborationController extends Controller
 
         try {
             // We use the folder name explicitly so it matches the FileAccessController filter
-            $path = Storage::disk('gcs')->putFile('project_deliverables', $file);
-
-            if ($path === false) {
-                \Log::error('GCS Storage explicitly returned FALSE', [
-                    'bucket' => config('filesystems.disks.gcs.bucket'),
-                    'project' => config('filesystems.disks.gcs.project_id'),
-                ]);
-
-                return response()->json(['message' => 'Upload failed: Cloud storage rejected the file. Please check bucket permissions and ensure it has no "Uniform" access restrictions on public objects.'], 500);
-            }
+            $path = retry(3, function () use ($file) {
+                $p = Storage::disk('gcs')->putFile('project_deliverables', $file);
+                if ($p === false) {
+                    throw new \RuntimeException('GCS Storage explicitly returned FALSE');
+                }
+                return $p;
+            }, 500);
 
             \Log::info('Project delivery upload successful', ['path' => $path, 'disk' => 'gcs']);
         } catch (\Exception $e) {

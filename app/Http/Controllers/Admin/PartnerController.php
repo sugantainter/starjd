@@ -44,9 +44,9 @@ class PartnerController extends Controller
         if ($request->hasFile('logo')) {
             $request->validate(['logo' => ['image', 'mimes:jpeg,png,jpg,webp,svg', 'max:' . self::LOGO_MAX_KB]]);
             if ($partner->logo) {
-                Storage::disk('public')->delete($partner->logo);
+                Storage::delete($partner->logo);
             }
-            $data['logo'] = $request->file('logo')->store('partners', 'public');
+            $data['logo'] = $request->file('logo')->store('partners');
         }
         $partner->update($data);
         return response()->json(['message' => 'Updated', 'partner' => $partner->fresh()]);
@@ -55,7 +55,7 @@ class PartnerController extends Controller
     public function destroy(Partner $partner): JsonResponse
     {
         if ($partner->logo) {
-            Storage::disk('public')->delete($partner->logo);
+            Storage::delete($partner->logo);
         }
         $partner->delete();
         return response()->json(['message' => 'Deleted']);
@@ -66,8 +66,8 @@ class PartnerController extends Controller
         $request->validate([
             'logo' => ['required', 'image', 'mimes:jpeg,png,jpg,webp,svg', 'max:' . self::LOGO_MAX_KB],
         ]);
-        $path = $request->file('logo')->store('partners', 'public');
-        $url = asset('storage/' . $path);
+        $path = $request->file('logo')->store('partners');
+        $url = Storage::url($path);
         return response()->json(['url' => $url, 'path' => $path]);
     }
 }

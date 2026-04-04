@@ -27,8 +27,7 @@ class CreatorImagePostController extends Controller
 
         $user = $request->user();
         $path = $request->file('image')->store(
-            'profiles/creator-posts/' . $user->id,
-            'public'
+            'profiles/creator-posts/' . $user->id
         );
 
         $maxOrder = $user->creatorImagePosts()->max('sort_order') ?? 0;
@@ -46,7 +45,7 @@ class CreatorImagePostController extends Controller
         if ($creatorImagePost->creator_id !== $request->user()->id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
-        Storage::disk('public')->delete($creatorImagePost->image);
+        Storage::delete($creatorImagePost->image);
         $creatorImagePost->delete();
         return response()->json(null, 204);
     }

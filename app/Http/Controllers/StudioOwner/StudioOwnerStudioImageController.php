@@ -23,7 +23,7 @@ class StudioOwnerStudioImageController extends Controller
             'is_primary' => ['nullable', 'boolean'],
         ]);
 
-        $path = $request->file('image')->store('studios/' . $studio->id, 'public');
+        $path = $request->file('image')->store('studios/' . $studio->id);
         if (! $path) {
             return response()->json(['message' => 'Upload failed.'], 500);
         }
@@ -44,7 +44,7 @@ class StudioOwnerStudioImageController extends Controller
             'message' => 'Image added.',
             'image' => [
                 'id' => $image->id,
-                'image' => '/storage/' . ltrim($image->image, '/'),
+                'image' => Storage::url($image->image),
                 'caption' => $image->caption,
                 'sort_order' => $image->sort_order,
                 'is_primary' => $image->is_primary,
@@ -57,7 +57,7 @@ class StudioOwnerStudioImageController extends Controller
         $this->authorize('update', $studio_image->studio);
 
         if ($studio_image->image && ! str_starts_with($studio_image->image, 'http')) {
-            Storage::disk('public')->delete($studio_image->image);
+            Storage::delete($studio_image->image);
         }
         $studio_image->delete();
 
@@ -92,7 +92,7 @@ class StudioOwnerStudioImageController extends Controller
             'message' => 'Updated.',
             'images' => $studio->images->map(fn ($img) => [
                 'id' => $img->id,
-                'image' => '/storage/' . ltrim($img->image, '/'),
+                'image' => Storage::url($img->image),
                 'caption' => $img->caption,
                 'sort_order' => $img->sort_order,
                 'is_primary' => $img->is_primary,

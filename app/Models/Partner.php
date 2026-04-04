@@ -18,6 +18,6 @@ class Partner extends Model
         if (is_string($this->logo) && (str_starts_with($this->logo, 'http://') || str_starts_with($this->logo, 'https://'))) {
             return $this->logo;
         }
-        return asset('storage/' . $this->logo);
+        return \Illuminate\Support\Facades\Storage::url($this->logo);
     }
 }
