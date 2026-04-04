@@ -129,6 +129,7 @@ const routes = [
       { path: 'users/:id', name: 'admin-user-detail', component: () => import('../views/admin/UserDetail.vue') },
       { path: 'messages', name: 'admin-messages', component: () => import('../views/admin/Messages.vue') },
       { path: 'withdrawals', name: 'admin-withdrawals', component: () => import('../views/admin/Withdrawals.vue') },
+      { path: 'sitemap', name: 'admin-sitemap', component: () => import('../views/admin/Sitemap.vue') },
     ],
 
   },

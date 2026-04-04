@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
 use App\Http\Controllers\Admin\SupportAdminController;
 use App\Http\Controllers\Admin\AIUsageController as AdminAIUsageController;
 use App\Http\Controllers\Admin\PayoutRequestController as AdminPayoutRequestController;
+use App\Http\Controllers\Admin\SitemapController;
 
 use App\Http\Controllers\Api\AppConfigController;
 use App\Http\Controllers\Api\PageController as ApiPageController;
@@ -297,6 +298,10 @@ Route::prefix('api')->group(function () {
         Route::get('users', [\App\Http\Controllers\Admin\UserController::class, 'index']);
         Route::get('users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'show']);
         Route::patch('users/{user}/status', [\App\Http\Controllers\Admin\UserController::class, 'updateStatus']);
+
+        // Sitemap
+        Route::get('sitemap', [SitemapController::class, 'status']);
+        Route::post('sitemap/generate', [SitemapController::class, 'generate']);
     });
 });
 
