@@ -147,22 +147,36 @@
     <!-- Advanced Channel Insights (Public Mirror of Dashboard) -->
     <div v-if="connectedSocialAccountsWithAnalytics.length" class="mt-8">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-4">
-        <div>
+        <div class="flex-1 min-w-[200px]">
            <h2 class="text-xl font-semibold text-[#1a1a1a]">Channel Insights</h2>
            <p class="text-sm text-[#64748b]">Real-time audience performance and demographics.</p>
         </div>
-        <!-- Platform Tabs -->
-        <div class="flex items-center gap-1 overflow-x-auto rounded-xl bg-slate-100 p-1">
-          <button
-            v-for="s in connectedSocialAccountsWithAnalytics"
-            :key="s.platform"
-            @click="selectedPlatform = s.platform"
-            class="flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-all"
-            :class="selectedPlatform === s.platform ? 'bg-white text-[#1a1a1a] shadow-sm' : 'text-[#64748b] hover:text-[#1a1a1a]'"
-          >
-            <SocialPlatformIcon :platform="s.platform" :size="18" />
-            {{ platformName(s.platform) }}
-          </button>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <!-- Metric Selectors (Sub/Likes/Views) -->
+          <div v-if="activeAccount" class="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl">
+             <button
+               v-for="tab in (platformTabs[selectedPlatform] || [])"
+               :key="tab.id"
+               @click="activeTab = tab.id"
+               class="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all"
+               :class="activeTab === tab.id ? 'bg-[#1a1a1a] text-white shadow-sm' : 'text-[#64748b] hover:text-[#1a1a1a]'"
+             >
+               {{ tab.name }}
+             </button>
+          </div>
+          <!-- Platform Tabs -->
+          <div class="flex items-center gap-1 overflow-x-auto rounded-xl bg-slate-100 p-1">
+            <button
+              v-for="s in connectedSocialAccountsWithAnalytics"
+              :key="s.platform"
+              @click="selectedPlatform = s.platform; activeTab = platformTabs[s.platform]?.[0]?.id || 'views'"
+              class="flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-all"
+              :class="selectedPlatform === s.platform ? 'bg-white text-[#1a1a1a] shadow-sm' : 'text-[#64748b] hover:text-[#1a1a1a]'"
+            >
+              <SocialPlatformIcon :platform="s.platform" :size="18" />
+              {{ platformName(s.platform) }}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -200,8 +214,14 @@
         <div :class="{ 'opacity-10 blur-2xl pointer-events-none select-none max-h-48 overflow-hidden': !isLoggedIn }" class="transition-all duration-700">
           <!-- Graphs (views) -->
           <div class="mt-10">
-             <h3 class="text-xs font-bold uppercase tracking-wider text-[#94a3b8] mb-4">View Growth (Last 30 days)</h3>
-             <GrowthChart v-if="activeHistory.length" :history="activeHistory" :metricIndex="3" color="#3b82f6" />
+             <h3 class="text-xs font-bold uppercase tracking-wider text-[#94a3b8] mb-4">{{ activeTabLabel }} History (Last 30 days)</h3>
+             <GrowthChart 
+                v-if="activeHistory.length" 
+                :history="activeHistory" 
+                :metricIndex="activeMetricIndex" 
+                :metricName="activeTabLabel"
+                :color="selectedPlatform === 'youtube' ? '#ef4444' : selectedPlatform === 'linkedin' ? '#0a66c2' : '#3b82f6'" 
+             />
              <div v-else class="h-[200px] flex items-center justify-center text-sm text-slate-400 italic">No historical data available yet.</div>
           </div>
 
@@ -326,6 +346,33 @@ const isBrand = ref(false);
 const isLoggedIn = ref(false);
 
 const selectedPlatform = ref('');
+const activeTab = ref('views');
+
+const platformTabs = {
+    youtube: [
+        { id: "views", name: "Views", label: "Daily Views", index: 3 },
+        { id: "subscribers", name: "Subscribers", label: "Subscriber growth", index: 1 },
+        { id: "likes", name: "Likes", label: "Daily Likes", index: 4 },
+    ],
+    facebook: [
+        { id: "reach", name: "Reach", label: "Daily Reach", index: 3 },
+        { id: "engagement", name: "Engagement", label: "Daily Engagement", index: 1 },
+    ],
+    linkedin: [
+        { id: "engagement", name: "Engagement", label: "Total Engagement", index: 3 },
+        { id: "likes", name: "Likes", label: "Post Likes", index: 1 },
+        { id: "comments", name: "Comments", label: "Post Comments", index: 2 },
+    ],
+    instagram: [
+        { id: "reach", name: "Reach", label: "Account Reach", index: 3 },
+        { id: "impressions", name: "Impressions", label: "Total Impressions", index: 2 },
+    ],
+    pinterest: [
+        { id: "impressions", name: "Impressions", label: "Daily Impressions", index: 1 },
+        { id: "saves", name: "Saves", label: "Daily Saves", index: 2 },
+        { id: "clicks", name: "Clicks", label: "Outbound Clicks", index: 3 },
+    ],
+};
 
 const connectedSocialAccountsWithAnalytics = computed(() => {
   const list = profile.value?.user?.social_accounts || [];
@@ -335,8 +382,21 @@ const connectedSocialAccountsWithAnalytics = computed(() => {
 const activeAccount = computed(() => {
   if (!selectedPlatform.value && connectedSocialAccountsWithAnalytics.value.length) {
     selectedPlatform.value = connectedSocialAccountsWithAnalytics.value[0].platform;
+    activeTab.value = platformTabs[selectedPlatform.value]?.[0]?.id || 'views';
   }
   return connectedSocialAccountsWithAnalytics.value.find(a => a.platform === selectedPlatform.value);
+});
+
+const activeMetricIndex = computed(() => {
+    const tabs = platformTabs[selectedPlatform.value] || [];
+    const tab = tabs.find((t) => t.id === activeTab.value);
+    return tab ? tab.index : 3;
+});
+
+const activeTabLabel = computed(() => {
+    const tabs = platformTabs[selectedPlatform.value] || [];
+    const tab = tabs.find((t) => t.id === activeTab.value);
+    return tab ? tab.name : "Metric";
 });
 
 const activeHistory = computed(() => activeAccount.value?.analytics_data?.history ?? []);
