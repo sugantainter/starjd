@@ -39,4 +39,28 @@ class Page extends Model
     {
         return $query->whereNull('state_id')->whereNull('city_id');
     }
+
+    /**
+     * Public URL path (single segment), matching the front-end router — e.g. /influencers-in-ahmedabad.
+     */
+    public function publicPath(): ?string
+    {
+        if (! filled($this->slug)) {
+            return null;
+        }
+
+        if ($this->city_id && $this->city?->slug) {
+            return '/'.$this->slug.'-in-'.$this->city->slug;
+        }
+
+        if ($this->state_id && $this->state?->slug) {
+            return '/'.$this->slug.'-in-'.$this->state->slug;
+        }
+
+        if ($this->city_id || $this->state_id) {
+            return null;
+        }
+
+        return '/'.$this->slug;
+    }
 }

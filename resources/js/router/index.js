@@ -30,7 +30,8 @@ const routes = [
   { path: '/services/:slug', component: AppLayout, children: [ { path: '', name: 'service-page', component: () => import('../views/ServicePage.vue') } ] },
   { path: '/marketplace', component: AppLayout, children: [ { path: '', name: 'marketplace', component: () => import('../views/Marketplace.vue') } ] },
   { path: '/gigs/:slug', component: AppLayout, children: [ { path: '', name: 'gig-detail', component: () => import('../views/GigDetail.vue') } ] },
-  { path: '/page/:slug', component: AppLayout, children: [ { path: '', name: 'dynamic-page', component: () => import('../views/DynamicPage.vue') } ] },
+  // Legacy /page/{slug} → canonical /{slug} (same DynamicPage as catch-all; avoids duplicate URLs)
+  { path: '/page/:slug', redirect: (to) => ({ path: `/${to.params.slug}` }) },
   { path: '/creators', component: AppLayout, children: [ { path: '', name: 'creators', component: () => import('../views/Creators.vue') } ] },
   { path: '/creators/:slug', component: AppLayout, children: [ { path: '', name: 'creator-public', component: () => import('../views/CreatorPublicProfile.vue') } ] },
   { path: '/studios', component: AppLayout, children: [ { path: '', name: 'studios', component: () => import('../views/Studios.vue') } ] },

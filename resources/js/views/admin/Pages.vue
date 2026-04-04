@@ -108,6 +108,43 @@
           </tr>
         </tbody>
       </table>
+      <div v-if="totalPages > 1" class="flex flex-col items-center justify-between gap-4 border-t border-[#e2e8f0] bg-[#f8fafc] px-4 py-4 sm:flex-row">
+        <p class="text-xs text-[#64748b]">
+          Showing <span class="font-medium text-[#1a1a1a]">{{ from }}</span> to <span class="font-medium text-[#1a1a1a]">{{ to }}</span> of <span class="font-medium text-[#1a1a1a]">{{ total }}</span> pages
+        </p>
+        <div class="flex items-center gap-1">
+          <button
+            type="button"
+            @click="listPage--"
+            :disabled="listPage <= 1"
+            class="rounded-lg border border-[#e2e8f0] bg-white p-1.5 text-[#64748b] transition hover:bg-[#f1f5f9] disabled:opacity-50"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            v-for="p in visiblePages"
+            :key="p"
+            type="button"
+            @click="listPage = p"
+            class="min-w-[32px] rounded-lg border px-2 py-1.5 text-xs font-medium transition"
+            :class="listPage === p ? 'bg-[#e63946] border-[#e63946] text-white shadow-sm' : 'bg-white border-[#e2e8f0] text-[#64748b] hover:bg-[#f1f5f9]'"
+          >
+            {{ p }}
+          </button>
+          <button
+            type="button"
+            @click="listPage++"
+            :disabled="listPage >= totalPages"
+            class="rounded-lg border border-[#e2e8f0] bg-white p-1.5 text-[#64748b] transition hover:bg-[#f1f5f9] disabled:opacity-50"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
     </div>
     <AdminEmptyState
       v-else
@@ -235,6 +272,12 @@ import AdminConfirmModal from '../../components/admin/AdminConfirmModal.vue';
 import RichTextEditor from '../../components/admin/RichTextEditor.vue';
 
 const items = ref([]);
+const listPage = ref(1);
+const total = ref(0);
+const from = ref(0);
+const to = ref(0);
+const totalPages = ref(1);
+const perPage = 20;
 const states = ref([]);
 const cities = ref([]);
 const loading = ref(true);
@@ -300,6 +343,37 @@ function selectCityFilter(city) {
   cityDropdownOpen.value = false;
 }
 
+const visiblePages = computed(() => {
+  const current = listPage.value;
+  const last = totalPages.value;
+  const delta = 2;
+  const left = current - delta;
+  const right = current + delta + 1;
+  const range = [];
+  let l;
+
+  for (let i = 1; i <= last; i++) {
+    if (i === 1 || i === last || (i >= left && i < right)) {
+      range.push(i);
+    }
+  }
+
+  const rangeWithDots = [];
+  for (const i of range) {
+    if (l) {
+      if (i - l === 2) {
+        rangeWithDots.push(l + 1);
+      } else if (i - l !== 1) {
+        rangeWithDots.push('...');
+      }
+    }
+    rangeWithDots.push(i);
+    l = i;
+  }
+
+  return rangeWithDots.filter((p) => typeof p === 'number');
+});
+
 function selectCityForModal(city) {
   form.city_id = String(city.id);
   modalCitySearch.value = city.name;
@@ -328,7 +402,7 @@ async function loadCities() {
 async function load() {
   loading.value = true;
   try {
-    const params = {};
+    const params = { page: listPage.value, per_page: perPage };
     if (scopeFilter.value === 'global') params.scope = 'global';
     if (scopeFilter.value === 'state' && scopeFilterStateId.value) {
       params.scope = 'state';
@@ -339,12 +413,23 @@ async function load() {
       params.city_id = scopeFilterCityId.value;
     }
     const r = await axios.get('/api/admin/pages', { params });
-    items.value = r.data;
+    items.value = r.data.data;
+    total.value = r.data.total;
+    from.value = r.data.from ?? 0;
+    to.value = r.data.to ?? 0;
+    totalPages.value = r.data.last_page;
   } finally {
     loading.value = false;
   }
 }
-watch([scopeFilter, scopeFilterStateId, scopeFilterCityId], load);
+watch([scopeFilter, scopeFilterStateId, scopeFilterCityId], () => {
+  if (listPage.value !== 1) {
+    listPage.value = 1;
+  } else {
+    load();
+  }
+});
+watch(listPage, load);
 function openForm(item = null) {
   editing.value = item;
   if (item) {

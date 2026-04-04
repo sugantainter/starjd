@@ -78,6 +78,14 @@ Route::get('/storage/{path}', \App\Http\Controllers\FileAccessController::class)
 
 /*
 |--------------------------------------------------------------------------
+| XML sitemaps (generated under storage/app/sitemaps — no write permission on public/)
+|--------------------------------------------------------------------------
+*/
+Route::get('/{sitemapFile}', [SitemapController::class, 'servePublic'])
+    ->where('sitemapFile', 'sitemap\\.xml|sitemap_[0-9]+\\.xml');
+
+/*
+|--------------------------------------------------------------------------
 | API Routes (SPA)
 |--------------------------------------------------------------------------
 */
@@ -333,4 +341,10 @@ Route::middleware(['auth:web', 'verified', 'creator'])->group(function () {
 | /creator/*, /brand/*, /admin/*, etc.
 */
 Route::get('/login', [HomeController::class, 'index'])->name('login');
+
+// Legacy CMS URLs: /page/{slug} → /{slug} (301; canonical is root path, e.g. /influencers-in-ahmedabad)
+Route::get('/page/{slug}', function (string $slug) {
+    return redirect('/'.$slug, 301);
+})->where('slug', '[^/]+');
+
 Route::get('/{any?}', [HomeController::class, 'index'])->where('any', '.*')->name('home');

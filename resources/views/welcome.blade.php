@@ -10,7 +10,7 @@
             <h4 class="mb-6 text-center text-sm font-bold uppercase tracking-widest text-white">Our Pages</h4>
             <div class="mx-auto max-w-7xl grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                 @foreach($pages as $page)
-                    <a href="{{ url('/page/' . $page->slug) }}" class="text-[11px] font-medium text-[#94a3b8] transition-colors hover:text-white truncate" title="{{ $page->title }}">{{ $page->title }}</a>
+                    <a href="{{ url($page->publicPath() ?? '/'.$page->slug) }}" class="text-[11px] font-medium text-[#94a3b8] transition-colors hover:text-white truncate" title="{{ $page->title }}">{{ $page->title }}</a>
                 @endforeach
             </div>
             

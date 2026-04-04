@@ -22,8 +22,10 @@ class PageController extends Controller
                 $query->where('city_id', $request->city_id);
             }
         }
-        $pages = $query->get();
-        return response()->json($pages);
+
+        $perPage = min(max((int) $request->input('per_page', 20), 5), 100);
+
+        return response()->json($query->paginate($perPage));
     }
 
     public function store(Request $request): JsonResponse

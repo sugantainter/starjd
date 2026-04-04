@@ -11,7 +11,11 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $pages = \App\Models\Page::published()->inRandomOrder()->limit(18)->get(['id', 'title', 'slug']);
+        $pages = Page::published()
+            ->with(['state:id,slug', 'city:id,slug'])
+            ->inRandomOrder()
+            ->limit(18)
+            ->get(['id', 'title', 'slug', 'state_id', 'city_id']);
         return view('welcome', compact('pages'));
     }
 }

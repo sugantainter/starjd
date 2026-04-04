@@ -22,19 +22,24 @@
 
     <div class="grid gap-6">
       <!-- Status Cards -->
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div class="rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-sm">
           <p class="text-sm font-medium text-[#64748b]">Last Generated</p>
           <p class="mt-1 text-2xl font-bold text-[#1a1a1a]">{{ status.last_generated || 'Never' }}</p>
         </div>
         <div class="rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-sm">
-          <p class="text-sm font-medium text-[#64748b]">Total Sitemaps</p>
+          <p class="text-sm font-medium text-[#64748b]">URLs in Sitemap</p>
+          <p class="mt-1 text-2xl font-bold text-[#1a1a1a]">{{ status.total_url_count ?? 0 }}</p>
+          <p class="mt-0.5 text-xs text-[#94a3b8]">Indexed page entries</p>
+        </div>
+        <div class="rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-sm">
+          <p class="text-sm font-medium text-[#64748b]">Total Sitemap Files</p>
           <p class="mt-1 text-2xl font-bold text-[#1a1a1a]">{{ status.sitemaps?.length || 0 }}</p>
         </div>
         <div class="rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-sm">
           <p class="text-sm font-medium text-[#64748b]">Main Index URL</p>
           <div class="mt-1 flex items-center gap-2">
-            <code class="rounded bg-[#f1f5f9] px-2 py-1 text-xs text-[#e63946]">{{ mainIndexUrl }}</code>
+            <code class="rounded bg-[#f1f5f9] px-2 py-1 text-xs text-[#e63946] break-all">{{ mainIndexUrl }}</code>
           </div>
         </div>
       </div>
@@ -64,6 +69,7 @@
             <thead class="bg-[#f8fafc] text-[#64748b] uppercase text-[11px] font-bold tracking-wider">
               <tr>
                 <th class="px-5 py-3">File Name</th>
+                <th class="px-5 py-3 text-right">URLs</th>
                 <th class="px-5 py-3">Size</th>
                 <th class="px-5 py-3">Last Modified</th>
                 <th class="px-5 py-3 text-right">Action</th>
@@ -71,15 +77,16 @@
             </thead>
             <tbody class="divide-y divide-[#e2e8f0]">
               <tr v-if="loading_status" v-for="i in 3" :key="'loader-'+i">
-                <td colspan="4" class="px-5 py-4"><div class="h-4 w-full animate-pulse rounded bg-[#f1f5f9]"></div></td>
+                <td colspan="5" class="px-5 py-4"><div class="h-4 w-full animate-pulse rounded bg-[#f1f5f9]"></div></td>
               </tr>
               <tr v-else-if="status.sitemaps?.length === 0">
-                <td colspan="4" class="px-5 py-10 text-center text-[#94a3b8]">No sitemaps generated yet.</td>
+                <td colspan="5" class="px-5 py-10 text-center text-[#94a3b8]">No sitemaps generated yet.</td>
               </tr>
               <tr v-for="file in status.sitemaps" :key="file.name" class="hover:bg-[#f8fafc] transition">
                 <td class="px-5 py-4">
                   <span class="font-medium text-[#1a1a1a]">{{ file.name }}</span>
                 </td>
+                <td class="px-5 py-4 text-right tabular-nums font-semibold text-[#1a1a1a]">{{ file.url_count ?? 0 }}</td>
                 <td class="px-5 py-4 text-[#64748b]">{{ file.size }}</td>
                 <td class="px-5 py-4 text-[#64748b]">{{ file.last_modified }}</td>
                 <td class="px-5 py-4 text-right">
