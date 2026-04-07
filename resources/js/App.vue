@@ -2380,11 +2380,10 @@ function categoryCarouselPrev() {
         Math.max(1, categories.value.length);
 }
 function categoryCarouselGoTo(i) {
-    const centerOffset = Math.floor(CATEGORY_CARDS_PER_ROW / 2);
     const len = categories.value.length;
     const targetScroll = Math.max(
         0,
-        Math.min(len - CATEGORY_CARDS_PER_ROW, i - centerOffset),
+        Math.min(len - CATEGORY_CARDS_PER_ROW, i),
     );
     categoryCarouselIndex.value = targetScroll;
 }
@@ -2405,10 +2404,7 @@ const categoryCarouselTrackStyle = computed(() => {
 });
 
 const categoryCenterIndex = computed(() => {
-    const n = categoryCarouselIndex.value;
-    const len = categories.value.length;
-    const centerOffset = Math.floor(CATEGORY_CARDS_PER_ROW / 2);
-    return Math.min(len - 1, n + centerOffset);
+    return categoryCarouselIndex.value;
 });
 let categoryCarouselIntervalId = null;
 watch(
