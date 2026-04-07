@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\StudioImage;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Str;
@@ -15,8 +16,7 @@ class StudioDetailResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $mainImage = $this->resource->images()->where('is_primary', true)->first()
-            ?? $this->resource->images()->orderBy('sort_order')->first();
+        $mainImage = $this->mainStudioImage();
 
         $rawDescription = $this->resource->description ?? '';
         $decodedDescription = $rawDescription !== '' ? html_entity_decode($rawDescription) : null;
@@ -26,7 +26,7 @@ class StudioDetailResource extends JsonResource
             'slug' => $this->resource->slug,
             'name' => $this->resource->name,
             'description' => $decodedDescription,
-            'main_image' => $mainImage ? '/storage/' . ltrim($mainImage->image, '/') : null,
+            'main_image' => $mainImage?->image_url,
             'price_per_hour' => $this->resource->price_per_hour ? (float) $this->resource->price_per_hour : null,
             'price_per_day' => $this->resource->price_per_day ? (float) $this->resource->price_per_day : null,
             'cancellation_policy' => $this->resource->cancellation_policy ?? 'moderate',
@@ -46,7 +46,7 @@ class StudioDetailResource extends JsonResource
             'featured' => (bool) $this->resource->is_featured,
             'gallery' => $this->resource->images->map(fn ($img) => [
                 'id' => $img->id,
-                'image' => '/storage/' . ltrim($img->image, '/'),
+                'image' => $img->image_url,
                 'caption' => $img->caption,
                 'is_primary' => $img->is_primary,
                 'sort_order' => $img->sort_order,
@@ -86,6 +86,24 @@ class StudioDetailResource extends JsonResource
         }
 
         return $data;
+    }
+
+    /**
+     * Same primary/first image logic as {@see StudioResource}; uses eager-loaded `images` when present.
+     */
+    private function mainStudioImage(): ?StudioImage
+    {
+        $studio = $this->resource;
+        $images = $studio->relationLoaded('images')
+            ? $studio->images
+            : $studio->images()->orderBy('sort_order')->get();
+
+        if ($images->isEmpty()) {
+            return null;
+        }
+
+        return $images->first(fn (StudioImage $img) => $img->is_primary)
+            ?? $images->sortBy('sort_order')->first();
     }
 
     /** Get the category relation (Studio has a string column "category" that shadows the relationship). */

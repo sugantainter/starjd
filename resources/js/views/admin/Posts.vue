@@ -86,7 +86,7 @@
             <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Featured image</label>
             <div class="flex flex-wrap items-end gap-3">
               <div class="flex-1 min-w-0">
-                <input v-model="form.image" type="text" class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-sm text-[#1a1a1a]" placeholder="Image URL or upload below" />
+                <input v-model="form.image" type="text" class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-sm text-[#1a1a1a]" placeholder="Storage path (e.g. posts/2026-04-04/…) or full URL" />
               </div>
               <div class="flex items-center gap-2">
                 <input ref="featuredImageInput" type="file" accept="image/*" class="hidden" @change="onFeaturedImageSelect" />
@@ -94,7 +94,12 @@
               </div>
             </div>
             <p v-if="form.image" class="mt-1.5 text-xs text-[#64748b]">Preview:</p>
-            <img v-if="form.image" :src="form.image" alt="Featured" class="mt-1 max-h-32 rounded-lg border border-[#e2e8f0] object-cover" />
+            <StoragePreviewImg
+              v-if="form.image"
+              :path-or-url="form.image"
+              alt="Featured"
+              class="mt-1 max-h-32 rounded-lg border border-[#e2e8f0] object-cover"
+            />
           </div>
 
           <!-- Category label (primary) -->
@@ -149,6 +154,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import axios from 'axios';
 import RichTextEditor from '../../components/admin/RichTextEditor.vue';
+import StoragePreviewImg from '../../components/admin/StoragePreviewImg.vue';
 
 const items = ref([]);
 const loading = ref(true);
@@ -247,7 +253,7 @@ async function onFeaturedImageSelect(ev) {
       headers: { Accept: 'application/json' },
       withCredentials: true,
     });
-    form.image = data.url || '';
+    form.image = data.path || data.url || '';
   } catch (e) {
     const status = e.response?.status;
     let msg = 'Image upload failed.';

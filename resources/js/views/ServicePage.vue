@@ -9,6 +9,7 @@
           :alt="service.name"
           class="absolute inset-0 h-full w-full object-cover"
           :style="{ objectPosition: bannerPositionStyle }"
+          @error="onServiceBannerError"
         />
         <div
           v-else
@@ -60,6 +61,16 @@ const route = useRoute();
 const service = ref(null);
 const loading = ref(true);
 
+const SERVICE_BANNER_FALLBACK =
+  'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1920&h=600&fit=crop';
+
+function onServiceBannerError(e) {
+  const el = e?.target;
+  if (!el || el.dataset.bannerFallback === '1') return;
+  el.dataset.bannerFallback = '1';
+  el.src = SERVICE_BANNER_FALLBACK;
+}
+
 const bannerPositionStyle = computed(() => {
   const p = service.value?.banner_position;
   if (p === 'top') return 'center top';
@@ -85,15 +96,28 @@ function updateDocumentMeta() {
 
 watch(service, updateDocumentMeta, { immediate: true });
 
-onMounted(async () => {
+async function loadService() {
+  loading.value = true;
+  service.value = null;
   try {
     const r = await axios.get('/api/services/' + encodeURIComponent(route.params.slug));
-    service.value = r.data;
+    service.value = r.data?.data ?? r.data;
   } catch {
     service.value = null;
   } finally {
     loading.value = false;
   }
+}
+
+watch(
+  () => route.params.slug,
+  () => {
+    loadService();
+  },
+);
+
+onMounted(() => {
+  loadService();
 });
 </script>
 

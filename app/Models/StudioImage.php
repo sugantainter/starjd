@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\StoragePublicUrl;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -29,6 +30,6 @@ class StudioImage extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        return $this->image ? \Illuminate\Support\Facades\Storage::url($this->image) : null;
+        return $this->image ? StoragePublicUrl::resolve($this->image) : null;
     }
 }

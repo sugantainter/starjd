@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Post;
+use App\Support\StoragePublicUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 
@@ -47,7 +48,7 @@ class PostController extends Controller
             'excerpt' => $p->excerpt ? html_entity_decode($p->excerpt) : '',
             'category' => $p->category_label,
             'date' => $p->published_at?->format('M j, Y'),
-            'image' => $p->image,
+            'image' => $p->image ? (StoragePublicUrl::resolve($p->image) ?? $p->image) : null,
             'url' => '/blog/' . $p->slug,
         ]);
 
@@ -72,6 +73,8 @@ class PostController extends Controller
 
         $post->refresh();
 
+        $bodyRaw = $post->body ? html_entity_decode($post->body) : '';
+
         return response()->json([
             'id' => $post->id,
             'title' => $post->title ? html_entity_decode($post->title) : '',
@@ -79,8 +82,8 @@ class PostController extends Controller
             'excerpt' => $post->excerpt ? html_entity_decode($post->excerpt) : '',
             'meta_title' => $post->meta_title ? html_entity_decode($post->meta_title) : '',
             'meta_description' => $post->meta_description ? html_entity_decode($post->meta_description) : '',
-            'body' => $post->body ? html_entity_decode($post->body) : '',
-            'image' => $post->image,
+            'body' => StoragePublicUrl::rewriteStorageUrlsInHtml($bodyRaw),
+            'image' => $post->image ? (StoragePublicUrl::resolve($post->image) ?? $post->image) : null,
             'category' => $post->category_label,
             'category_tags' => $post->category_tags ?? [],
             'date' => $post->published_at?->format('M j, Y'),

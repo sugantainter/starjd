@@ -11,7 +11,6 @@ use App\Services\MarketingCampaignService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class MarketingController extends Controller
 {
@@ -30,7 +29,6 @@ class MarketingController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        Log::info('MarketingController@store: Request received', $request->all());
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
@@ -39,10 +37,8 @@ class MarketingController extends Controller
             'target_id' => 'nullable|integer',
             'scheduled_at' => 'nullable|date',
         ]);
-        Log::info('MarketingController@store: Validation passed', $data);
 
         $campaign = MarketingCampaign::create($data);
-        Log::info('MarketingController@store: Campaign created', ['id' => $campaign->id]);
 
         return response()->json([
             'message' => 'Campaign created successfully',
@@ -65,14 +61,11 @@ class MarketingController extends Controller
 
     public function send(MarketingCampaign $marketing): JsonResponse
     {
-        Log::info('MarketingController@send: Request received', ['id' => $marketing->id]);
         if ($marketing->status !== 'draft' && $marketing->status !== 'failed') {
-            Log::warning('MarketingController@send: Campaign not in draft/failed status', ['status' => $marketing->status]);
             return response()->json(['message' => 'Campaign already processed or in progress'], 400);
         }
 
         $this->service->dispatchCampaign($marketing);
-        Log::info('MarketingController@send: Service dispatch called');
 
         return response()->json([
             'message' => 'Campaign queued for delivery',

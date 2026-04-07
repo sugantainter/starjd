@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class Page extends Model
 {
@@ -50,11 +51,11 @@ class Page extends Model
         }
 
         if ($this->city_id && $this->city?->slug) {
-            return '/'.$this->slug.'-in-'.$this->city->slug;
+            return '/'.$this->slug.'-in-'.Str::slug($this->city->slug);
         }
 
         if ($this->state_id && $this->state?->slug) {
-            return '/'.$this->slug.'-in-'.$this->state->slug;
+            return '/'.$this->slug.'-in-'.Str::slug($this->state->slug);
         }
 
         if ($this->city_id || $this->state_id) {

@@ -87,7 +87,7 @@ class CreatorProfileDetailResource extends JsonResource
             if ($user && $user->relationLoaded('creatorImagePosts')) {
                 $data['portfolio'] = $user->creatorImagePosts->map(fn ($p) => [
                     'id' => $p->id,
-                    'image' => $p->image ? '/storage/' . ltrim($p->image, '/') : null,
+                    'image' => $p->image_url ?: null,
                     'caption' => $p->caption,
                     'sort_order' => $p->sort_order,
                 ]);

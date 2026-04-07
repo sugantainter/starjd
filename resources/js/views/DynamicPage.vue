@@ -204,12 +204,12 @@
                  <div class="mt-5 space-y-5">
                    <router-link v-for="b in blogs" :key="b.id" :to="'/blog/' + b.slug" class="group flex gap-4">
                       <div class="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-[#f1f5f9]">
-                        <img :src="b.featured_image_url || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=200&fit=crop'" class="h-full w-full object-cover transition duration-300 group-hover:scale-110" />
+                        <img :src="b.image || b.featured_image_url || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=200&fit=crop'" class="h-full w-full object-cover transition duration-300 group-hover:scale-110" />
                       </div>
                       <div class="min-w-0 flex-1">
                         <h4 class="line-clamp-2 text-sm font-bold transition group-hover:text-[#e63946] leading-tight">{{ b.title }}</h4>
                         <div class="mt-1 flex items-center justify-between">
-                          <span class="text-[9px] font-bold uppercase tracking-widest text-[#e63946]">{{ b.category?.name || 'Blog' }}</span>
+                          <span class="text-[9px] font-bold uppercase tracking-widest text-[#e63946]">{{ typeof b.category === 'string' ? b.category : (b.category?.name || 'Blog') }}</span>
                           <span class="text-[9px] text-[#94a3b8]">{{ b.reading_time || '5 min' }}</span>
                         </div>
                       </div>

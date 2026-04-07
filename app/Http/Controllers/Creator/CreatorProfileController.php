@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Creator;
 
 use App\Http\Controllers\Controller;
+use App\Support\StoragePublicUrl;
 use App\Models\CreatorProfile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -126,9 +127,11 @@ class CreatorProfileController extends Controller
     {
         $data = $profile->toArray();
         if (! empty($profile->avatar)) {
-            $url = Storage::url($profile->avatar);
+            $url = StoragePublicUrl::resolve($profile->avatar);
             $ts = $profile->updated_at?->timestamp ?? time();
-            $data['avatar_url'] = $ts ? $url . (str_contains($url, '?') ? '&' : '?') . 't=' . $ts : $url;
+            $data['avatar_url'] = $url !== null
+                ? $url.(str_contains($url, '?') ? '&' : '?').'t='.$ts
+                : null;
         } else {
             $data['avatar_url'] = null;
         }

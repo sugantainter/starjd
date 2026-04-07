@@ -40,7 +40,7 @@
               <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-5">
                   <div class="h-16 w-16 shrink-0 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center overflow-hidden">
-                    <img v-if="c.creator?.profile?.avatar_url" :src="c.creator.profile.avatar_url" class="h-full w-full object-cover" />
+                    <img v-if="creatorAvatarUrl(c)" :src="creatorAvatarUrl(c)" class="h-full w-full object-cover" />
                     <span v-else class="text-2xl font-black text-slate-300 uppercase">{{ c.creator?.name?.charAt(0) }}</span>
                   </div>
                   <div>
@@ -374,6 +374,13 @@ const previewUrl = ref('');
 const previewType = ref('');
 
 const steps = ['Request', 'Accepted', 'Paid', 'Delivered', 'Completed'];
+
+/** API uses creator_profile (snake_case); keep fallbacks for older payloads */
+function creatorAvatarUrl(c) {
+  const u = c?.creator;
+  if (!u) return '';
+  return u.creator_profile?.avatar_url || u.profile?.avatar_url || u.avatar_url || '';
+}
 
 const statusMap = {
   'pending': 0,

@@ -74,8 +74,6 @@ class GenerateDeliverablePreview implements ShouldQueue
                 'deliverable_preview_path' => $dest,
                 'deliverable_preview_status' => 'ready',
             ]);
-
-            Log::info('Deliverable preview generated', ['collaboration_id' => $collab->id, 'path' => $dest]);
         } catch (\Throwable $e) {
             Log::error('GenerateDeliverablePreview failed', [
                 'collaboration_id' => $this->collaborationId,

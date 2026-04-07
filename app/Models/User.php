@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\StoragePublicUrl;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -179,7 +180,7 @@ class User extends Authenticatable implements MustVerifyEmail
             if (str_starts_with($this->avatar, 'http')) {
                 return $this->avatar;
             }
-            return \Illuminate\Support\Facades\Storage::url($this->avatar);
+            return StoragePublicUrl::resolve($this->avatar);
         }
         return null;
     }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\StoragePublicUrl;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -136,8 +137,12 @@ class CreatorProfile extends Model
             return null;
         }
 
-        $url = \Illuminate\Support\Facades\Storage::url($this->avatar);
+        $url = StoragePublicUrl::resolve($this->avatar);
+        if ($url === null) {
+            return null;
+        }
         $ts = $this->updated_at?->timestamp ?? time();
-        return $url . (str_contains($url, '?') ? '&' : '?') . 't=' . $ts;
+
+        return $url.(str_contains($url, '?') ? '&' : '?').'t='.$ts;
     }
 }

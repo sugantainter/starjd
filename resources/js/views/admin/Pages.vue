@@ -31,10 +31,9 @@
       <select
         v-model="scopeFilterStateId"
         class="rounded-full border border-[#e2e8f0] bg-white px-3 py-1.5 text-sm text-[#1a1a1a]"
-        @change="scopeFilter = scopeFilterStateId ? 'state' : ''; scopeFilterCityId = ''; citySearch = ''"
       >
         <option value="">By state…</option>
-        <option v-for="s in states" :key="s.id" :value="s.id">{{ s.name }}</option>
+        <option v-for="s in states" :key="s.id" :value="String(s.id)">{{ s.name }}</option>
       </select>
       <div class="relative">
         <input
@@ -62,7 +61,7 @@
             :key="c.id"
             type="button"
             class="w-full px-4 py-2 text-left text-sm hover:bg-[#f8fafc]"
-            :class="{ 'bg-red-50 text-[#e63946]': scopeFilterCityId === c.id }"
+            :class="{ 'bg-red-50 text-[#e63946]': String(scopeFilterCityId) === String(c.id) }"
             @click="selectCityFilter(c)"
           >
             <div class="font-medium">{{ c.name }}</div>
@@ -173,7 +172,19 @@
           </div>
           <div>
             <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Slug</label>
-            <input v-model="form.slug" type="text" class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-[#1a1a1a]" placeholder="URL path (e.g. about-us)" />
+            <input
+              v-model="form.slug"
+              type="text"
+              class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 font-mono text-sm text-[#1a1a1a]"
+              placeholder="auto from title if left blank"
+            />
+            <p v-if="formPublicPathPreview" class="mt-1.5 text-xs text-[#64748b]">
+              Public URL: <code class="rounded bg-[#f1f5f9] px-1.5 py-0.5 text-[#1a1a1a]">{{ formPublicPathPreview }}</code>
+            </p>
+            <p class="mt-1 text-xs text-[#94a3b8]">
+              For state or city pages, use the topic only (e.g. <code class="text-[#64748b]">top-influencers</code>) — the site adds
+              <code class="text-[#64748b]">-in-{state-or-city}</code> automatically.
+            </p>
           </div>
           <div class="rounded-lg border border-[#e2e8f0] bg-[#f8fafc] p-3">
             <h3 class="mb-2 text-sm font-semibold text-[#1a1a1a]">Scope (location)</h3>
@@ -188,7 +199,7 @@
               </label>
               <select v-if="scopeType === 'state'" v-model="form.state_id" class="ml-6 rounded border border-[#e2e8f0] px-2 py-1.5 text-sm">
                 <option value="">Select state</option>
-                <option v-for="s in states" :key="s.id" :value="s.id">{{ s.name }}</option>
+                <option v-for="s in states" :key="s.id" :value="String(s.id)">{{ s.name }}</option>
               </select>
               <label class="flex items-center gap-2">
                 <input v-model="scopeType" type="radio" value="city" />
@@ -197,7 +208,7 @@
               <template v-if="scopeType === 'city'">
                 <select v-model="form.state_id" class="ml-6 mr-2 rounded border border-[#e2e8f0] px-2 py-1.5 text-sm" @change="form.city_id = ''; modalCitySearch = ''">
                   <option value="">State first</option>
-                  <option v-for="s in states" :key="s.id" :value="s.id">{{ s.name }}</option>
+                  <option v-for="s in states" :key="s.id" :value="String(s.id)">{{ s.name }}</option>
                 </select>
                 <div class="relative ml-6 mt-2 inline-block">
                   <input
@@ -330,15 +341,47 @@ const filteredCitiesForModal = computed(() => {
   return list;
 });
 
+/** Public path preview in the editor (matches Page::publicPath()). */
+const formPublicPathPreview = computed(() => {
+  if (!showModal.value) return '';
+  const slug = (form.slug || '').trim();
+  if (!slug) return '';
+  if (scopeType.value === 'city' && form.city_id) {
+    const c = cities.value.find((x) => String(x.id) === String(form.city_id));
+    if (c?.slug) return `/${slug}-in-${slugifyTitle(c.slug)}`;
+  }
+  if (scopeType.value === 'state' && form.state_id) {
+    const s = states.value.find((x) => String(x.id) === String(form.state_id));
+    if (s?.slug) return `/${slug}-in-${slugifyTitle(s.slug)}`;
+  }
+  if (scopeType.value === 'global') return `/${slug}`;
+  return '';
+});
+
+function slugifyTitle(str) {
+  return String(str || '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 function selectCityFilter(city) {
   if (city === '') {
     scopeFilterCityId.value = '';
     citySearch.value = '';
     scopeFilter.value = scopeFilterStateId.value ? 'state' : '';
   } else {
-    scopeFilterCityId.value = city.id;
+    scopeFilterCityId.value = String(city.id);
     citySearch.value = city.name;
     scopeFilter.value = 'city';
+    if (city.state_id != null) {
+      scopeFilterStateId.value = String(city.state_id);
+    }
   }
   cityDropdownOpen.value = false;
 }
@@ -383,10 +426,10 @@ function selectCityForModal(city) {
 function pageUrl(page) {
   const base = window.location.origin;
   if (page.city_id && page.city?.slug) {
-    return `${base}/${page.slug}-in-${page.city.slug}`;
+    return `${base}/${page.slug}-in-${slugifyTitle(page.city.slug)}`;
   }
   if (page.state_id && page.state?.slug) {
-    return `${base}/${page.slug}-in-${page.state.slug}`;
+    return `${base}/${page.slug}-in-${slugifyTitle(page.state.slug)}`;
   }
   return `${base}/${page.slug}`;
 }
@@ -399,20 +442,30 @@ async function loadCities() {
   const r = await axios.get('/api/admin/cities');
   cities.value = r.data;
 }
+function buildPagesListParams() {
+  const params = { page: listPage.value, per_page: perPage };
+  // Order matters: avoid relying on scopeFilter === 'state' (it updates in another watcher and races).
+  if (scopeFilter.value === 'global') {
+    params.scope = 'global';
+    return params;
+  }
+  if (scopeFilter.value === 'city' && scopeFilterCityId.value) {
+    params.scope = 'city';
+    params.city_id = Number(scopeFilterCityId.value);
+    return params;
+  }
+  if (scopeFilterStateId.value) {
+    params.scope = 'state';
+    params.state_id = Number(scopeFilterStateId.value);
+    return params;
+  }
+  return params;
+}
+
 async function load() {
   loading.value = true;
   try {
-    const params = { page: listPage.value, per_page: perPage };
-    if (scopeFilter.value === 'global') params.scope = 'global';
-    if (scopeFilter.value === 'state' && scopeFilterStateId.value) {
-      params.scope = 'state';
-      params.state_id = scopeFilterStateId.value;
-    }
-    if (scopeFilter.value === 'city' && scopeFilterCityId.value) {
-      params.scope = 'city';
-      params.city_id = scopeFilterCityId.value;
-    }
-    const r = await axios.get('/api/admin/pages', { params });
+    const r = await axios.get('/api/admin/pages', { params: buildPagesListParams() });
     items.value = r.data.data;
     total.value = r.data.total;
     from.value = r.data.from ?? 0;
@@ -430,6 +483,35 @@ watch([scopeFilter, scopeFilterStateId, scopeFilterCityId], () => {
   }
 });
 watch(listPage, load);
+
+/** Keep list scope in sync if state id changes without native change event (e.g. programmatic). */
+watch(scopeFilterStateId, (id) => {
+  if (scopeFilter.value === 'city' && scopeFilterCityId.value) {
+    const city = cities.value.find((c) => String(c.id) === String(scopeFilterCityId.value));
+    if (city && id && String(city.state_id) !== String(id)) {
+      scopeFilterCityId.value = '';
+      citySearch.value = '';
+      scopeFilter.value = id ? 'state' : '';
+    }
+    return;
+  }
+  if (id) {
+    scopeFilter.value = 'state';
+    scopeFilterCityId.value = '';
+    citySearch.value = '';
+  } else if (!scopeFilterCityId.value) {
+    scopeFilter.value = '';
+  }
+});
+
+/** New pages: auto slug from title (server still normalizes on save). */
+watch(
+  () => form.title,
+  (title) => {
+    if (!showModal.value || editing.value) return;
+    form.slug = slugifyTitle(title);
+  },
+);
 function openForm(item = null) {
   editing.value = item;
   if (item) {
@@ -460,13 +542,19 @@ async function save() {
   try {
     const payload = {
       title: form.title,
-      slug: form.slug || undefined,
+      slug: (form.slug || '').trim() || undefined,
       content: form.content || undefined,
       meta_title: form.meta_title || undefined,
       meta_description: form.meta_description || undefined,
       status: form.status,
-      state_id: scopeType.value === 'global' ? null : (form.state_id || null),
-      city_id: scopeType.value === 'city' ? (form.city_id || null) : null,
+      state_id:
+        scopeType.value === 'global'
+          ? null
+          : form.state_id
+            ? Number(form.state_id)
+            : null,
+      city_id:
+        scopeType.value === 'city' && form.city_id ? Number(form.city_id) : null,
     };
     if (editing.value) {
       await axios.put('/api/admin/pages/' + editing.value.id, payload);

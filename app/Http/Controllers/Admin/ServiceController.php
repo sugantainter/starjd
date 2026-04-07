@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Support\StoragePublicUrl;
 use App\Models\Service;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,7 +14,13 @@ class ServiceController extends Controller
     public function index(): JsonResponse
     {
         $services = Service::orderBy('sort_order')->orderBy('name')->get();
-        return response()->json($services);
+
+        return response()->json($services->map(function (Service $s) {
+            $a = $s->toArray();
+            $a['body'] = StoragePublicUrl::rewriteStorageUrlsInHtml($s->body ?? '');
+
+            return $a;
+        }));
     }
 
     public function store(Request $request): JsonResponse
@@ -35,8 +42,19 @@ class ServiceController extends Controller
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
         $data['is_active'] = $data['is_active'] ?? true;
         $data['sort_order'] = $data['sort_order'] ?? Service::max('sort_order') + 1;
+        foreach (['image', 'banner_image'] as $k) {
+            if (! empty($data[$k])) {
+                $data[$k] = StoragePublicUrl::normalizeToStoragePath($data[$k]);
+            }
+        }
+        if (array_key_exists('body', $data) && $data['body'] !== null) {
+            $data['body'] = StoragePublicUrl::normalizeStorageUrlsInHtml($data['body']);
+        }
         $service = Service::create($data);
-        return response()->json(['message' => 'Created', 'service' => $service]);
+        $arr = $service->toArray();
+        $arr['body'] = StoragePublicUrl::rewriteStorageUrlsInHtml($service->body ?? '');
+
+        return response()->json(['message' => 'Created', 'service' => $arr]);
     }
 
     public function update(Request $request, int $service): JsonResponse
@@ -56,8 +74,20 @@ class ServiceController extends Controller
             'sort_order' => 'nullable|integer',
             'is_active' => 'nullable|boolean',
         ]);
+        foreach (['image', 'banner_image'] as $k) {
+            if (array_key_exists($k, $data) && $data[$k] !== null && $data[$k] !== '') {
+                $data[$k] = StoragePublicUrl::normalizeToStoragePath($data[$k]);
+            }
+        }
+        if (array_key_exists('body', $data) && $data['body'] !== null) {
+            $data['body'] = StoragePublicUrl::normalizeStorageUrlsInHtml($data['body']);
+        }
         $service->update($data);
-        return response()->json(['message' => 'Updated', 'service' => $service->fresh()]);
+        $fresh = $service->fresh();
+        $arr = $fresh->toArray();
+        $arr['body'] = StoragePublicUrl::rewriteStorageUrlsInHtml($fresh->body ?? '');
+
+        return response()->json(['message' => 'Updated', 'service' => $arr]);
     }
 
     public function destroy(int $service): JsonResponse

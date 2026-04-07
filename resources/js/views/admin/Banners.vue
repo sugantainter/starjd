@@ -29,7 +29,7 @@
         <tbody class="divide-y divide-[#e2e8f0]">
           <tr v-for="banner in banners" :key="banner.id" class="hover:bg-[#f8fafc] transition-colors">
             <td class="px-6 py-4">
-              <img :src="banner.image" class="h-12 w-24 object-cover rounded-lg border border-[#e2e8f0]" />
+              <StoragePreviewImg :path-or-url="banner.image" alt="" class="h-12 w-24 object-cover rounded-lg border border-[#e2e8f0]" />
             </td>
             <td class="px-6 py-4 text-sm font-medium text-[#1a1a1a]">{{ banner.title || 'No Title' }}</td>
             <td class="px-6 py-4 text-sm text-[#64748b]">{{ banner.link || '-' }}</td>
@@ -74,7 +74,7 @@
           <div>
             <label class="block text-sm font-medium text-[#64748b] mb-1">Banner Image</label>
             <div class="mt-1 flex items-center gap-4">
-              <img v-if="form.image" :src="form.image" class="h-20 w-40 object-cover rounded-lg border" />
+              <StoragePreviewImg v-if="form.image" :path-or-url="form.image" alt="" class="h-20 w-40 object-cover rounded-lg border" />
               <div v-else class="h-20 w-40 flex items-center justify-center border-2 border-dashed rounded-lg text-[#64748b] text-xs">No image</div>
               <input type="file" @change="handleFileUpload" class="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#e63946]/10 file:text-[#e63946] hover:file:bg-[#e63946]/20" accept="image/*" />
             </div>
@@ -104,6 +104,7 @@
 <script setup>
 import { ref, onMounted, reactive } from 'vue';
 import axios from 'axios';
+import StoragePreviewImg from '../../components/admin/StoragePreviewImg.vue';
 
 const banners = ref([]);
 const loading = ref(false);
@@ -150,7 +151,7 @@ async function handleFileUpload(e) {
     const res = await axios.post('/api/admin/banners/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
-    form.image = res.data.url;
+    form.image = res.data.path || res.data.url || '';
   } catch (err) {
     alert('Upload failed');
   } finally {

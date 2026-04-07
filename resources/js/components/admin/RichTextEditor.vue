@@ -445,8 +445,11 @@ async function onImageFileSelect(ev) {
       headers: { Accept: 'application/json' },
       withCredentials: true,
     });
-    const url = data.url;
-    if (url) editor.value.chain().focus().setImage({ src: url }).run();
+    const path = data.path;
+    const src = path
+      ? `/storage/${String(path).replace(/^\/+/, '').replace(/^storage\//, '')}`
+      : data.url;
+    if (src) editor.value.chain().focus().setImage({ src }).run();
   } catch (e) {
     const status = e.response?.status;
     let msg = 'Image upload failed.';

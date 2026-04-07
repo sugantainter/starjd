@@ -59,7 +59,11 @@
                 <button v-if="form.image" type="button" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 hover:bg-red-100" @click="form.image = ''">Remove</button>
               </div>
               <div v-if="form.image" class="mt-2 flex items-center gap-2">
-                <img :src="form.image" alt="Card" class="max-h-32 w-full max-w-[200px] rounded-lg border border-[#e2e8f0] object-cover" />
+                <StoragePreviewImg
+                  :path-or-url="form.image"
+                  alt="Card"
+                  class="max-h-32 w-full max-w-[200px] rounded-lg border border-[#e2e8f0] object-cover"
+                />
                 <div>
                   <label class="mb-0.5 block text-xs font-medium text-[#64748b]">Display</label>
                   <select v-model="form.image_fit" class="rounded border border-[#e2e8f0] px-2 py-1 text-sm text-[#1a1a1a]">
@@ -78,7 +82,11 @@
                 <button v-if="form.banner_image" type="button" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 hover:bg-red-100" @click="form.banner_image = ''">Remove</button>
               </div>
               <div v-if="form.banner_image" class="mt-2 flex items-center gap-2">
-                <img :src="form.banner_image" alt="Banner" class="max-h-32 w-full max-w-[200px] rounded-lg border border-[#e2e8f0] object-cover" />
+                <StoragePreviewImg
+                  :path-or-url="form.banner_image"
+                  alt="Banner"
+                  class="max-h-32 w-full max-w-[200px] rounded-lg border border-[#e2e8f0] object-cover"
+                />
                 <div>
                   <label class="mb-0.5 block text-xs font-medium text-[#64748b]">Position</label>
                   <select v-model="form.banner_position" class="rounded border border-[#e2e8f0] px-2 py-1 text-sm text-[#1a1a1a]">
@@ -139,6 +147,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import axios from 'axios';
 import RichTextEditor from '../../components/admin/RichTextEditor.vue';
+import StoragePreviewImg from '../../components/admin/StoragePreviewImg.vue';
 
 const items = ref([]);
 const loading = ref(true);
@@ -172,7 +181,7 @@ async function onImageSelect(ev, field) {
       headers: { Accept: 'application/json' },
       withCredentials: true,
     });
-    form[field] = data.url || '';
+    form[field] = data.path || data.url || '';
   } catch (e) {
     const status = e.response?.status;
     let msg = 'Upload failed.';

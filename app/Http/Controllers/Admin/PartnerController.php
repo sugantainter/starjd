@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Partner;
+use App\Support\StoragePublicUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -28,7 +29,7 @@ class PartnerController extends Controller
         $data['sort_order'] = $data['sort_order'] ?? Partner::max('sort_order') + 1;
         if ($request->hasFile('logo')) {
             $request->validate(['logo' => ['image', 'mimes:jpeg,png,jpg,webp,svg', 'max:' . self::LOGO_MAX_KB]]);
-            $data['logo'] = $request->file('logo')->store('partners', 'public');
+            $data['logo'] = $request->file('logo')->store('partners');
         }
         $partner = Partner::create($data);
         return response()->json(['message' => 'Created', 'partner' => $partner->fresh()]);
@@ -67,7 +68,7 @@ class PartnerController extends Controller
             'logo' => ['required', 'image', 'mimes:jpeg,png,jpg,webp,svg', 'max:' . self::LOGO_MAX_KB],
         ]);
         $path = $request->file('logo')->store('partners');
-        $url = Storage::url($path);
+        $url = StoragePublicUrl::resolve($path) ?? '';
         return response()->json(['url' => $url, 'path' => $path]);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Support\StoragePublicUrl;
 use App\Models\Banner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -59,7 +60,10 @@ class BannerController extends Controller
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('banners');
-            return response()->json(['url' => Storage::url($path)]);
+            return response()->json([
+                'url' => StoragePublicUrl::resolve($path),
+                'path' => $path,
+            ]);
         }
 
         return response()->json(['message' => 'No file uploaded'], 400);

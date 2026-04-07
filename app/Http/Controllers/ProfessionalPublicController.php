@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ServiceListingPublicResource;
 use App\Models\ServiceListing;
-use App\Models\ProfessionalProfile;
 use App\Models\User;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ProfessionalPublicController extends Controller
@@ -13,7 +12,7 @@ class ProfessionalPublicController extends Controller
     /**
      * List all active professional service gig listings.
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
         $query = ServiceListing::query()
             ->with(['user', 'serviceCategory'])
@@ -41,13 +40,13 @@ class ProfessionalPublicController extends Controller
         $perPage = (int) $request->input('per_page', 12);
         $listings = $query->latest()->paginate($perPage);
 
-        return response()->json($listings);
+        return ServiceListingPublicResource::collection($listings);
     }
 
     /**
      * Show a single professional service gig listing.
      */
-    public function show(string $slug): JsonResponse
+    public function show(string $slug)
     {
         $listing = ServiceListing::with([
             'user.professionalProfile',
@@ -57,21 +56,26 @@ class ProfessionalPublicController extends Controller
         ->where('is_active', true)
         ->firstOrFail();
 
-        return response()->json($listing);
+        // Flat JSON (same pattern as studio detail) — avoid { "data": { ... } } wrapper for SPA.
+        $payload = (new ServiceListingPublicResource($listing))->resolve();
+
+        return response()->json($payload);
     }
 
     /**
      * Show a professional's public profile and their listings.
      */
-    public function professionalProfile(string $userId): JsonResponse
+    public function professionalProfile(string $userId)
     {
-        $user = User::with(['professionalProfile', 'serviceListings' => fn($q) => $q->where('is_active', true)])
-            ->findOrFail($userId);
+        $user = User::with([
+            'professionalProfile',
+            'serviceListings' => fn ($q) => $q->where('is_active', true)->with('serviceCategory'),
+        ])->findOrFail($userId);
 
         return response()->json([
             'user' => $user->only('id', 'name', 'avatar_url'),
             'profile' => $user->professionalProfile,
-            'listings' => $user->serviceListings,
+            'listings' => ServiceListingPublicResource::collection($user->serviceListings),
         ]);
     }
 }

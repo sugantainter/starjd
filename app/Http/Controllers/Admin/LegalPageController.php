@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Support\StoragePublicUrl;
 use App\Models\Page;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -27,12 +28,13 @@ class LegalPageController extends Controller
 
         $items = collect(self::PAGE_DEFINITIONS)->map(function (string $title, string $slug) use ($pages) {
             $page = $pages->get($slug);
+            $rawContent = $page?->content ?? '';
 
             return [
                 'id' => $page?->id,
                 'slug' => $slug,
                 'title' => $page?->title ?? $title,
-                'content' => $page?->content ?? '',
+                'content' => StoragePublicUrl::rewriteStorageUrlsInHtml($rawContent),
                 'meta_title' => $page?->meta_title,
                 'meta_description' => $page?->meta_description,
                 'status' => $page?->status ?? 'draft',
@@ -57,6 +59,10 @@ class LegalPageController extends Controller
             'status' => ['required', Rule::in(['draft', 'published'])],
         ]);
 
+        if (array_key_exists('content', $data) && $data['content'] !== null) {
+            $data['content'] = StoragePublicUrl::normalizeStorageUrlsInHtml($data['content']);
+        }
+
         $page = Page::firstOrNew([
             'slug' => $slug,
             'state_id' => null,
@@ -77,9 +83,12 @@ class LegalPageController extends Controller
         ]);
         $page->save();
 
+        $fresh = $page->fresh();
+        $fresh->setAttribute('content', StoragePublicUrl::rewriteStorageUrlsInHtml($fresh->content ?? ''));
+
         return response()->json([
             'message' => 'Legal page updated successfully.',
-            'page' => $page->fresh(),
+            'page' => $fresh,
         ]);
     }
 }

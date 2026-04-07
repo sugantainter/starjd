@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\StoragePublicUrl;
 use Illuminate\Database\Eloquent\Model;
 
 class Partner extends Model
@@ -18,6 +19,7 @@ class Partner extends Model
         if (is_string($this->logo) && (str_starts_with($this->logo, 'http://') || str_starts_with($this->logo, 'https://'))) {
             return $this->logo;
         }
-        return \Illuminate\Support\Facades\Storage::url($this->logo);
+
+        return StoragePublicUrl::resolve($this->logo);
     }
 }

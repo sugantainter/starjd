@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Collaboration;
+use App\Support\StoragePublicUrl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -24,8 +25,6 @@ class FileAccessController extends Controller
             ->first();
 
         if ($collaboration) {
-            \Log::info('Collaboration file matched', ['id' => $collaboration->id, 'path' => $path]);
-            
             // Smarter GCS check: try common path variants to avoid prefix/storage format mismatches
             $targetPath = $collaboration->deliverable_content;
             $candidates = array_values(array_unique(array_filter([
@@ -46,9 +45,8 @@ class FileAccessController extends Controller
             }
 
             if ($finalPath) {
-                // For GCS, we return a signed temporary URL
                 $url = Storage::disk('gcs')->temporaryUrl($finalPath, now()->addMinutes(10));
-                \Log::info('Generated GCS Signed URL', ['final_path' => $finalPath]);
+
                 return redirect($url);
             }
 
@@ -78,9 +76,34 @@ class FileAccessController extends Controller
         }
 
         // If not a collaboration file, fall back to PUBLIC storage behavior
-        // Check default cloud storage first (now that it's migrated)
-        if (Storage::exists($path)) {
-            return redirect(Storage::url($path));
+        $default = config('filesystems.default');
+        if ($default === 'gsc') {
+            $default = 'gcs';
+        }
+
+        // GCS + signed reads: object()->exists() can fail under some IAM setups while signing still works.
+        // Only attempt this for known web-public upload prefixes (never receipts, deliverables, etc.).
+        if ($default === 'gcs'
+            && config('filesystems.disks.gcs.signed_read_urls')
+            && self::isPublicWebStoragePath($path)) {
+            try {
+                $ttlHours = max(1, (int) config('filesystems.disks.gcs.signed_read_ttl_hours', 168));
+                $signed = Storage::disk('gcs')->temporaryUrl($path, now()->addHours($ttlHours));
+
+                return redirect($signed);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::debug('FileAccessController: GCS temporaryUrl failed for public path', [
+                    'path' => $path,
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        if (Storage::disk($default)->exists($path)) {
+            $public = StoragePublicUrl::resolve($path);
+            if ($public) {
+                return redirect($public);
+            }
         }
 
         if (Storage::disk('public')->exists($path)) {
@@ -90,5 +113,39 @@ class FileAccessController extends Controller
         }
 
         abort(404);
+    }
+
+    /**
+     * Paths we are willing to serve via /storage/{path} without a reliable exists() check (GCS only).
+     *
+     * @see self::__invoke() public fallback branch
+     */
+    private static function isPublicWebStoragePath(string $path): bool
+    {
+        if ($path === '' || str_contains($path, '..')) {
+            return false;
+        }
+
+        $prefixes = [
+            'studios/',
+            'banners/',
+            'categories/',
+            'hero/',
+            'partners/',
+            'posts/',
+            'success_stories/',
+            'testimonials/',
+            'services/gallery/',
+            'avatars/',
+            'profiles/',
+        ];
+
+        foreach ($prefixes as $p) {
+            if (str_starts_with($path, $p)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

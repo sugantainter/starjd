@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\StudioImage;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Str;
@@ -15,8 +16,7 @@ class StudioResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $mainImage = $this->resource->images()->where('is_primary', true)->first()
-            ?? $this->resource->images()->orderBy('sort_order')->first();
+        $mainImage = $this->mainStudioImage();
 
         $rawDescription = $this->resource->description ?? '';
         $shortDescription = $rawDescription !== ''
@@ -28,7 +28,7 @@ class StudioResource extends JsonResource
             'slug' => $this->resource->slug,
             'name' => $this->resource->name,
             'description' => $shortDescription,
-            'main_image' => $mainImage ? '/storage/' . ltrim($mainImage->image, '/') : null,
+            'main_image' => $mainImage?->image_url,
             'price_per_hour' => $this->resource->price_per_hour ? (float) $this->resource->price_per_hour : null,
             'price_per_day' => $this->resource->price_per_day ? (float) $this->resource->price_per_day : null,
             'rating_avg' => $this->resource->rating_avg ? (float) $this->resource->rating_avg : null,
@@ -40,6 +40,24 @@ class StudioResource extends JsonResource
             'latitude' => $this->resource->latitude ? (float) $this->resource->latitude : null,
             'longitude' => $this->resource->longitude ? (float) $this->resource->longitude : null,
         ];
+    }
+
+    /**
+     * Prefer eager-loaded images; avoids extra queries and matches the loaded set.
+     */
+    private function mainStudioImage(): ?StudioImage
+    {
+        $studio = $this->resource;
+        $images = $studio->relationLoaded('images')
+            ? $studio->images
+            : $studio->images()->get();
+
+        if ($images->isEmpty()) {
+            return null;
+        }
+
+        return $images->first(fn (StudioImage $img) => $img->is_primary)
+            ?? $images->sortBy('sort_order')->first();
     }
 
     /**
