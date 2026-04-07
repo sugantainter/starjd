@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen bg-[#fafaf9] text-[#1a1a1a]">
+  <div class="flex min-h-screen flex-col bg-[#fafaf9] text-[#1a1a1a]">
     <Navbar />
 
-    <main>
+    <main class="flex-1">
       <router-view />
     </main>
 
