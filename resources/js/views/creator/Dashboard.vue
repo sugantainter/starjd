@@ -745,12 +745,14 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import axios from "axios";
 import SocialPlatformIcon from "../../components/SocialPlatformIcon.vue";
 import GrowthChart from "../../components/GrowthChart.vue";
 import DoughnutChart from "../../components/DoughnutChart.vue";
 import BarChart from "../../components/BarChart.vue";
 
+const router = useRouter();
 const data = ref(null);
 const selectedPlatform = ref("youtube");
 const activeTab = ref("views");
@@ -860,6 +862,10 @@ onMounted(async () => {
             }
         }
     } catch (err) {
+        if (err.response?.status === 402 || err.response?.data?.requires_payment) {
+            router.replace("/creator/choose-plan");
+            return;
+        }
         console.error("Failed to load dashboard:", err);
     }
 });

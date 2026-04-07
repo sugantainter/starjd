@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
 use App\Http\Controllers\Admin\SupportAdminController;
 use App\Http\Controllers\Admin\AIUsageController as AdminAIUsageController;
 use App\Http\Controllers\Admin\PayoutRequestController as AdminPayoutRequestController;
+use App\Http\Controllers\Admin\SubCategoryController as AdminSubCategoryController;
 use App\Http\Controllers\Admin\SitemapController;
 
 use App\Http\Controllers\Api\AppConfigController;
@@ -220,7 +221,7 @@ Route::prefix('api')->group(function () {
         Route::patch('campaign-applications/{campaign_application}', [BrandCampaignApplicationController::class, 'update']);
     });
 
-    Route::middleware(['auth:web', 'verified', 'agency'])->prefix('agency')->group(function () {
+    Route::middleware(['auth:web', 'verified', 'agency', 'paid'])->prefix('agency')->group(function () {
         Route::get('dashboard', fn () => response()->json(['message' => 'Agency dashboard', 'user' => request()->user()->only('id', 'name', 'email')]));
     });
 
@@ -228,7 +229,7 @@ Route::prefix('api')->group(function () {
     Route::middleware(['auth:web', 'studio_owner'])->prefix('studio')->group(function () {
         Route::get('dashboard', [\App\Http\Controllers\StudioOwner\StudioOwnerController::class, 'dashboard']);
     });
-    Route::middleware(['auth:web', 'studio_owner'])->prefix('studio-owner')->group(function () {
+    Route::middleware(['auth:web', 'studio_owner', 'paid'])->prefix('studio-owner')->group(function () {
         Route::get('studios', [StudioOwnerStudioController::class, 'index']);
         Route::get('studios/{studio}', [StudioOwnerStudioController::class, 'show']);
         Route::post('studios', [StudioOwnerStudioController::class, 'store']);
@@ -251,6 +252,7 @@ Route::prefix('api')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index']);
         Route::get('roles', fn () => response()->json(\App\Models\Role::whereNotIn('slug', ['admin', 'customer'])->orderBy('name')->get(['id', 'name', 'slug'])));
         Route::apiResource('categories', AdminCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::apiResource('sub-categories', AdminSubCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('testimonials', AdminTestimonialController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('faqs', AdminFaqController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('steps', AdminStepController::class)->only(['index', 'store', 'update', 'destroy']);

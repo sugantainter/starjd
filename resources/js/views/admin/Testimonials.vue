@@ -220,8 +220,7 @@ function clearAvatar() {
     form.avatar = null;
     avatarPreview.value = "";
     if (editing.value) {
-            ? editing.value.avatar_url
-            : "";
+        avatarPreview.value = editing.value.avatar_url || "";
     }
 }
 

@@ -200,10 +200,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 import PostCampaignFlow from '../../components/brand/PostCampaignFlow.vue';
 import { notify } from '../../lib/notify.js';
 
+const router = useRouter();
 const data = ref(null);
 
 function typeLabel(type) {
@@ -251,8 +253,16 @@ async function openCampaign(c) {
 }
 
 async function loadDashboard() {
-  const res = await axios.get('/api/brand/dashboard', { withCredentials: true });
-  data.value = res.data;
+  try {
+    const res = await axios.get('/api/brand/dashboard', { withCredentials: true });
+    data.value = res.data;
+  } catch (err) {
+    if (err.response?.status === 402 || err.response?.data?.requires_payment) {
+      router.replace('/brand/choose-plan');
+      return;
+    }
+    console.error('Failed to load dashboard:', err);
+  }
 }
 
 onMounted(loadDashboard);

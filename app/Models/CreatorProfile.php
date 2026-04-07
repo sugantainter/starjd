@@ -18,6 +18,7 @@ class CreatorProfile extends Model
         'location',
         'tagline',
         'category',
+        'sub_category',
         'gender',
         'language',
         'is_public',

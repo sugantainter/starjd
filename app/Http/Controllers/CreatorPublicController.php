@@ -30,6 +30,9 @@ class CreatorPublicController extends Controller
         if ($request->filled('category')) {
             $query->where('category', $request->category);
         }
+        if ($request->filled('sub_category')) {
+            $query->where('sub_category', $request->sub_category);
+        }
         if ($request->filled('gender')) {
             $query->where('gender', $request->gender);
         }

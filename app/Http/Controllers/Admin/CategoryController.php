@@ -30,6 +30,7 @@ class CategoryController extends Controller
             'slug' => 'nullable|string|max:255|unique:categories,slug',
             'count_display' => 'nullable|string|max:50',
             'sort_order' => 'nullable|integer',
+            'show_on_navbar' => 'nullable|boolean',
         ]);
         if ($request->hasFile('image')) {
             $request->validate(['image' => ['image', 'mimes:jpeg,png,jpg,webp', 'max:' . self::IMAGE_MAX_KB]]);
@@ -39,6 +40,7 @@ class CategoryController extends Controller
         }
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
         $data['sort_order'] = $data['sort_order'] ?? 0;
+        $data['show_on_navbar'] = $request->boolean('show_on_navbar');
         $data['created_at'] = $data['updated_at'] = now();
         DB::table('categories')->insert($data);
         $id = DB::getPdo()->lastInsertId();
@@ -58,6 +60,7 @@ class CategoryController extends Controller
             'slug' => 'sometimes|string|max:255',
             'count_display' => 'nullable|string|max:50',
             'sort_order' => 'nullable|integer',
+            'show_on_navbar' => 'nullable|boolean',
         ]);
         if ($request->hasFile('image')) {
             $request->validate(['image' => ['image', 'mimes:jpeg,png,jpg,webp', 'max:' . self::IMAGE_MAX_KB]]);
@@ -65,6 +68,9 @@ class CategoryController extends Controller
                 Storage::delete($row->image);
             }
             $data['image'] = $request->file('image')->store('categories');
+        }
+        if ($request->has('show_on_navbar')) {
+            $data['show_on_navbar'] = $request->boolean('show_on_navbar');
         }
         $data['updated_at'] = now();
         DB::table('categories')->where('id', $category)->update($data);

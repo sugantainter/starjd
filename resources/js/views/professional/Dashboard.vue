@@ -1,7 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 
+const router = useRouter();
 const stats = ref({
   listings_count: 0,
   active_orders_count: 0,
@@ -15,8 +17,12 @@ onMounted(async () => {
     const res = await axios.get('/api/professional/dashboard');
     stats.value = res.data.stats;
     recentOrders.value = res.data.recent_orders;
-  } catch (e) {
-    console.error('Failed to fetch dashboard data', e);
+  } catch (err) {
+    if (err.response?.status === 402 || err.response?.data?.requires_payment) {
+      router.replace('/professional/choose-plan');
+      return;
+    }
+    console.error('Failed to fetch dashboard data', err);
   } finally {
     loading.value = false;
   }

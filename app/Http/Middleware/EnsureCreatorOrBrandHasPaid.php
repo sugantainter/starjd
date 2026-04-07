@@ -12,11 +12,8 @@ class EnsureCreatorOrBrandHasPaid
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
-        if (! $user || (! $user->hasRole('creator') && ! $user->hasRole('brand'))) {
-            if ($request->expectsJson()) {
-                return response()->json(['message' => 'Unauthorized.'], 403);
-            }
-            return redirect('/login');
+        if (! $user || $user->hasRole('admin')) {
+            return $next($request);
         }
 
         if (! AccessPayment::hasPaidAccess($user)) {
@@ -26,7 +23,8 @@ class EnsureCreatorOrBrandHasPaid
                     'requires_payment' => true,
                 ], 402);
             }
-            $path = $user->hasRole('creator') ? '/creator/choose-plan' : '/brand/choose-plan';
+            $prefix = $user->role === 'studio_owner' ? 'studio' : str_replace('_', '-', $user->role);
+            $path = '/' . $prefix . '/choose-plan';
             return redirect($path);
         }
 

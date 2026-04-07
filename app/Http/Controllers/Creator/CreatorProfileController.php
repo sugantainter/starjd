@@ -46,6 +46,7 @@ class CreatorProfileController extends Controller
             'location' => ['nullable', 'string', 'max:255'],
             'tagline' => ['nullable', 'string', 'max:255'],
             'category' => ['nullable', 'string', Rule::in($categories)],
+            'sub_category' => ['nullable', 'string', 'max:255'],
             'gender' => ['nullable', 'string', Rule::in(array_keys(config('creator.genders', [])))],
             'language' => ['nullable', 'string', Rule::in(config('creator.languages', []))],
             'is_public' => ['nullable', 'boolean'],
@@ -73,7 +74,7 @@ class CreatorProfileController extends Controller
             $profile = $request->user()->creatorProfile()->create([]);
         }
 
-        $data = $request->only(['bio', 'location', 'tagline', 'category', 'gender', 'language', 'min_rate', 'engagement_rate']);
+        $data = $request->only(['bio', 'location', 'tagline', 'category', 'sub_category', 'gender', 'language', 'min_rate', 'engagement_rate']);
         $data['is_public'] = $request->boolean('is_public');
 
         if ($request->hasFile('avatar')) {

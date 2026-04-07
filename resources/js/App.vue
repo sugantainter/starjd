@@ -656,10 +656,31 @@
                             <option value="">All categories</option>
                             <option
                                 v-for="c in heroFilterOptions.categories"
-                                :key="c"
-                                :value="c"
+                                :key="c.id"
+                                :value="c.name"
                             >
-                                {{ c }}
+                                {{ c.name }}
+                            </option>
+                        </select>
+                    </div>
+                    <div v-show="heroAvailableSubCategories.length" class="min-w-0 sm:w-auto sm:min-w-[130px]">
+                        <label
+                            for="hero-filter-subcategory"
+                            class="mb-1 block text-xs font-medium text-[#6b7280]"
+                            >Sub Category</label
+                        >
+                        <select
+                            id="hero-filter-subcategory"
+                            v-model="heroSearchSubCategory"
+                            class="hero-filter-select w-full cursor-pointer rounded-lg border border-[#e5e7eb] bg-white px-3 py-2.5 text-sm text-[#1a1a1a] transition hover:border-[#d1d5db] focus:border-[#e63946] focus:outline-none focus:ring-2 focus:ring-[#e63946]/20"
+                        >
+                            <option value="">All sub-categories</option>
+                            <option
+                                v-for="sc in heroAvailableSubCategories"
+                                :key="sc.id"
+                                :value="sc.name"
+                            >
+                                {{ sc.name }}
                             </option>
                         </select>
                     </div>
@@ -2148,6 +2169,7 @@ const heroData = ref(null);
 const heroSearchQuery = ref("");
 const heroSearchPlatform = ref("");
 const heroSearchCategory = ref("");
+const heroSearchSubCategory = ref("");
 const heroSearchGender = ref("");
 const heroSearchLanguage = ref("");
 const heroSearchLocation = ref("");
@@ -2155,9 +2177,19 @@ const heroSearchMinRate = ref("");
 const heroSearchMaxRate = ref("");
 const heroFilterOptions = ref({
     categories: [],
+    sub_categories: [],
     genders: {},
     languages: [],
     platforms: {},
+});
+
+const heroAvailableSubCategories = computed(() => {
+    if (!heroSearchCategory.value) return [];
+    return (heroFilterOptions.value.sub_categories || []).filter(sc => sc.category_name === heroSearchCategory.value);
+});
+
+watch(heroSearchCategory, () => {
+    heroSearchSubCategory.value = "";
 });
 
 /* Platform options from API, with fallback so dropdown works before API loads */
@@ -2189,6 +2221,7 @@ function submitHeroSearch() {
     if (heroSearchQuery.value?.trim()) q.search = heroSearchQuery.value.trim();
     if (heroSearchPlatform.value) q.platform = heroSearchPlatform.value;
     if (heroSearchCategory.value) q.category = heroSearchCategory.value;
+    if (heroSearchSubCategory.value) q.sub_category = heroSearchSubCategory.value;
     if (heroSearchGender.value) q.gender = heroSearchGender.value;
     if (heroSearchLanguage.value) q.language = heroSearchLanguage.value;
     if (heroSearchLocation.value?.trim()) q.location = heroSearchLocation.value.trim();
@@ -2206,6 +2239,7 @@ function clearHeroSearch() {
     heroSearchQuery.value = "";
     heroSearchPlatform.value = "";
     heroSearchCategory.value = "";
+    heroSearchSubCategory.value = "";
     heroSearchGender.value = "";
     heroSearchLanguage.value = "";
     heroSearchLocation.value = "";
@@ -2629,6 +2663,7 @@ onMounted(() => {
         .get("/api/creators/options/filters")
         .then((r) => {
             heroFilterOptions.value.categories = r.data.categories ?? [];
+            heroFilterOptions.value.sub_categories = r.data.sub_categories ?? [];
             heroFilterOptions.value.genders = r.data.genders ?? {};
             heroFilterOptions.value.languages = r.data.languages ?? [];
             heroFilterOptions.value.platforms = r.data.platforms ?? {};

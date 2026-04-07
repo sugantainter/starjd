@@ -143,6 +143,7 @@
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
+import { getErrorMessage } from '../lib/errorHandler.js';
 
 const route = useRoute();
 const form = reactive({ name: '', email: '', password: '', password_confirmation: '', role: 'creator' });
@@ -193,7 +194,7 @@ async function submit() {
     const path = raw.startsWith('http') ? new URL(raw).pathname : (raw.startsWith('/') ? raw : `/${raw}`);
     window.location.href = path;
   } catch (e) {
-    error.value = e.response?.data?.message || (e.response?.data?.errors ? Object.values(e.response.data.errors).flat().join(' ') : 'Registration failed.');
+    error.value = getErrorMessage(e);
   } finally {
     loading.value = false;
   }

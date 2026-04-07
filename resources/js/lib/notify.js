@@ -20,8 +20,10 @@ export function useNotify() {
 
 // Global instance for non-setup usage if needed, or just export the ref
 export const globalNotifications = notifications;
+import { getErrorMessage } from './errorHandler.js';
+
 export const notify = {
     success: (msg) => useNotify().show(msg, 'success'),
-    error: (msg) => useNotify().show(msg, 'error'),
+    error: (msg) => useNotify().show(getErrorMessage(msg), 'error'),
     info: (msg) => useNotify().show(msg, 'info'),
 };

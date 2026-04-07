@@ -26,7 +26,11 @@
           </select>
           <select v-model="filters.category" class="rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#fc4402] focus:outline-none bg-white text-sm font-medium">
             <option value="">All Categories</option>
-            <option v-for="c in filterOptions.categories" :key="c" :value="c">{{ c }}</option>
+            <option v-for="c in filterOptions.categories" :key="c.slug" :value="c.name">{{ c.name }}</option>
+          </select>
+          <select v-show="availableSubCategories.length" v-model="filters.sub_category" class="rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#fc4402] focus:outline-none bg-white text-sm font-medium">
+            <option value="">All Sub Categories</option>
+            <option v-for="sc in availableSubCategories" :key="sc.slug" :value="sc.name">{{ sc.name }}</option>
           </select>
           <select v-model="filters.platform" class="rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#fc4402] focus:outline-none bg-white text-sm font-medium">
             <option value="">Any Platform</option>
@@ -61,8 +65,9 @@
           <div v-if="p.is_featured" class="absolute top-4 left-4">
              <span class="bg-[#f59e0b] text-white text-[10px] uppercase font-black px-3 py-1 rounded-full shadow-lg">Featured</span>
           </div>
-          <div v-if="p.category" class="absolute bottom-4 left-4">
+          <div v-if="p.category" class="absolute bottom-4 left-4 flex flex-wrap gap-2">
              <span class="bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-lg border border-white/20">{{ p.category }}</span>
+             <span v-if="p.sub_category" class="bg-[#fc4402]/80 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-lg border border-white/20">{{ p.sub_category }}</span>
           </div>
         </div>
 
@@ -158,13 +163,22 @@ const states = ref([]);
 const cities = ref([]);
 let observer = null;
 
-const filterOptions = reactive({ categories: [], genders: {}, languages: [], platforms: {} });
-const filters = reactive({ category: '', gender: '', language: '', platform: '', min_rate: '', location: '', price_range: '', state_id: '', city_id: '' });
+const filterOptions = reactive({ categories: [], sub_categories: [], genders: {}, languages: [], platforms: {} });
+const availableSubCategories = computed(() => {
+    if (!filters.category) return [];
+    return filterOptions.sub_categories.filter(sc => sc.category_name === filters.category);
+});
+const filters = reactive({ category: '', sub_category: '', gender: '', language: '', platform: '', min_rate: '', location: '', price_range: '', state_id: '', city_id: '' });
+
+watch(() => filters.category, () => {
+  filters.sub_category = '';
+});
 
 function applyQueryToFilters() {
   const q = route.query;
   if (q.search != null) search.value = q.search;
   if (q.category != null) filters.category = q.category;
+  if (q.sub_category != null) filters.sub_category = q.sub_category;
   if (q.gender != null) filters.gender = q.gender;
   if (q.language != null) filters.language = q.language;
   if (q.platform != null) filters.platform = q.platform;
@@ -181,6 +195,7 @@ onMounted(async () => {
     axios.get('/api/states'),
   ]);
   filterOptions.categories = filtersRes.data.categories ?? [];
+  filterOptions.sub_categories = filtersRes.data.sub_categories ?? [];
   filterOptions.genders = filtersRes.data.genders ?? {};
   filterOptions.languages = filtersRes.data.languages ?? [];
   filterOptions.platforms = filtersRes.data.platforms ?? {};
@@ -216,6 +231,7 @@ watch(() => route.query, () => {
 function clearFilters() {
   search.value = '';
   filters.category = '';
+  filters.sub_category = '';
   filters.gender = '';
   filters.language = '';
   filters.platform = '';
@@ -261,6 +277,7 @@ async function load(p = 1) {
     const params = { page: p };
     if (search.value) params.search = search.value;
     if (filters.category) params.category = filters.category;
+    if (filters.sub_category) params.sub_category = filters.sub_category;
     if (filters.gender) params.gender = filters.gender;
     if (filters.language) params.language = filters.language;
     if (filters.platform) params.platform = filters.platform;

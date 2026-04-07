@@ -41,10 +41,21 @@ const route = useRoute();
 onMounted(async () => {
   try {
     const res = await axios.get('/api/me');
+    if (!res.data?.has_paid_access && route.path !== '/professional/choose-plan') {
+      router.replace('/professional/choose-plan');
+      return;
+    }
     if (res.data?.role !== 'professional' && res.data?.role !== 'admin') {
       router.replace('/');
+      return;
     }
+    // Also try calling dashboard to trigger middleware if session is stale or complex rules apply
+    await axios.get('/api/professional/dashboard');
   } catch (e) {
+    if (e.response?.status === 402 || e.response?.data?.requires_payment) {
+      router.replace('/professional/choose-plan');
+      return;
+    }
     if (e.response?.status === 401 || e.response?.status === 403) {
       window.location.href = '/login?redirect=' + encodeURIComponent(route.fullPath);
     }

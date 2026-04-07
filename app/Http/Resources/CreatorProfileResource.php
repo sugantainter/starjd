@@ -32,6 +32,7 @@ class CreatorProfileResource extends JsonResource
             'city_name' => $user->city?->name,
             'tagline' => $this->resource->tagline,
             'category' => $this->resource->category,
+            'sub_category' => $this->resource->sub_category,
             'gender' => $this->resource->gender,
             'language' => $this->resource->language,
             'min_rate' => $this->resource->min_rate ? (float) $this->resource->min_rate : null,

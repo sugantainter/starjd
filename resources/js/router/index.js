@@ -81,6 +81,7 @@ const routes = [
     component: AgencyLayout,
     children: [
       { path: '', redirect: '/agency/dashboard' },
+      { path: 'choose-plan', name: 'agency-choose-plan', component: () => import('../views/agency/ChoosePlan.vue') },
       { path: 'dashboard', name: 'agency-dashboard', component: () => import('../views/agency/Dashboard.vue') },
       { path: 'support', name: 'agency-support', component: () => import('../views/Support.vue') },
     ],
@@ -90,6 +91,7 @@ const routes = [
     component: StudioLayout,
     children: [
       { path: '', redirect: '/studio/dashboard' },
+      { path: 'choose-plan', name: 'studio-choose-plan', component: () => import('../views/studio/ChoosePlan.vue') },
       { path: 'dashboard', name: 'studio-dashboard', component: () => import('../views/studio/Dashboard.vue') },
       { path: 'studios', name: 'studio-my-studios', component: () => import('../views/studio/MyStudios.vue') },
       { path: 'studios/new', name: 'studio-add', component: () => import('../views/studio/AddStudio.vue') },
@@ -104,6 +106,7 @@ const routes = [
     children: [
       { path: '', name: 'admin', component: () => import('../views/admin/Dashboard.vue') },
       { path: 'categories', name: 'admin-categories', component: () => import('../views/admin/Categories.vue') },
+      { path: 'sub-categories', name: 'admin-sub-categories', component: () => import('../views/admin/SubCategories.vue') },
       { path: 'testimonials', name: 'admin-testimonials', component: () => import('../views/admin/Testimonials.vue') },
       { path: 'faqs', name: 'admin-faqs', component: () => import('../views/admin/Faqs.vue') },
       { path: 'steps', name: 'admin-steps', component: () => import('../views/admin/Steps.vue') },
@@ -139,6 +142,7 @@ const routes = [
     component: () => import('../layouts/ProfessionalLayout.vue'),
     children: [
       { path: '', redirect: '/professional/dashboard' },
+      { path: 'choose-plan', name: 'professional-choose-plan', component: () => import('../views/professional/ChoosePlan.vue') },
       { path: 'dashboard', name: 'professional-dashboard', component: () => import('../views/professional/Dashboard.vue') },
       { path: 'profile', name: 'professional-profile', component: () => import('../views/professional/Profile.vue') },
       { path: 'services', name: 'professional-services', component: () => import('../views/professional/Services.vue') },

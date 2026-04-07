@@ -169,7 +169,7 @@ Route::middleware('web')->group(function () {
             Route::patch('campaign-applications/{campaign_application}', [\App\Http\Controllers\Brand\BrandCampaignApplicationController::class, 'update']);
         });
 
-        Route::middleware(['studio_owner'])->prefix('studio-owner')->group(function () {
+        Route::middleware(['studio_owner', 'paid'])->prefix('studio-owner')->group(function () {
             Route::get('dashboard', [\App\Http\Controllers\StudioOwner\StudioOwnerController::class, 'dashboard']);
             Route::get('studios', [\App\Http\Controllers\StudioOwner\StudioOwnerStudioController::class, 'index']);
             Route::get('studios/{studio}', [\App\Http\Controllers\StudioOwner\StudioOwnerStudioController::class, 'show']);
@@ -184,7 +184,7 @@ Route::middleware('web')->group(function () {
             Route::delete('availability-slots/{availability_slot}', [\App\Http\Controllers\StudioOwner\StudioOwnerAvailabilityController::class, 'destroy']);
         });
 
-        Route::middleware(['professional'])->prefix('professional')->group(function () {
+        Route::middleware(['professional', 'paid'])->prefix('professional')->group(function () {
             Route::get('dashboard', [\App\Http\Controllers\Professional\ProfessionalController::class, 'dashboard']);
             Route::post('profile', [\App\Http\Controllers\Professional\ProfessionalController::class, 'updateProfile']);
             Route::get('categories', [\App\Http\Controllers\Professional\ProfessionalController::class, 'categories']);

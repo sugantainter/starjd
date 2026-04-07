@@ -73,16 +73,17 @@ class PayUController extends Controller
                     'coupon_id' => $couponId,
                 ]);
 
-                if ($amount == 0) {
-                    if ($couponId) {
-                        Coupon::where('id', $couponId)->increment('used_count');
+                    if ($amount == 0) {
+                        if ($couponId) {
+                            Coupon::where('id', $couponId)->increment('used_count');
+                        }
+                        $prefix = $user->role === 'studio_owner' ? 'studio' : str_replace('_', '-', $user->role);
+                        return response()->json([
+                            'free' => true,
+                            'message' => 'Access granted via 100% discount.',
+                            'redirect' => url('/' . $prefix . '/dashboard'),
+                        ]);
                     }
-                    return response()->json([
-                        'free' => true,
-                        'message' => 'Access granted via 100% discount.',
-                        'redirect' => $user->role === 'creator' ? url('/creator/dashboard') : url('/brand/dashboard'),
-                    ]);
-                }
 
                 $payableType = AccessPayment::class;
                 $payableId = $accessPayment->id;

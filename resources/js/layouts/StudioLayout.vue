@@ -37,6 +37,10 @@ onMounted(async () => {
   try {
     await axios.get('/api/studio/dashboard', { withCredentials: true });
   } catch (e) {
+    if (e.response?.status === 402 || e.response?.data?.requires_payment) {
+      router.replace('/studio/choose-plan');
+      return;
+    }
     if (e.response?.status === 401 || e.response?.status === 403) {
       window.location.href = '/login?redirect=' + encodeURIComponent(route.fullPath);
     }

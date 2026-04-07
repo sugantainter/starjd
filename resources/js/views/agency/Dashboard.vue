@@ -13,15 +13,21 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 
+const router = useRouter();
 const data = ref(null);
 
 onMounted(async () => {
   try {
     const res = await axios.get('/api/agency/dashboard', { withCredentials: true });
     data.value = res.data;
-  } catch (_) {
+  } catch (err) {
+    if (err.response?.status === 402 || err.response?.data?.requires_payment) {
+      router.replace('/agency/choose-plan');
+      return;
+    }
     data.value = { message: 'Unable to load dashboard.' };
   }
 });

@@ -524,12 +524,14 @@ class AuthController extends Controller
         $primary = $user->primaryRole();
         $slug = $primary?->slug ?? 'customer';
 
+        if (in_array($slug, ['creator', 'brand', 'agency', 'studio_owner', 'professional'])) {
+            $prefix = $slug === 'studio_owner' ? 'studio' : str_replace('_', '-', $slug);
+            return url('/' . $prefix . '/choose-plan');
+        }
+
         return match ($slug) {
             'admin' => url('/admin'),
-            'creator' => url('/creator/choose-plan'),
-            'brand' => url('/brand/choose-plan'),
-            'agency' => url('/agency/dashboard'),
-            'studio_owner' => url('/studio/dashboard'),
+            'studio_owner' => url('/studio/choose-plan'),
             default => url('/'),
         };
     }
@@ -557,12 +559,13 @@ class AuthController extends Controller
         $primary = $user->primaryRole();
         $slug = $primary?->slug ?? 'customer';
 
+        if (in_array($slug, ['creator', 'brand', 'agency', 'studio_owner', 'professional'])) {
+            $prefix = $slug === 'studio_owner' ? 'studio' : str_replace('_', '-', $slug);
+            return url('/' . $prefix . '/dashboard');
+        }
+
         return match ($slug) {
             'admin' => url('/admin'),
-            'creator' => url('/creator/dashboard'),
-            'brand' => url('/brand/dashboard'),
-            'agency' => url('/agency/dashboard'),
-            'studio_owner' => url('/studio/dashboard'),
             default => url('/'),
         };
     }

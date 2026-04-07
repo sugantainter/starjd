@@ -24,8 +24,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 
+const router = useRouter();
 const data = ref(null);
 const studioCount = ref(0);
 const bookingCount = ref(0);
@@ -40,7 +42,11 @@ onMounted(async () => {
     data.value = dashboardRes.data;
     studioCount.value = Array.isArray(studiosRes.data?.data) ? studiosRes.data.data.length : studiosRes.data?.length ?? 0;
     bookingCount.value = bookingsRes.data?.total ?? (Array.isArray(bookingsRes.data?.data) ? bookingsRes.data.data.length : 0);
-  } catch (_) {
+  } catch (err) {
+    if (err.response?.status === 402 || err.response?.data?.requires_payment) {
+      router.replace('/studio/choose-plan');
+      return;
+    }
     data.value = {};
   }
 });

@@ -35,6 +35,10 @@ onMounted(async () => {
   try {
     await axios.get('/api/agency/dashboard', { withCredentials: true });
   } catch (e) {
+    if (e.response?.status === 402 || e.response?.data?.requires_payment) {
+      router.replace('/agency/choose-plan');
+      return;
+    }
     if (e.response?.status === 401 || e.response?.status === 403) {
       window.location.href = '/login?redirect=' + encodeURIComponent(route.fullPath);
     }

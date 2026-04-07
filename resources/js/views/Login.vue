@@ -91,6 +91,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
+import { getErrorMessage } from '../lib/errorHandler.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -173,7 +174,7 @@ async function submit() {
       window.location.href = `/verify-email?${params.toString()}`;
       return;
     }
-    error.value = data?.message || (data?.errors?.email?.[0]) || 'Invalid email or password.';
+    error.value = getErrorMessage(e);
   } finally {
     loading.value = false;
   }

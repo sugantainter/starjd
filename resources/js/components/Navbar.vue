@@ -681,8 +681,8 @@ const ROUTE_PATHS = {
 };
 
 function creatorCategoryTo(item) {
-    return item.slug
-        ? { path: "/creators", query: { category: item.slug } }
+    return item.name
+        ? { path: "/creators", query: { category: item.name } }
         : "/creators";
 }
 
@@ -731,7 +731,7 @@ const servicesColumn2 = computed(() => {
     return fallbackServicesColumn2;
 });
 
-const creatorCategoriesExtended = [
+const creatorCategoriesExtended = ref([
     { name: "Influencers", slug: "influencers" },
     { name: "UGC Creators", slug: "ugc-creators" },
     { name: "Podcast Hosts", slug: "podcast-hosts" },
@@ -739,7 +739,7 @@ const creatorCategoriesExtended = [
     { name: "Short-Form Creators", slug: "short-form-creators" },
     { name: "YouTube Creators", slug: "youtube-creators" },
     { name: "Regional Creators", slug: "regional-creators" },
-];
+]);
 const professionalCategories = [
     { name: "Graphic & Video Editors", slug: "graphic-video-editors" },
     { name: "Photographers & Videographers", slug: "photographers-videographers" },
@@ -838,6 +838,16 @@ onMounted(() => {
         .finally(() => {
             servicesLoading.value = false;
         });
+    axios
+        .get("/api/creators/options/filters")
+        .then((r) => {
+            const cats = r.data.categories || [];
+            const navCats = cats.filter(c => c.show_on_navbar);
+            if (navCats.length > 0) {
+                creatorCategoriesExtended.value = navCats;
+            }
+        })
+        .catch(() => {});
     document.addEventListener("click", onClickOutside);
 });
 

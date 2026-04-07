@@ -87,7 +87,14 @@
         <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Category</label>
         <select v-model="form.category" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#10b981] focus:outline-none focus:ring-1 focus:ring-[#10b981]">
           <option value="">Select category</option>
-          <option v-for="c in filterOptions.categories" :key="c" :value="c">{{ c }}</option>
+          <option v-for="c in filterOptions.categories" :key="c.slug" :value="c.name">{{ c.name }}</option>
+        </select>
+      </div>
+      <div v-if="availableSubCategories.length">
+        <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Sub Category</label>
+        <select v-model="form.sub_category" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#10b981] focus:outline-none focus:ring-1 focus:ring-[#10b981]">
+          <option value="">Select sub category</option>
+          <option v-for="sc in availableSubCategories" :key="sc.id" :value="sc.name">{{ sc.name }}</option>
         </select>
       </div>
       <div>
@@ -154,15 +161,31 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import axios from 'axios';
+import { getErrorMessage } from '../../lib/errorHandler.js';
 import CitySearchSelect from '../../components/CitySearchSelect.vue';
 
 const profile = ref(null);
-const form = reactive({ slug: '', tagline: '', bio: '', location: '', category: '', gender: '', language: '', min_rate: null, is_public: true, state_id: null, city_id: null });
+const form = reactive({ slug: '', tagline: '', bio: '', location: '', category: '', sub_category: '', gender: '', language: '', min_rate: null, is_public: true, state_id: null, city_id: null });
 const states = ref([]);
 const cities = ref([]);
-const filterOptions = reactive({ categories: [], genders: {}, languages: [] });
+const filterOptions = reactive({ categories: [], sub_categories: [], genders: {}, languages: [] });
+
+const availableSubCategories = computed(() => {
+    if (!form.category) return [];
+    const cat = filterOptions.categories.find(c => c.name === form.category);
+    if (!cat) return [];
+    // If our categories in filters have IDs, we'd use them. 
+    // They are from DB but filters API currently only returns name, slug, show_on_navbar for categories.
+    // However, I just updated SubCategoryController handles category_id.
+    // I need to make sure CategoryController returns IDs too.
+    return filterOptions.sub_categories.filter(sc => {
+       // Since categories in filterOptions are objects {name, slug...} but NO ID yet.
+       // I'll update CreatorOptionsController to return ID.
+       return sc.category_name === form.category;
+    });
+});
 const avatarFile = ref(null);
 const avatarPreview = ref('');
 const avatarLoadError = ref(false);
@@ -214,21 +237,24 @@ onMounted(async () => {
   }
   avatarLoadError.value = false;
   avatarPreview.value = profileRes.data.avatar_url || '';
+  filterOptions.categories = optionsRes.data.categories ?? [];
+  filterOptions.sub_categories = optionsRes.data.sub_categories ?? [];
+  filterOptions.genders = optionsRes.data.genders ?? {};
+  filterOptions.languages = optionsRes.data.languages ?? [];
+  imagePosts.value = postsRes.data ?? [];
+  
   form.slug = profileRes.data.slug ?? '';
   form.tagline = profileRes.data.tagline ?? '';
   form.bio = profileRes.data.bio ?? '';
   form.location = profileRes.data.location ?? '';
   form.category = profileRes.data.category ?? '';
+  form.sub_category = profileRes.data.sub_category ?? '';
   form.gender = profileRes.data.gender ?? '';
   form.language = profileRes.data.language ?? '';
   form.min_rate = profileRes.data.min_rate ?? null;
   form.is_public = profileRes.data.is_public ?? true;
   form.state_id = profileRes.data.user.state_id;
   form.city_id = profileRes.data.user.city_id;
-  filterOptions.categories = optionsRes.data.categories ?? [];
-  filterOptions.genders = optionsRes.data.genders ?? {};
-  filterOptions.languages = optionsRes.data.languages ?? [];
-  imagePosts.value = postsRes.data ?? [];
 });
 
 function onAvatarImageError() {
@@ -275,17 +301,6 @@ function clearAvatar() {
   if (avatarInput.value) avatarInput.value.value = '';
 }
 
-function getApiErrorMessage(e) {
-  const data = e.response?.data;
-  if (!data) return 'Something went wrong. Please try again.';
-  if (data.errors?.avatar?.length) return data.errors.avatar[0];
-  if (data.errors && typeof data.errors === 'object') {
-    const first = Object.values(data.errors).flat();
-    if (first.length) return first[0];
-  }
-  if (data.message) return data.message;
-  return 'Something went wrong. Please try again.';
-}
 
 async function save() {
   loading.value = true;
@@ -299,6 +314,7 @@ async function save() {
       fd.append('bio', form.bio);
       fd.append('location', form.location);
       fd.append('category', form.category);
+      fd.append('sub_category', form.sub_category || '');
       fd.append('gender', form.gender);
       fd.append('language', form.language);
       if (form.min_rate != null) fd.append('min_rate', form.min_rate);
@@ -328,7 +344,7 @@ async function save() {
     }
     setTimeout(() => { successMessage.value = ''; }, 5000);
   } catch (e) {
-    error.value = getApiErrorMessage(e);
+    error.value = getErrorMessage(e);
   } finally {
     loading.value = false;
   }
@@ -369,7 +385,7 @@ async function uploadPostImage() {
     imagePosts.value = [r.data, ...imagePosts.value];
     cancelPostImage();
   } catch (e) {
-    postError.value = e.response?.data?.errors?.image?.[0] || e.response?.data?.message || 'Upload failed.';
+    postError.value = getErrorMessage(e);
   }
 }
 
@@ -380,7 +396,7 @@ async function deletePost(post) {
     await axios.delete('/api/creator/image-posts/' + post.id, { withCredentials: true });
     imagePosts.value = imagePosts.value.filter((p) => p.id !== post.id);
   } catch (e) {
-    postError.value = e.response?.data?.message || 'Delete failed.';
+    postError.value = getErrorMessage(e);
   }
 }
 </script>
