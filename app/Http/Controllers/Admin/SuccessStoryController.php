@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Support\StoragePublicUrl;
 use App\Models\SuccessStory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,7 +14,19 @@ class SuccessStoryController extends Controller
     public function index(): JsonResponse
     {
         $stories = SuccessStory::with('role:id,name,slug')->orderByDesc('created_at')->get();
-        return response()->json($stories);
+
+        return response()->json($stories->map(fn (SuccessStory $s) => $this->storyToAdminArray($s)));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function storyToAdminArray(SuccessStory $story): array
+    {
+        $a = $story->toArray();
+        $a['content'] = StoragePublicUrl::rewriteStorageUrlsInHtml($story->content ?? '');
+
+        return $a;
     }
 
     public function store(Request $request): JsonResponse
@@ -36,16 +49,24 @@ class SuccessStoryController extends Controller
         $data['status'] = $data['status'] ?? 'draft';
         $data['is_featured'] = $data['is_featured'] ?? false;
 
+        if (! empty($data['image'])) {
+            $data['image'] = StoragePublicUrl::normalizeToStoragePath($data['image']);
+        }
+        if (array_key_exists('content', $data) && $data['content'] !== null) {
+            $data['content'] = StoragePublicUrl::normalizeStorageUrlsInHtml($data['content']);
+        }
+
         $story = SuccessStory::create($data);
         $story->load('role:id,name,slug');
 
-        return response()->json(['message' => 'Created', 'story' => $story]);
+        return response()->json(['message' => 'Created', 'story' => $this->storyToAdminArray($story)]);
     }
 
     public function show(SuccessStory $successStory): JsonResponse
     {
         $successStory->load('role:id,name,slug');
-        return response()->json($successStory);
+
+        return response()->json($this->storyToAdminArray($successStory));
     }
 
     public function update(Request $request, SuccessStory $successStory): JsonResponse
@@ -68,10 +89,17 @@ class SuccessStoryController extends Controller
             $data['slug'] = Str::slug($data['title']);
         }
 
-        $successStory->update($data);
-        $successStory->load('role:id,name,slug');
+        if (array_key_exists('image', $data) && $data['image'] !== null && $data['image'] !== '') {
+            $data['image'] = StoragePublicUrl::normalizeToStoragePath($data['image']);
+        }
+        if (array_key_exists('content', $data) && $data['content'] !== null) {
+            $data['content'] = StoragePublicUrl::normalizeStorageUrlsInHtml($data['content']);
+        }
 
-        return response()->json(['message' => 'Updated', 'story' => $successStory]);
+        $successStory->update($data);
+        $fresh = $successStory->fresh()->load('role:id,name,slug');
+
+        return response()->json(['message' => 'Updated', 'story' => $this->storyToAdminArray($fresh)]);
     }
 
     public function destroy(SuccessStory $successStory): JsonResponse
@@ -87,8 +115,12 @@ class SuccessStoryController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('success_stories', 'public');
-            return response()->json(['url' => asset('storage/' . $path)]);
+            $path = $request->file('image')->store('success_stories');
+
+            return response()->json([
+                'url' => StoragePublicUrl::resolve($path),
+                'path' => $path,
+            ]);
         }
 
         return response()->json(['message' => 'No image uploaded'], 400);

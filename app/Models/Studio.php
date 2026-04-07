@@ -99,6 +99,7 @@ class Studio extends Model
         if (! $img || ! $img->image) {
             return null;
         }
-        return '/storage/' . ltrim($img->image, '/');
+
+        return $img->image_url;
     }
 }

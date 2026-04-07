@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\StoragePublicUrl;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -26,7 +27,7 @@ class PayoutRequest extends Model
 
     public function getReceiptFullUrlAttribute(): ?string
     {
-        return $this->receipt_url ? \Illuminate\Support\Facades\Storage::url($this->receipt_url) : null;
+        return $this->receipt_url ? StoragePublicUrl::resolve($this->receipt_url) : null;
     }
 
     protected $casts = [

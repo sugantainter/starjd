@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Page;
+use App\Support\StoragePublicUrl;
+use Illuminate\Support\Str;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -21,17 +23,15 @@ class PageController extends Controller
         $cityId = null;
 
         if ($citySlug) {
-            // Try to find city first (if citySlug is same as stateSlug, it will still try)
-            $city = \App\Models\City::where('slug', $citySlug)->first();
+            $city = \App\Models\City::findByUrlSlug($citySlug);
             if ($city) {
                 $cityId = $city->id;
                 $stateId = $city->state_id;
             }
         }
 
-        if (!$cityId && $stateSlug) {
-            // If no city found, or only state provided, try to find state
-            $state = \App\Models\State::where('slug', $stateSlug)->first();
+        if (! $cityId && $stateSlug) {
+            $state = \App\Models\State::findByUrlSlug($stateSlug);
             if ($state) {
                 $stateId = $state->id;
             }
@@ -41,11 +41,13 @@ class PageController extends Controller
         if (! $page) {
             return response()->json(['message' => 'Page not found'], 404);
         }
+        $contentRaw = $page->content ? html_entity_decode($page->content) : '';
+
         return response()->json([
             'id' => $page->id,
             'title' => $page->title ? html_entity_decode($page->title) : '',
             'slug' => $page->slug,
-            'content' => $page->content ? html_entity_decode($page->content) : '',
+            'content' => StoragePublicUrl::rewriteStorageUrlsInHtml($contentRaw),
             'meta_title' => $page->meta_title ? html_entity_decode($page->meta_title) : '',
             'meta_description' => $page->meta_description ? html_entity_decode($page->meta_description) : '',
             'template' => $page->template,
@@ -79,9 +81,9 @@ class PageController extends Controller
         return response()->json($pages->map(function($p) {
             $fullSlug = $p->slug;
             if ($p->city_id && $p->city) {
-                $fullSlug = $p->slug . '-in-' . $p->city->slug;
+                $fullSlug = $p->slug.'-in-'.Str::slug($p->city->slug);
             } elseif ($p->state_id && $p->state) {
-                $fullSlug = $p->slug . '-in-' . $p->state->slug;
+                $fullSlug = $p->slug.'-in-'.Str::slug($p->state->slug);
             }
 
             return [

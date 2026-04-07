@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Professional;
 
 use App\Http\Controllers\Controller;
+use App\Support\StoragePublicUrl;
 use App\Models\ServiceListing;
 use App\Models\ServiceBooking;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class ProfessionalController extends Controller
 {
@@ -126,13 +126,10 @@ class ProfessionalController extends Controller
         ]);
 
         $user = $request->user();
-        $path = $request->file('image')->store(
-            'services/gallery/' . $user->id,
-            'public'
-        );
+        $path = $request->file('image')->store('services/gallery/' . $user->id);
 
         return response()->json([
-            'url' => Storage::url($path),
+            'url' => StoragePublicUrl::resolve($path),
             'path' => $path
         ]);
     }

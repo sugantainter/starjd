@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\StoragePublicUrl;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -23,10 +24,13 @@ class BrandProfile extends Model
             return null;
         }
 
-        $url = \Illuminate\Support\Facades\Storage::url($this->logo);
+        $url = StoragePublicUrl::resolve($this->logo);
+        if ($url === null) {
+            return null;
+        }
         $ts = $this->updated_at?->timestamp;
 
-        return $ts ? $url . (str_contains($url, '?') ? '&' : '?') . 't=' . $ts : $url;
+        return $ts ? $url.(str_contains($url, '?') ? '&' : '?').'t='.$ts : $url;
     }
 
     public function user(): BelongsTo

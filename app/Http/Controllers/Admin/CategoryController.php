@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Support\StoragePublicUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -91,6 +92,6 @@ class CategoryController extends Controller
         if (str_starts_with($image, 'http')) {
             return $image;
         }
-        return Storage::url($image);
+        return StoragePublicUrl::resolve($image);
     }
 }

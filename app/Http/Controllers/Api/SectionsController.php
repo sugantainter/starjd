@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Support\StoragePublicUrl;
 use App\Models\HeroSetting;
 use App\Models\Partner;
 use Illuminate\Support\Facades\DB;
@@ -36,7 +37,9 @@ class SectionsController extends Controller
             $categories = DB::table('categories')->orderBy('sort_order')->get()->map(fn ($r) => [
                 'name' => $r->name,
                 'count' => $r->count_display ?? '0',
-                'image' => $r->image ? asset('storage/' . $r->image) : 'https://picsum.photos/seed/' . Str::slug($r->name) . '/400/500',
+                'image' => $r->image
+                    ? (StoragePublicUrl::resolve($r->image) ?? 'https://picsum.photos/seed/'.Str::slug($r->name).'/400/500')
+                    : 'https://picsum.photos/seed/'.Str::slug($r->name).'/400/500',
             ])->toArray();
         }
         if (\Schema::hasTable('testimonials')) {
@@ -44,7 +47,9 @@ class SectionsController extends Controller
                 'quote' => $r->quote,
                 'name' => $r->name,
                 'role' => $r->role,
-                'avatar' => $r->avatar ? asset('storage/' . $r->avatar) : 'https://picsum.photos/seed/' . $r->id . '/80/80',
+                'avatar' => $r->avatar
+                    ? (StoragePublicUrl::resolve($r->avatar) ?? 'https://picsum.photos/seed/'.$r->id.'/80/80')
+                    : 'https://picsum.photos/seed/'.$r->id.'/80/80',
             ])->toArray();
         }
         if (\Schema::hasTable('faqs')) {
@@ -62,7 +67,9 @@ class SectionsController extends Controller
                     'id' => $b->id,
                     'title' => $b->title,
                     'link' => $b->link,
-                    'image' => $b->image && !str_starts_with($b->image, 'http') ? asset('storage/' . $b->image) : $b->image,
+                    'image' => $b->image
+                        ? (StoragePublicUrl::resolve($b->image) ?? $b->image)
+                        : null,
                 ])->toArray();
         }
 

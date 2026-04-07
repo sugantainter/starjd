@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Support\StoragePublicUrl;
 use App\Models\HeroSetting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -38,6 +39,27 @@ class HeroController extends Controller
             'btn_browse_url' => 'nullable|string|max:500',
         ]);
 
+        if (! empty($data['wallpaper_images']) && is_array($data['wallpaper_images'])) {
+            $data['wallpaper_images'] = array_map(static function ($item) {
+                if (! is_array($item) || empty($item['src'])) {
+                    return $item;
+                }
+                $item['src'] = StoragePublicUrl::normalizeToStoragePath((string) $item['src']);
+
+                return $item;
+            }, $data['wallpaper_images']);
+        }
+        if (! empty($data['cascade_images']) && is_array($data['cascade_images'])) {
+            $data['cascade_images'] = array_map(static function ($item) {
+                if (! is_array($item) || empty($item['src'])) {
+                    return $item;
+                }
+                $item['src'] = StoragePublicUrl::normalizeToStoragePath((string) $item['src']);
+
+                return $item;
+            }, $data['cascade_images']);
+        }
+
         $row = HeroSetting::first();
         if (! $row) {
             $row = new HeroSetting();
@@ -55,10 +77,8 @@ class HeroController extends Controller
         ]);
 
         $file = $request->file('image');
-        $path = $file->store('hero/' . date('Y-m-d'), 'public');
+        $path = $file->store('hero/' . date('Y-m-d'));
 
-        $url = asset('storage/' . $path);
-
-        return response()->json(['url' => $url, 'path' => $path]);
+        return response()->json(['url' => StoragePublicUrl::resolve($path), 'path' => $path]);
     }
 }

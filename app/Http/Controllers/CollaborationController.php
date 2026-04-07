@@ -209,8 +209,6 @@ class CollaborationController extends Controller
             return response()->json(['message' => 'Cannot deliver at this stage'], 422);
         }
 
-        \Log::info('Project delivery started', ['collaboration_id' => $collaboration->id, 'file' => $request->file('deliverable_file')->getClientOriginalName()]);
-
         $file = $request->file('deliverable_file');
         $ext = strtolower((string) $file->getClientOriginalExtension());
         $isVideo = (bool) preg_match('/^(mp4|mov|m4v|avi|mkv)$/', $ext);
@@ -225,8 +223,6 @@ class CollaborationController extends Controller
                 }
                 return $p;
             }, 500);
-
-            \Log::info('Project delivery upload successful', ['path' => $path, 'disk' => 'gcs']);
         } catch (\Exception $e) {
             \Log::error('Project delivery upload failed', [
                 'message' => $e->getMessage(),
@@ -257,7 +253,6 @@ class CollaborationController extends Controller
             GenerateDeliverablePreview::dispatch($collaboration->id)->afterCommit();
         }
 
-        \Log::info('Collaboration record updated', ['collaboration_id' => $collaboration->id, 'status' => 'delivered']);
         $this->notify($collaboration, 'brand', 'delivered');
 
         return response()->json($collaboration->fresh());

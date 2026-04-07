@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Support\StoragePublicUrl;
 use App\Models\Post;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
@@ -18,7 +19,18 @@ class PostController extends Controller
     {
         $posts = Post::with('author:id,name')->orderByDesc('created_at')->get();
 
-        return response()->json($posts);
+        return response()->json($posts->map(fn (Post $p) => $this->postToAdminArray($p)));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function postToAdminArray(Post $post): array
+    {
+        $a = $post->toArray();
+        $a['body'] = StoragePublicUrl::rewriteStorageUrlsInHtml($post->body ?? '');
+
+        return $a;
     }
 
     /**
@@ -83,10 +95,17 @@ class PostController extends Controller
             $data['published_at'] = now();
         }
 
+        if (! empty($data['image'])) {
+            $data['image'] = StoragePublicUrl::normalizeToStoragePath($data['image']);
+        }
+        if (array_key_exists('body', $data) && $data['body'] !== null) {
+            $data['body'] = StoragePublicUrl::normalizeStorageUrlsInHtml($data['body']);
+        }
+
         try {
             $post = Post::create($data);
 
-            return response()->json(['message' => 'Created', 'post' => $post]);
+            return response()->json(['message' => 'Created', 'post' => $this->postToAdminArray($post)]);
         } catch (UniqueConstraintViolationException $e) {
             throw ValidationException::withMessages([
                 'slug' => ['This URL slug is already used by another post. Please use a different title or enter a unique slug.'],
@@ -129,10 +148,17 @@ class PostController extends Controller
             $data['published_at'] = $data['published_at'] ?? now();
         }
 
+        if (array_key_exists('image', $data) && $data['image'] !== null && $data['image'] !== '') {
+            $data['image'] = StoragePublicUrl::normalizeToStoragePath($data['image']);
+        }
+        if (array_key_exists('body', $data) && $data['body'] !== null) {
+            $data['body'] = StoragePublicUrl::normalizeStorageUrlsInHtml($data['body']);
+        }
+
         try {
             $post->update($data);
 
-            return response()->json(['message' => 'Updated', 'post' => $post->fresh()]);
+            return response()->json(['message' => 'Updated', 'post' => $this->postToAdminArray($post->fresh())]);
         } catch (UniqueConstraintViolationException $e) {
             throw ValidationException::withMessages([
                 'slug' => ['This URL slug is already used by another post. Please enter a different slug.'],
@@ -160,12 +186,11 @@ class PostController extends Controller
 
         $file = $request->file('image');
         try {
-            $path = $file->store('posts/'.date('Y-m-d'), 'public');
+            $path = $file->store('posts/'.date('Y-m-d'));
         } catch (\Throwable $e) {
-            return response()->json(['message' => 'Storage error. Ensure storage is linked (php artisan storage:link).'], 500);
+            return response()->json(['message' => 'Could not store upload.'], 500);
         }
-        $url = asset('storage/'.$path);
 
-        return response()->json(['url' => $url, 'path' => $path]);
+        return response()->json(['url' => StoragePublicUrl::resolve($path), 'path' => $path]);
     }
 }

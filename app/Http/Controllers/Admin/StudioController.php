@@ -135,7 +135,7 @@ class StudioController extends Controller
         $data['amenity_ids'] = $studio->amenities->pluck('id')->all();
         $data['images'] = $studio->images->map(fn ($img) => [
             'id' => $img->id,
-            'image' => '/storage/' . ltrim($img->image, '/'),
+            'image' => $img->image_url,
             'caption' => $img->caption,
             'sort_order' => $img->sort_order,
             'is_primary' => $img->is_primary,

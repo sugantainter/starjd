@@ -1387,12 +1387,10 @@
                             class="relative aspect-[4/3] overflow-hidden bg-[#f3f4f6]"
                         >
                             <img
-                                :src="
-                                    s.main_image ||
-                                    'https://images.unsplash.com/photo-1595846519845-68e298c2f195?w=400&h=300&fit=crop'
-                                "
+                                :src="featuredStudioCardSrc(s)"
                                 :alt="s.name"
                                 class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                                @error="onFeaturedStudioImgError"
                             />
                             <span
                                 v-if="s.featured"
@@ -2391,6 +2389,21 @@ watch(
 
 const featuredCreators = ref([]);
 const featuredStudios = ref([]);
+/** Fallback when main_image fails to load (expired URL, blocked host, etc.) */
+const FEATURED_STUDIO_PLACEHOLDER =
+    "https://images.unsplash.com/photo-1595846519845-68e298c2f195?w=400&h=300&fit=crop";
+
+function featuredStudioCardSrc(s) {
+    return s.main_image || FEATURED_STUDIO_PLACEHOLDER;
+}
+
+function onFeaturedStudioImgError(e) {
+    const el = e?.target;
+    if (!el || el.dataset.studioImgFallback === "1") return;
+    el.dataset.studioImgFallback = "1";
+    el.src = FEATURED_STUDIO_PLACEHOLDER;
+}
+
 const partners = ref([]);
 
 const steps = ref([

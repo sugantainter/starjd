@@ -9,7 +9,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\StudioImage;
-use Illuminate\Support\Facades\Storage;
 
 class StudioOwnerStudioController extends Controller
 {
@@ -39,7 +38,7 @@ class StudioOwnerStudioController extends Controller
                 'rating_avg' => $s->rating_avg ? (float) $s->rating_avg : null,
                 'reviews_count' => (int) $s->reviews_count,
                 'is_featured' => (bool) $s->is_featured,
-                'main_image' => $main ? '/storage/' . ltrim($main->image, '/') : null,
+                'main_image' => $main?->image_url,
                 'created_at' => $s->created_at->toIso8601String(),
             ];
         });
@@ -66,7 +65,7 @@ class StudioOwnerStudioController extends Controller
         $data['amenity_ids'] = $studio->amenities->pluck('id')->all();
         $data['images'] = $studio->images->map(fn ($img) => [
             'id' => $img->id,
-            'image' => '/storage/' . ltrim($img->image, '/'),
+            'image' => $img->image_url,
             'caption' => $img->caption,
             'sort_order' => $img->sort_order,
             'is_primary' => $img->is_primary,
@@ -133,7 +132,7 @@ class StudioOwnerStudioController extends Controller
         // Handle Image Uploads
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $index => $file) {
-                $path = $file->store('studios/' . $studio->id, 'public');
+                $path = $file->store('studios/' . $studio->id);
                 StudioImage::create([
                     'studio_id' => $studio->id,
                     'image' => $path,
@@ -192,7 +191,7 @@ class StudioOwnerStudioController extends Controller
         if ($request->hasFile('images')) {
             $lastOrder = $studio->images()->max('sort_order') ?? -1;
             foreach ($request->file('images') as $file) {
-                $path = $file->store('studios/' . $studio->id, 'public');
+                $path = $file->store('studios/' . $studio->id);
                 StudioImage::create([
                     'studio_id' => $studio->id,
                     'image' => $path,

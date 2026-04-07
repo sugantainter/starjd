@@ -40,7 +40,13 @@
           >
             <!-- Image Area -->
             <div class="w-full md:w-80 h-72 md:h-80 shrink-0 overflow-hidden bg-[#f1f5f9] relative">
-              <img v-if="s.image" :src="s.image" :alt="s.name" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              <img
+                v-if="s.image"
+                :src="s.image"
+                :alt="s.name"
+                class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                @error="onServiceListImgError"
+              />
               <div v-else class="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#e63946] to-[#1a1a1a]">
                 <span class="text-6xl font-black text-white/20">{{ s.name.charAt(0) }}</span>
               </div>
@@ -105,6 +111,16 @@ import axios from 'axios';
 
 const services = ref([]);
 const loading = ref(true);
+
+const SERVICE_IMG_FALLBACK =
+  'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop';
+
+function onServiceListImgError(e) {
+  const el = e?.target;
+  if (!el || el.dataset.svcImgFallback === '1') return;
+  el.dataset.svcImgFallback = '1';
+  el.src = SERVICE_IMG_FALLBACK;
+}
 
 onMounted(async () => {
   try {

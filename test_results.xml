@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuites>
-  <testsuite name="Tests\Feature\DummyTest" file="C:\Users\Hello\Downloads\starjd\starjd.com\tests\Feature\DummyTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.379869">
-    <testcase name="test_model_exists" file="C:\Users\Hello\Downloads\starjd\starjd.com\tests\Feature\DummyTest.php" line="10" class="Tests\Feature\DummyTest" classname="Tests.Feature.DummyTest" assertions="1" time="0.379869"/>
-  </testsuite>
-</testsuites>

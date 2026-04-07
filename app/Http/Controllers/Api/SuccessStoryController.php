@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\SuccessStory;
+use App\Support\StoragePublicUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -23,11 +24,15 @@ class SuccessStoryController extends Controller
             $query->featured();
         }
 
-        $stories = $query->orderByDesc('is_featured')
+        $paginator = $query->orderByDesc('is_featured')
             ->orderByDesc('created_at')
             ->paginate($request->integer('limit', 12));
 
-        return response()->json($stories);
+        $paginator->setCollection(
+            $paginator->getCollection()->map(fn (SuccessStory $s) => $this->serializeForPublic($s))
+        );
+
+        return response()->json($paginator);
     }
 
     public function show(string $slug): JsonResponse
@@ -37,7 +42,25 @@ class SuccessStoryController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
-        return response()->json($story);
+        return response()->json($this->serializeForPublic($story));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function serializeForPublic(SuccessStory $story): array
+    {
+        $data = $story->toArray();
+
+        if (! empty($data['image'])) {
+            $data['image'] = StoragePublicUrl::resolve($data['image']) ?? $data['image'];
+        }
+
+        if (! empty($data['content'])) {
+            $data['content'] = StoragePublicUrl::rewriteStorageUrlsInHtml($data['content']);
+        }
+
+        return $data;
     }
 
     public function roles(): JsonResponse

@@ -32,7 +32,12 @@
         <div class="space-y-3">
           <div v-for="(item, i) in form.cascade_images" :key="i" class="flex flex-wrap items-start gap-2 rounded-lg border border-[#e2e8f0] p-3">
             <div class="h-14 w-20 shrink-0 overflow-hidden rounded bg-[#f1f5f9]">
-              <img v-if="item.src" :src="item.src" :alt="item.alt" class="h-full w-full object-cover" />
+              <StoragePreviewImg
+                v-if="item.src"
+                :path-or-url="item.src"
+                :alt="item.alt || ''"
+                class="h-full w-full object-cover"
+              />
               <span v-else class="flex h-full w-full items-center justify-center text-xs text-[#94a3b8]">No image</span>
             </div>
             <div class="min-w-0 flex-1 space-y-1">
@@ -89,6 +94,7 @@
 import { ref, reactive, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { notify } from '../../lib/notify.js';
+import StoragePreviewImg from '../../components/admin/StoragePreviewImg.vue';
 
 const loading = ref(true);
 const uploadingWallpaper = ref(false);
@@ -106,7 +112,7 @@ async function uploadFile(file) {
   const r = await axios.post('/api/admin/hero/upload', fd, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
-  return r.data?.url;
+  return r.data?.path || r.data?.url;
 }
 async function onWallpaperFileSelect(e) {
   const file = e.target.files?.[0];

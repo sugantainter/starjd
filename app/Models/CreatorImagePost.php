@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Support\StoragePublicUrl;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Storage;
 
 class CreatorImagePost extends Model
 {
@@ -24,6 +24,6 @@ class CreatorImagePost extends Model
 
     public function getImageUrlAttribute(): string
     {
-        return Storage::url($this->image);
+        return StoragePublicUrl::resolve($this->image) ?? '';
     }
 }

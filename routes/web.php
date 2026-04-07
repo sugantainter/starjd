@@ -257,6 +257,7 @@ Route::prefix('api')->group(function () {
         Route::get('contacts', [ContactMessageController::class, 'index']);
         Route::delete('contacts/{id}', [ContactMessageController::class, 'destroy'])->name('admin.contacts.destroy');
         Route::post('posts/upload', [AdminPostController::class, 'uploadImage']);
+        Route::get('storage-url', [\App\Http\Controllers\Admin\StorageUrlController::class, 'show']);
         Route::apiResource('posts', AdminPostController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('videos', AdminVideoController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get('hero', [AdminHeroController::class, 'show']);

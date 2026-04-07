@@ -28,7 +28,12 @@
           <tr v-for="item in items" :key="item.id" class="hover:bg-[#f8fafc]">
             <td class="px-4 py-3 text-sm font-medium text-[#1a1a1a]">
               <div class="flex items-center gap-3">
-                <img v-if="item.image" :src="item.image" class="h-10 w-10 rounded object-cover border border-[#e2e8f0]" />
+                <StoragePreviewImg
+                  v-if="item.image"
+                  :path-or-url="item.image"
+                  :alt="item.title || ''"
+                  class="h-10 w-10 rounded object-cover border border-[#e2e8f0]"
+                />
                 <div v-else class="flex h-10 w-10 items-center justify-center rounded border border-[#e2e8f0] bg-[#f8fafc] text-[10px] text-[#94a3b8]">No IMG</div>
                 <span>{{ item.title }}</span>
               </div>
@@ -113,7 +118,12 @@
                 <button type="button" class="rounded-lg border border-[#e2e8f0] px-3 py-2 text-sm text-[#64748b] hover:bg-[#f1f5f9]" @click="imageInput?.click()">Upload</button>
               </div>
             </div>
-            <img v-if="form.image" :src="form.image" class="mt-2 max-h-32 rounded border border-[#e2e8f0] object-cover" />
+            <StoragePreviewImg
+              v-if="form.image"
+              :path-or-url="form.image"
+              alt=""
+              class="mt-2 max-h-32 rounded border border-[#e2e8f0] object-cover"
+            />
           </div>
 
           <div>
@@ -167,6 +177,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import axios from 'axios';
+import StoragePreviewImg from '../../components/admin/StoragePreviewImg.vue';
 import AdminPageHeader from '../../components/admin/AdminPageHeader.vue';
 import AdminEmptyState from '../../components/admin/AdminEmptyState.vue';
 import AdminTableSkeleton from '../../components/admin/AdminTableSkeleton.vue';
@@ -242,7 +253,7 @@ async function onImageSelect(ev) {
   fd.append('image', file);
   try {
     const { data } = await axios.post('/api/admin/success-stories/upload', fd);
-    form.image = data.url;
+    form.image = data.path || data.url || '';
   } catch (e) {
     alert('Upload failed: ' + (e.response?.data?.message || 'Error'));
   }

@@ -1,5 +1,13 @@
 <?php
 
+use League\Flysystem\GoogleCloudStorage\UniformBucketLevelAccessVisibility;
+
+// Common .env typo (gsc) breaks Storage::disk(config('filesystems.default')) site-wide.
+$defaultFilesystemDisk = env('FILESYSTEM_DISK', 'gcs');
+if ($defaultFilesystemDisk === 'gsc') {
+    $defaultFilesystemDisk = 'gcs';
+}
+
 return [
 
     /*
@@ -13,7 +21,7 @@ return [
     |
     */
 
-    'default' => env('FILESYSTEM_DISK', 'gcs'),
+    'default' => $defaultFilesystemDisk,
 
     /*
     |--------------------------------------------------------------------------
@@ -69,6 +77,9 @@ return [
             'path_prefix' => env('GOOGLE_CLOUD_STORAGE_PATH_PREFIX', null),
             'storage_api_uri' => env('GOOGLE_CLOUD_STORAGE_API_URI', null),
             'visibility' => 'public',
+            'visibility_handler' => env('GOOGLE_CLOUD_GCS_VISIBILITY_HANDLER', UniformBucketLevelAccessVisibility::class),
+            'signed_read_urls' => env('GCS_SIGNED_READ_URLS', true),
+            'signed_read_ttl_hours' => (int) env('GCS_SIGNED_READ_TTL_HOURS', 168),
             'throw' => false,
             'report' => false,
         ],

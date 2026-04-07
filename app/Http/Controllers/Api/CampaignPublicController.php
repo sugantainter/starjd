@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Support\StoragePublicUrl;
 use App\Models\Campaign;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -143,7 +144,7 @@ class CampaignPublicController extends Controller
             $rows = DB::table('categories')->orderBy('sort_order')->orderBy('name')->get(['name', 'slug', 'image', 'count_display']);
             $items = $rows->map(function ($row) {
                 $imageUrl = $row->image
-                    ? (str_starts_with($row->image, 'http') ? $row->image : asset('storage/' . $row->image))
+                    ? (str_starts_with($row->image, 'http') ? $row->image : StoragePublicUrl::resolve($row->image))
                     : null;
                 return [
                     'name' => $row->name,

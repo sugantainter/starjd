@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\StoragePublicUrl;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -44,5 +45,35 @@ class ServiceListing extends Model
     public function bookings(): HasMany
     {
         return $this->hasMany(ServiceBooking::class);
+    }
+
+    /**
+     * Browser-ready URLs for gallery items (DB stores object keys or legacy URLs).
+     *
+     * @return list<string>
+     */
+    public function resolvedGalleryUrls(): array
+    {
+        $paths = $this->gallery;
+        if (! is_array($paths)) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($paths as $item) {
+            if ($item === null || $item === '' || ! is_string($item)) {
+                continue;
+            }
+            $item = trim($item);
+            if ($item === '') {
+                continue;
+            }
+            $url = StoragePublicUrl::resolve($item);
+            if ($url !== null && $url !== '') {
+                $out[] = $url;
+            }
+        }
+
+        return $out;
     }
 }

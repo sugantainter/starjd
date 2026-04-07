@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\StudioOwner;
 
 use App\Http\Controllers\Controller;
+use App\Support\StoragePublicUrl;
 use App\Models\Studio;
 use App\Models\StudioImage;
 use Illuminate\Http\JsonResponse;
@@ -44,7 +45,7 @@ class StudioOwnerStudioImageController extends Controller
             'message' => 'Image added.',
             'image' => [
                 'id' => $image->id,
-                'image' => Storage::url($image->image),
+                'image' => StoragePublicUrl::resolve($image->image),
                 'caption' => $image->caption,
                 'sort_order' => $image->sort_order,
                 'is_primary' => $image->is_primary,
@@ -92,7 +93,7 @@ class StudioOwnerStudioImageController extends Controller
             'message' => 'Updated.',
             'images' => $studio->images->map(fn ($img) => [
                 'id' => $img->id,
-                'image' => Storage::url($img->image),
+                'image' => StoragePublicUrl::resolve($img->image),
                 'caption' => $img->caption,
                 'sort_order' => $img->sort_order,
                 'is_primary' => $img->is_primary,

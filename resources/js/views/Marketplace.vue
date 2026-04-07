@@ -46,7 +46,13 @@
          >
             <!-- Preview Image -->
             <div class="w-full md:w-96 h-64 md:h-80 overflow-hidden bg-[#f1f5f9] shrink-0 relative">
-               <img v-if="listing.gallery?.[0]" :src="listing.gallery[0]" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+               <img
+                 v-if="listing.gallery?.[0]"
+                 :src="listing.gallery[0]"
+                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                 alt=""
+                 @error="onGigImageError"
+               />
                <div v-else class="w-full h-full flex items-center justify-center text-[#cbd5e1]">
                  <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                </div>
@@ -57,7 +63,13 @@
             <div class="flex-1 p-8 flex flex-col">
               <div class="flex items-center gap-3 mb-4">
                  <div class="h-10 w-10 rounded-full bg-[#f1f5f9] overflow-hidden border-2 border-white shadow-sm">
-                    <img v-if="listing.user?.avatar_url" :src="listing.user.avatar_url" class="w-full h-full object-cover" />
+                    <img
+                      v-if="listing.user?.avatar_url"
+                      :src="listing.user.avatar_url"
+                      class="w-full h-full object-cover"
+                      alt=""
+                      @error="onGigImageError"
+                    />
                  </div>
                  <div>
                     <span class="text-sm font-black text-[#1a1a1a]">{{ listing.user?.name }}</span>
@@ -125,6 +137,17 @@ import { useRoute } from 'vue-router';
 import axios from 'axios';
 
 const route = useRoute();
+/** When signed URLs expire or paths were wrong */
+const GIG_IMAGE_FALLBACK =
+  'https://images.unsplash.com/photo-1560439514-4e9645039924?w=800&h=500&fit=crop';
+
+function onGigImageError(e) {
+  const el = e?.target;
+  if (!el || el.dataset.gigImgFallback === '1') return;
+  el.dataset.gigImgFallback = '1';
+  el.src = GIG_IMAGE_FALLBACK;
+}
+
 const loading = ref(true);
 const listings = ref([]);
 const categories = ref([]);

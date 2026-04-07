@@ -65,7 +65,7 @@
               <td class="px-8 py-6">
                 <div class="flex items-center gap-4">
                   <div class="h-12 w-12 rounded-2xl bg-slate-100 flex items-center justify-center font-bold text-slate-400 overflow-hidden border border-slate-200">
-                     <img v-if="r.user?.profile?.avatar || r.user?.profile?.logo" :src="r.user.profile.avatar || r.user.profile.logo" class="h-full w-full object-cover" />
+                     <img v-if="payoutUserImage(r.user)" :src="payoutUserImage(r.user)" class="h-full w-full object-cover" />
                      <span v-else>{{ r.user?.name?.charAt(0) }}</span>
                   </div>
                   <div>
@@ -267,6 +267,18 @@ function getStatusClass(status) {
 function formatDate(d) {
    if (!d) return '';
    return new Date(d).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function payoutUserImage(u) {
+  if (!u) return '';
+  return (
+    u.avatar_url
+    || u.creator_profile?.avatar_url
+    || u.brand_profile?.logo_url
+    || u.profile?.avatar_url
+    || u.profile?.logo_url
+    || ''
+  );
 }
 
 function getAppRate(u) {

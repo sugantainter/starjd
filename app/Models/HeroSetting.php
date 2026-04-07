@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\StoragePublicUrl;
 use Illuminate\Database\Eloquent\Model;
 
 class HeroSetting extends Model
@@ -50,11 +51,29 @@ class HeroSetting extends Model
                 ['src' => 'https://later.com/static/53dc907229ca6b860ea26841d00f39dc/9b018/outer-l.webp', 'alt' => 'Outer left'],
             ];
         }
+        $mapSrc = static function (array $items): array {
+            return array_map(function ($item) {
+                if (is_string($item)) {
+                    $s = trim($item);
+                    $url = $s === '' ? '' : (StoragePublicUrl::resolve($s) ?? $s);
+
+                    return ['src' => $url];
+                }
+                if (! is_array($item) || empty($item['src']) || ! is_string($item['src'])) {
+                    return $item;
+                }
+                $src = trim($item['src']);
+                $item['src'] = StoragePublicUrl::resolve($src) ?? $src;
+
+                return $item;
+            }, $items);
+        };
+
         return [
             'headline' => $row?->headline ?? 'Influencer Marketing Made Easy',
             'subheadline' => $row?->subheadline,
-            'wallpaper_images' => $wallpaper,
-            'cascade_images' => $cascade,
+            'wallpaper_images' => $mapSrc($wallpaper),
+            'cascade_images' => $mapSrc($cascade),
             'btn_creator_label' => $row?->btn_creator_label ?? 'Join as Creator',
             'btn_creator_url' => $row?->btn_creator_url ?? '#join-creator',
             'btn_brand_label' => $row?->btn_brand_label ?? 'Join as Brand',

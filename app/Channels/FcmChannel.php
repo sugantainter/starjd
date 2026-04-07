@@ -13,7 +13,6 @@ class FcmChannel
      */
     public function send($notifiable, Notification $notification): void
     {
-        \Illuminate\Support\Facades\Log::info("FcmChannel@send starting", ['user_id' => $notifiable->id]);
         if (!method_exists($notification, 'toFcm')) {
             return;
         }

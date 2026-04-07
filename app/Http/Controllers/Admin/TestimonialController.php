@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Support\StoragePublicUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +15,7 @@ class TestimonialController extends Controller
     {
         $items = DB::table('testimonials')->orderBy('sort_order')->get();
         $items->transform(function ($item) {
-            $item->avatar_url = $item->avatar ? \Illuminate\Support\Facades\Storage::url($item->avatar) : null;
+            $item->avatar_url = $item->avatar ? StoragePublicUrl::resolve($item->avatar) : null;
             return $item;
         });
         return response()->json($items);

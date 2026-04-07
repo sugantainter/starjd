@@ -40,7 +40,7 @@
               <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-5">
                   <div class="h-16 w-16 shrink-0 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center overflow-hidden">
-                    <img v-if="c.brand?.brandProfile?.logo" :src="c.brand.brandProfile.logo" class="h-full w-full object-cover" />
+                    <img v-if="c.brand?.brand_profile?.logo_url || c.brand?.brandProfile?.logo_url" :src="c.brand.brand_profile?.logo_url || c.brand.brandProfile?.logo_url" class="h-full w-full object-cover" />
                     <span v-else class="text-2xl font-black text-slate-300 uppercase">{{ c.brand?.name?.charAt(0) }}</span>
                   </div>
                   <div>
@@ -182,8 +182,8 @@
                                    : 'Claim Payout' 
                                }}
                              </button>
-                             <div v-if="c.payout_requests?.find(p => p.type === 'creator_payout')?.receipt_url" class="mt-2">
-                                <a :href="'/storage/' + c.payout_requests.find(p => p.type === 'creator_payout').receipt_url" target="_blank" class="text-[9px] font-black text-indigo-600 uppercase tracking-widest hover:underline flex items-center gap-1">
+                             <div v-if="creatorPayoutReceiptUrl(c)" class="mt-2">
+                                <a :href="creatorPayoutReceiptUrl(c)" target="_blank" rel="noopener noreferrer" class="text-[9px] font-black text-indigo-600 uppercase tracking-widest hover:underline flex items-center gap-1">
                                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                                    View Receipt
                                 </a>
@@ -410,6 +410,13 @@ function isStepCompleted(status, idx) {
 function isStepActive(status, idx) {
   const currentStep = statusMap[status] || 0;
   return currentStep === idx;
+}
+
+function creatorPayoutReceiptUrl(c) {
+  const pr = c?.payout_requests?.find((p) => p.type === 'creator_payout');
+  if (!pr?.receipt_full_url && !pr?.receipt_url) return '';
+  if (pr.receipt_full_url) return pr.receipt_full_url;
+  return pr.receipt_url.startsWith('http') ? pr.receipt_url : '';
 }
 
 async function openPreview(c) {

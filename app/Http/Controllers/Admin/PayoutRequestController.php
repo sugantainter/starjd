@@ -13,24 +13,24 @@ class PayoutRequestController extends Controller
     {
         return response()->json(
             PayoutRequest::with([
-                'user' => function($q) {
-                    $q->withCount([
-                        'collaborationsAsBrand as brand_collabs_count',
-                        'collaborationsAsBrand as brand_rejected_count' => fn($q) => $q->where('status', 'rejected'),
-                        'collaborationsAsCreator as creator_collabs_count',
-                        'collaborationsAsCreator as creator_completed_count' => fn($q) => $q->where('status', 'completed'),
-                        'collaborationsAsCreator as creator_rejected_count' => fn($q) => $q->where('status', 'rejected'),
-                    ])->withSum('collaborationsAsCreator as creator_total_revisions', 'revision_count');
-                }, 
-                'collaboration', 
-                'bankAccount'
+                'user' => function ($q) {
+                    $q->with(['creatorProfile', 'brandProfile'])
+                        ->withCount([
+                            'collaborationsAsBrand as brand_collabs_count',
+                            'collaborationsAsBrand as brand_rejected_count' => fn ($q) => $q->where('status', 'rejected'),
+                            'collaborationsAsCreator as creator_collabs_count',
+                            'collaborationsAsCreator as creator_completed_count' => fn ($q) => $q->where('status', 'completed'),
+                            'collaborationsAsCreator as creator_rejected_count' => fn ($q) => $q->where('status', 'rejected'),
+                        ])->withSum('collaborationsAsCreator as creator_total_revisions', 'revision_count');
+                },
+                'collaboration',
+                'bankAccount',
             ])
-            ->orderByDesc('created_at')
-            ->get()
-            ->map(function($p) {
-                $p->receipt_full_url = $p->receipt_url ? \Illuminate\Support\Facades\Storage::url($p->receipt_url) : null;
-                return $p;
-            })
+                ->orderByDesc('created_at')
+                ->get()
+                ->each(function (PayoutRequest $p): void {
+                    $p->user?->append('avatar_url');
+                })
         );
     }
 
