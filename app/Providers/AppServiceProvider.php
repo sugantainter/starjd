@@ -2,7 +2,8 @@
 
 namespace App\Providers;
 
-use App\Models\Review;
+use App\Models\Campaign;
+use App\Observers\CampaignObserver;
 use App\Observers\ReviewObserver;
 use App\Services\PayUService;
 use Illuminate\Auth\Notifications\ResetPassword;
@@ -25,7 +26,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Review::observe(ReviewObserver::class);
+        Campaign::observe(CampaignObserver::class);
+
 
         // Password reset link points to SPA reset-password page
         ResetPassword::createUrlUsing(function ($notifiable, $token) {
