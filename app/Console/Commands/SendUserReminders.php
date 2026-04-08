@@ -33,6 +33,10 @@ class SendUserReminders extends Command
         $users = User::whereNotNull('email_verified_at')->get();
 
         foreach ($users as $user) {
+            if (! $service->shouldSendOnboardingReminder($user)) {
+                continue;
+            }
+
             // Stage 1 – Payment Reminder
             if (! $service->hasPaidAccess($user) && $user->last_payment_reminder_at === null) {
                 // Ensure at least 24h after verification
