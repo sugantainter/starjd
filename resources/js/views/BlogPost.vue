@@ -127,11 +127,31 @@
 
           <!-- Right: sidebar - Trending & News -->
           <aside class="space-y-8 lg:sticky lg:top-6 lg:self-start">
+        <!-- Search Box -->
+        <div class="rounded-xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
+          <div class="relative">
+            <input
+              v-model="searchTerm"
+              type="text"
+              placeholder="Search blogs..."
+              class="w-full px-4 py-2 pr-12 rounded-lg border border-[#e5e7eb] focus:outline-none focus:ring-2 focus:ring-[#e63946] transition"
+              @keyup.enter="router.push({ path: '/blog', query: { search: searchTerm } })"
+            />
+            <button 
+              @click="router.push({ path: '/blog', query: { search: searchTerm } })"
+              class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-[#64748b] hover:text-[#e63946] transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1116.5 9a7.5 7.5 0 010 7.5z" />
+              </svg>
+            </button>
+          </div>
+        </div>
             <!-- Trending -->
             <div class="rounded-xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
               <h2 class="text-lg font-bold text-[#1a1a1a]">Trending</h2>
               <ul class="mt-4 space-y-3">
-                <li v-for="p in trendingPosts" :key="p.id">
+                <li v-for="p in filteredSidebarPosts" :key="p.id">
                   <router-link :to="'/blog/' + p.slug" class="group flex gap-3">
                     <div v-if="p.image" class="h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-[#f3f4f6]">
                       <img :src="p.image" :alt="p.title" class="h-full w-full object-cover transition group-hover:scale-105" />
@@ -203,11 +223,14 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import RichTextContent from '../components/RichTextContent.vue';
 
 const route = useRoute();
+const router = useRouter();
+// Search term for sidebar filtering
+const searchTerm = ref('');
 const post = ref(null);
 const relatedPosts = ref([]);
 const allPosts = ref([]);
@@ -225,6 +248,14 @@ const trendingPosts = computed(() => {
 const newsPosts = computed(() => {
   const other = allPosts.value.filter((p) => p.slug !== post.value?.slug);
   return other.slice(5, 10);
+});
+const filteredSidebarPosts = computed(() => {
+  if (!searchTerm.value) return trendingPosts.value;
+  const term = searchTerm.value.toLowerCase();
+  return allPosts.value.filter(p =>
+    (p.title && p.title.toLowerCase().includes(term)) ||
+    (p.excerpt && p.excerpt.toLowerCase().includes(term))
+  ).slice(0, 5);
 });
 
 

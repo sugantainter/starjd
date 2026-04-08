@@ -11,6 +11,20 @@
     </section>
 
     <!-- Posts List -->
+    <!-- Search Bar -->
+    <div class="flex justify-end mb-6 space-x-2">
+      <input
+        v-model="searchTerm"
+        type="text"
+        placeholder="Search blogs..."
+        class="w-64 px-4 py-2 rounded-lg border border-[#e5e7eb] focus:outline-none focus:ring-2 focus:ring-[#e63946] transition"
+      />
+      <button @click="router.push({ path: '/blog', query: { search: searchTerm } })" class="p-2 rounded-lg bg-[#e63946] text-white hover:bg-[#c1121f] transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1116.5 9a7.5 7.5 0 010 7.5z" />
+        </svg>
+      </button>
+    </div>
     <section class="px-4 py-12 md:py-24 -mt-12">
       <div class="mx-auto max-w-5xl">
         <div v-if="loading && !posts.length" class="flex justify-center py-20 bg-white rounded-3xl border border-[#e5e7eb] shadow-xl">
@@ -23,7 +37,7 @@
 
         <div v-else class="flex flex-col gap-10">
           <article
-            v-for="post in posts"
+            v-for="post in filteredPosts"
             :key="post.id"
             class="group flex flex-col md:flex-row overflow-hidden rounded-3xl border border-[#e5e7eb] bg-white shadow-xl transition-all duration-500 hover:border-[#e63946]/30 hover:shadow-2xl hover:-translate-y-1"
           >
@@ -99,18 +113,34 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 
 const route = useRoute();
+const router = useRouter();
 const posts = ref([]);
 const loading = ref(true);
 const loadingMore = ref(false);
 const finished = ref(false);
 const page = ref(1);
+// Sync search term with URL query
+watch(() => route.query.search, (newVal) => {
+  if (newVal !== undefined) searchTerm.value = newVal || '';
+});
 const scrollTrigger = ref(null);
 const resolvedCategoryLabel = ref('');
 let observer = null;
+
+const searchTerm = ref('');
+// Computed filtered posts based on searchTerm
+const filteredPosts = computed(() => {
+  if (!searchTerm.value) return posts.value;
+  const term = searchTerm.value.toLowerCase();
+  return posts.value.filter(p =>
+    (p.title && p.title.toLowerCase().includes(term)) ||
+    (p.excerpt && p.excerpt.toLowerCase().includes(term))
+  );
+});
 
 function setupScrollObserver() {
   if (!observer) return;
@@ -213,6 +243,9 @@ onMounted(async () => {
     { threshold: 0.1 }
   );
 
+  if (route.query.search) {
+    searchTerm.value = route.query.search;
+  }
   await resolveCategoryFilter();
   await load(1, false);
   await nextTick();
