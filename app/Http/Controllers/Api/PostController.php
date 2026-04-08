@@ -37,6 +37,15 @@ class PostController extends Controller
             $query->where('category_label', request()->category);
         }
 
+        if (request()->has('search') && request()->search != '') {
+            $s = request()->search;
+            $query->where(function ($q) use ($s) {
+                $q->where('title', 'like', "%{$s}%")
+                  ->orWhere('excerpt', 'like', "%{$s}%")
+                  ->orWhere('body', 'like', "%{$s}%");
+            });
+        }
+
         $perPage = (int) request()->get('per_page', 10);
         $perPage = min(30, max(1, $perPage));
 
