@@ -14,6 +14,7 @@ class PaymentReminderMail extends Mailable implements ShouldQueue
 
     public $user;
     public $couponCode;
+    public $roleSlug;
 
     /**
      * Create a new message instance.
@@ -22,6 +23,7 @@ class PaymentReminderMail extends Mailable implements ShouldQueue
     {
         $this->user = $user;
         $this->couponCode = $couponCode;
+        $this->roleSlug = $user->primaryRole()?->slug ?? $user->role;
     }
 
     /**
@@ -29,13 +31,41 @@ class PaymentReminderMail extends Mailable implements ShouldQueue
      */
     public function build()
     {
-        return $this->subject('Activate Your Account – Special Offer Inside')
+        $roleTitle = match ($this->roleSlug) {
+            'creator' => 'Creator',
+            'brand' => 'Brand',
+            'studio_owner' => 'Studio Owner',
+            'professional' => 'Professional',
+            'agency' => 'Agency',
+            default => 'Account',
+        };
+
+        $targetPath = match ($this->roleSlug) {
+            'creator' => '/creator/choose-plan',
+            'brand' => '/brand/choose-plan',
+            'studio_owner' => '/studio/choose-plan',
+            'professional' => '/professional/choose-plan',
+            'agency' => '/agency/choose-plan',
+            default => '/',
+        };
+
+        $paymentUrl = $this->authAwareUrl($targetPath);
+
+        return $this->subject("Activate Your {$roleTitle} Account – Special Offer Inside")
                     ->markdown('emails.payment_reminder')
                     ->with([
                         'name' => $this->user->name,
-                        'paymentUrl' => url('/payment'),
+                        'paymentUrl' => $paymentUrl,
                         'couponCode' => $this->couponCode,
+                        'roleSlug' => $this->roleSlug,
+                        'roleTitle' => $roleTitle,
                     ]);
+    }
+
+    private function authAwareUrl(string $targetPath): string
+    {
+        $normalized = '/' . ltrim($targetPath, '/');
+        return url('/login?redirect=' . urlencode($normalized));
     }
 }
 ?>
