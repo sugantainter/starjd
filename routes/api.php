@@ -63,6 +63,7 @@ Route::get('creators/{slug}',           [CreatorPublicController::class, 'show']
 // Brands – Public
 Route::get('brands',                    [BrandPublicController::class, 'index']);
 Route::get('brands/{slug}',              [BrandPublicController::class, 'show']);
+Route::get('partners',                   [\App\Http\Controllers\Admin\PartnerController::class, 'index']);
 
 // Campaigns – Public
 Route::get('campaigns',                 [CampaignPublicController::class, 'index']);

@@ -984,50 +984,33 @@
         <!-- As seen in / Partners – auto-scroll marquee -->
         <section
             v-if="partners.length"
-            class="partners-marquee border-b border-[#e5e7eb] bg-white py-8"
+            class="partners-marquee bg-white py-12"
         >
-            <div class="partners-marquee-track overflow-hidden">
-                <div class="partners-marquee-inner flex items-center gap-10">
+            <div class="partners-marquee-track overflow-hidden border-y border-[#e5e7eb] py-8 md:py-10">
+                <div class="partners-marquee-inner flex items-center gap-16 transition-all duration-700">
                     <template
-                        v-for="(set, setIdx) in [partners, partners]"
+                        v-for="(set, setIdx) in [partners, partners, partners]"
                         :key="'set-' + setIdx"
                     >
                         <template v-for="p in set" :key="setIdx + '-' + p.id">
                             <a
-                                v-if="p.link"
-                                :href="p.link"
+                                :href="p.link || '#'"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                class="partners-marquee-item flex shrink-0 items-center justify-center transition hover:opacity-80"
+                                class="partners-marquee-item flex-shrink-0"
                             >
                                 <img
                                     v-if="p.logo_url"
                                     :src="p.logo_url"
                                     :alt="p.name || 'Partner'"
-                                    class="h-10 max-h-12 w-auto max-w-[140px] object-contain"
+                                    class="h-8 md:h-10 w-auto object-contain"
                                 />
                                 <span
                                     v-else
-                                    class="text-lg font-semibold text-[#9ca3af]"
+                                    class="text-lg font-bold text-[#cbd5e1]"
                                     >{{ p.name || "Partner" }}</span
                                 >
                             </a>
-                            <span
-                                v-else
-                                class="partners-marquee-item flex shrink-0 items-center justify-center"
-                            >
-                                <img
-                                    v-if="p.logo_url"
-                                    :src="p.logo_url"
-                                    :alt="p.name || 'Partner'"
-                                    class="h-10 max-h-12 w-auto max-w-[140px] object-contain"
-                                />
-                                <span
-                                    v-else
-                                    class="text-lg font-semibold text-[#9ca3af]"
-                                    >{{ p.name || "Partner" }}</span
-                                >
-                            </span>
                         </template>
                     </template>
                 </div>
@@ -2916,7 +2899,8 @@ onBeforeUnmount(() => {
 .partners-marquee-inner {
     display: flex;
     width: max-content;
-    animation: partners-scroll 40s linear infinite;
+    animation: partners-scroll 60s linear infinite;
+    will-change: transform;
 }
 .partners-marquee-inner:hover {
     animation-play-state: paused;
@@ -2926,7 +2910,7 @@ onBeforeUnmount(() => {
         transform: translateX(0);
     }
     100% {
-        transform: translateX(-50%);
+        transform: translateX(-33.333%);
     }
 }
 </style>

@@ -740,7 +740,13 @@ const desktopBottomLinks = [
     { label: "For Brands", to: "/brand" },
     { label: "For Creators", to: "/creator" },
 ];
-const mobileMainLinks = [{ label: "Home", to: "/" }, ...desktopBottomLinks];
+const mobileMainLinks = [
+    { label: "Home", to: "/" },
+    { label: "Creators", to: "/creators" },
+    { label: "Brands", to: "/brands" },
+    { label: "Campaigns", to: "/campaigns" },
+    ...desktopBottomLinks
+];
 
 // Keep all frequently used routes centralized (used in template directly).
 const ROUTE_PATHS = {

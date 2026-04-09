@@ -344,6 +344,10 @@ Route::middleware(['auth:web', 'verified', 'creator'])->group(function () {
 | /creator/*, /brand/*, /admin/*, etc.
 */
 Route::get('/login', [HomeController::class, 'index'])->name('login');
+Route::get('/creators', [HomeController::class, 'index']);
+Route::get('/brands', [HomeController::class, 'index']);
+Route::get('/campaigns', [HomeController::class, 'index']);
+Route::get('/studios', [HomeController::class, 'index']);
 
 // Legacy CMS URLs: /page/{slug} → /{slug} (301; canonical is root path, e.g. /influencers-in-ahmedabad)
 Route::get('/page/{slug}', function (string $slug) {

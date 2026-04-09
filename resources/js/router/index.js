@@ -33,6 +33,7 @@ const routes = [
   { path: '/page/:slug', redirect: (to) => ({ path: `/${to.params.slug}` }) },
   { path: '/creators', component: AppLayout, children: [ { path: '', name: 'creators', component: () => import('../views/Creators.vue') } ] },
   { path: '/creators/:slug', component: AppLayout, children: [ { path: '', name: 'creator-public', component: () => import('../views/CreatorPublicProfile.vue') } ] },
+  { path: '/brands', component: AppLayout, children: [ { path: '', name: 'brands', component: () => import('../views/Brands.vue') } ] },
   { path: '/brands/:slug', component: AppLayout, children: [ { path: '', name: 'brand-public', component: () => import('../views/BrandPublicProfile.vue') } ] },
   { path: '/studios', component: AppLayout, children: [ { path: '', name: 'studios', component: () => import('../views/Studios.vue') } ] },
   { path: '/studios/:slug', component: AppLayout, children: [ { path: '', name: 'studio-detail', component: () => import('../views/StudioDetail.vue') } ] },
