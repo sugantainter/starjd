@@ -164,6 +164,11 @@
         </div>
       </div>
 
+      <!-- App Download Section Integration -->
+      <div class="mt-16 mb-12">
+        <AppDownloadSection />
+      </div>
+
       <!-- Our Pages (Location & Legal Grid) -->
       <hr class="mt-12 border-[#334155]" />
       <div v-if="dynamicPages.length" class="flex flex-col gap-4 pt-6">
@@ -217,6 +222,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
+import AppDownloadSection from '@/components/common/AppDownloadSection.vue';
 
 /** Fallback list so "Our Services" always shows all options from design (All Services + these 9). */
 const defaultFooterServices = [

@@ -135,6 +135,11 @@
       </section>
 
       <p class="mt-6 text-center text-xs text-[#94a3b8]">StarJD — powered by Suganta International</p>
+
+      <!-- App Download Section -->
+      <div class="mt-12">
+        <AppDownloadSection />
+      </div>
     </div>
   </div>
 </template>
@@ -143,6 +148,7 @@
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
+import AppDownloadSection from '@/components/common/AppDownloadSection.vue';
 import { getErrorMessage } from '../lib/errorHandler.js';
 
 const route = useRoute();
