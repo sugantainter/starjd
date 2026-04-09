@@ -105,7 +105,7 @@
               <div>
                 <label class="mb-1.5 block text-sm font-medium text-[#475569]">What niches do you want to target? <span class="text-[#94a3b8]">(optional)</span></label>
                 <select v-model="form.niches" multiple class="w-full rounded-xl border border-[#e2e8f0] px-4 py-2.5 text-[#1a1a1a] focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" style="min-height: 88px">
-                  <option v-for="c in filterOptions.categories" :key="c" :value="c">{{ c }}</option>
+                  <option v-for="c in filterOptions.categories" :key="c.id" :value="c.name">{{ c.name }}</option>
                 </select>
                 <p class="mt-1 text-xs text-[#94a3b8]">Hold Ctrl/Cmd to select multiple</p>
               </div>

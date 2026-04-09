@@ -728,9 +728,13 @@ watch(
 );
 
 // Shared nav link lists to keep the navbar markup lean (desktop + mobile)
-const desktopTopLinks = [{ label: "Home", to: "/" }];
+const desktopTopLinks = [
+    { label: "Home", to: "/" },
+    { label: "Creators", to: "/creators" },
+    { label: "Brands", to: "/brands" },
+    { label: "Campaigns", to: "/campaigns" },
+];
 const desktopBottomLinks = [
-    { label: "Campaigns", to: "/campaign" },
     { label: "How It Works", to: "/how-it-works" },
     { label: "Pricing", to: "/pricing" },
     { label: "For Brands", to: "/brand" },

@@ -6,7 +6,7 @@
       <input v-model="search" type="text" placeholder="Keywords, niches or categories..." class="min-w-[180px] flex-1 rounded-xl border border-[#e2e8f0] px-4 py-2 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" />
       <select v-model="filters.category" class="rounded-xl border border-[#e2e8f0] px-4 py-2 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]">
         <option value="">Category</option>
-        <option v-for="c in filterOptions.categories" :key="c" :value="c">{{ c }}</option>
+        <option v-for="c in filterOptions.categories" :key="c.id" :value="c.name">{{ c.name }}</option>
       </select>
       <select v-model="filters.gender" class="rounded-xl border border-[#e2e8f0] px-4 py-2 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]">
         <option value="">Gender</option>
