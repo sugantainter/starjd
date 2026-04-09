@@ -14,6 +14,8 @@ use App\Http\Controllers\CreatorPublicController;
 use App\Http\Controllers\CreatorOptionsController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\SupportController;
+use App\Http\Controllers\BrandPublicController;
+use App\Http\Controllers\CampaignApplicationController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\CampaignPublicController;
 use App\Http\Controllers\Admin\FaqController;
@@ -57,6 +59,10 @@ Route::get('studios/{slugOrId}',    [StudioPublicController::class, 'show']);
 Route::get('creators',                  [CreatorPublicController::class, 'index']);
 Route::get('creators/options/filters',  [CreatorOptionsController::class, 'filters']);
 Route::get('creators/{slug}',           [CreatorPublicController::class, 'show']);
+
+// Brands – Public
+Route::get('brands',                    [BrandPublicController::class, 'index']);
+Route::get('brands/{slug}',              [BrandPublicController::class, 'show']);
 
 // Campaigns – Public
 Route::get('campaigns',                 [CampaignPublicController::class, 'index']);

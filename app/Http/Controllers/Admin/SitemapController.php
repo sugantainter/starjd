@@ -31,7 +31,7 @@ class SitemapController extends Controller
     private function ensureSitemapDirectory(): void
     {
         $dir = $this->sitemapDirectory();
-        if (! File::isDirectory($dir)) {
+        if (!File::isDirectory($dir)) {
             File::makeDirectory($dir, 0755, true);
         }
     }
@@ -41,11 +41,11 @@ class SitemapController extends Controller
      */
     public function servePublic(string $sitemapFile): BinaryFileResponse
     {
-        if (! preg_match('/^(sitemap\.xml|sitemap_[0-9]+\.xml)$/', $sitemapFile)) {
+        if (!preg_match('/^(sitemap\.xml|sitemap_[0-9]+\.xml)$/', $sitemapFile)) {
             abort(404);
         }
-        $path = $this->sitemapDirectory().DIRECTORY_SEPARATOR.$sitemapFile;
-        if (! File::isFile($path)) {
+        $path = $this->sitemapDirectory() . DIRECTORY_SEPARATOR . $sitemapFile;
+        if (!File::isFile($path)) {
             abort(404);
         }
 
@@ -58,7 +58,7 @@ class SitemapController extends Controller
     public function status(): JsonResponse
     {
         $this->ensureSitemapDirectory();
-        $files = File::glob($this->sitemapDirectory().'/sitemap*.xml');
+        $files = File::glob($this->sitemapDirectory() . '/sitemap*.xml');
         usort($files, function (string $a, string $b): int {
             $ba = basename($a);
             $bb = basename($b);
@@ -83,7 +83,7 @@ class SitemapController extends Controller
                 'name' => $filename,
                 'url' => url($filename),
                 'last_modified' => Carbon::createFromTimestamp(File::lastModified($file))->toDateTimeString(),
-                'size' => round(File::size($file) / 1024, 2).' KB',
+                'size' => round(File::size($file) / 1024, 2) . ' KB',
                 'url_count' => $urlCount,
             ];
         }
@@ -97,12 +97,12 @@ class SitemapController extends Controller
 
     private function countUrlEntriesInSitemapFile(string $path): int
     {
-        if (! File::isFile($path)) {
+        if (!File::isFile($path)) {
             return 0;
         }
 
         $dom = new DOMDocument;
-        if (! @$dom->load($path)) {
+        if (!@$dom->load($path)) {
             return 0;
         }
 
@@ -118,7 +118,7 @@ class SitemapController extends Controller
 
             // Clean up existing sitemaps (storage + legacy public copies)
             $existingFiles = array_merge(
-                File::glob($this->sitemapDirectory().'/sitemap*.xml'),
+                File::glob($this->sitemapDirectory() . '/sitemap*.xml'),
                 File::glob(public_path('sitemap*.xml'))
             );
             foreach ($existingFiles as $file) {
@@ -129,7 +129,7 @@ class SitemapController extends Controller
 
             if (count($chunks) > 1) {
                 foreach ($chunks as $index => $chunk) {
-                    $filename = 'sitemap_'.($index + 1).'.xml';
+                    $filename = 'sitemap_' . ($index + 1) . '.xml';
                     $this->createSitemapFile($filename, $chunk);
                     $sitemapFiles[] = $filename;
                 }
@@ -147,7 +147,7 @@ class SitemapController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to generate sitemap: '.$e->getMessage(),
+                'message' => 'Failed to generate sitemap: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -163,14 +163,36 @@ class SitemapController extends Controller
         // 1. Static routes (no login/register — not for organic search)
         $statics = [
             ['paths' => ['/'], 'priority' => '1.0', 'changefreq' => 'daily'],
-            ['paths' => [
-                '/about', '/how-it-works', '/contact', '/brand-landing', '/campaign',
-                '/campaigns', '/creator-landing', '/blog', '/success-stories',
-                '/videos', '/services', '/marketplace', '/creators', '/studios',
-            ], 'priority' => '0.9', 'changefreq' => 'weekly'],
-            ['paths' => [
-                '/privacy', '/terms', '/cookie-policy', '/child-safety',
-            ], 'priority' => '0.4', 'changefreq' => 'monthly'],
+            [
+                'paths' => [
+                    '/about',
+                    '/how-it-works',
+                    '/contact',
+                    '/brand',
+                    '/campaign',
+                    '/campaigns',
+                    '/creator',
+                    '/blog',
+                    '/success-stories',
+                    '/videos',
+                    '/services',
+                    '/marketplace',
+                    '/creators',
+                    '/studios',
+                ],
+                'priority' => '0.9',
+                'changefreq' => 'weekly'
+            ],
+            [
+                'paths' => [
+                    '/privacy',
+                    '/terms',
+                    '/cookie-policy',
+                    '/child-safety',
+                ],
+                'priority' => '0.4',
+                'changefreq' => 'monthly'
+            ],
         ];
 
         foreach ($statics as $group) {
@@ -185,7 +207,7 @@ class SitemapController extends Controller
         }
 
         // 2. CMS pages — single canonical path per page (/{slug} or /{slug}-in-{location}), not /page/{slug}
-        $staticPathKeys = collect($statics)->pluck('paths')->flatten()->map(fn ($p) => ltrim($p, '/'))->filter()->values()->all();
+        $staticPathKeys = collect($statics)->pluck('paths')->flatten()->map(fn($p) => ltrim($p, '/'))->filter()->values()->all();
         Page::published()
             ->with(['state:id,slug', 'city:id,slug'])
             ->orderBy('id')
@@ -210,7 +232,7 @@ class SitemapController extends Controller
         // 3. Blog
         Post::all()->each(function ($post) use (&$urls, $now) {
             $urls[] = [
-                'loc' => url('/blog/'.$post->slug),
+                'loc' => url('/blog/' . $post->slug),
                 'lastmod' => $post->updated_at?->toAtomString() ?? $now,
                 'priority' => '0.8',
                 'changefreq' => 'weekly',
@@ -220,7 +242,7 @@ class SitemapController extends Controller
         // 4. Creators
         CreatorProfile::where('is_public', true)->get()->each(function ($creator) use (&$urls, $now) {
             $urls[] = [
-                'loc' => url('/creators/'.$creator->slug),
+                'loc' => url('/creators/' . $creator->slug),
                 'lastmod' => $creator->updated_at?->toAtomString() ?? $now,
                 'priority' => '0.9',
                 'changefreq' => 'weekly',
@@ -230,7 +252,7 @@ class SitemapController extends Controller
         // 5. Studios
         Studio::all()->each(function ($studio) use (&$urls, $now) {
             $urls[] = [
-                'loc' => url('/studios/'.$studio->slug),
+                'loc' => url('/studios/' . $studio->slug),
                 'lastmod' => $studio->updated_at?->toAtomString() ?? $now,
                 'priority' => '0.8',
                 'changefreq' => 'weekly',
@@ -240,7 +262,7 @@ class SitemapController extends Controller
         // 6. Open campaigns
         Campaign::open()->get()->each(function ($campaign) use (&$urls, $now) {
             $urls[] = [
-                'loc' => url('/campaigns/'.$campaign->slug),
+                'loc' => url('/campaigns/' . $campaign->slug),
                 'lastmod' => $campaign->updated_at?->toAtomString() ?? $now,
                 'priority' => '0.85',
                 'changefreq' => 'daily',
@@ -250,7 +272,7 @@ class SitemapController extends Controller
         // 7. Services (canonical /services/{slug}; /gigs/{slug} is alternate UI only — not duplicated in sitemap)
         ServiceListing::where('is_active', true)->get()->each(function ($service) use (&$urls, $now) {
             $urls[] = [
-                'loc' => url('/services/'.$service->slug),
+                'loc' => url('/services/' . $service->slug),
                 'lastmod' => $service->updated_at?->toAtomString() ?? $now,
                 'priority' => '0.7',
                 'changefreq' => 'weekly',
@@ -260,7 +282,7 @@ class SitemapController extends Controller
         // 8. Success stories
         SuccessStory::all()->each(function ($story) use (&$urls, $now) {
             $urls[] = [
-                'loc' => url('/success-stories/'.$story->slug),
+                'loc' => url('/success-stories/' . $story->slug),
                 'lastmod' => $story->updated_at?->toAtomString() ?? $now,
                 'priority' => '0.6',
                 'changefreq' => 'monthly',
@@ -321,7 +343,7 @@ class SitemapController extends Controller
             throw new \RuntimeException('Could not serialize sitemap XML');
         }
 
-        File::put($this->sitemapDirectory().DIRECTORY_SEPARATOR.$filename, $xml);
+        File::put($this->sitemapDirectory() . DIRECTORY_SEPARATOR . $filename, $xml);
     }
 
     /**
@@ -357,6 +379,6 @@ class SitemapController extends Controller
             throw new \RuntimeException('Could not serialize sitemap index XML');
         }
 
-        File::put($this->sitemapDirectory().DIRECTORY_SEPARATOR.$filename, $xml);
+        File::put($this->sitemapDirectory() . DIRECTORY_SEPARATOR . $filename, $xml);
     }
 }

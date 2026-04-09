@@ -66,172 +66,244 @@
                         />
                     </svg>
                 </button>
-        <!-- Desktop nav -->
-        <div class="hidden items-center gap-4 md:flex">
-          <router-link
-            v-for="link in desktopTopLinks"
-            :key="link.to"
-            :to="link.to"
-            class="text-sm font-semibold transition hover:text-[#fc4402]"
-          >
-            {{ link.label }}
-          </router-link>
-          <div
-            ref="creatorsRef"
-            class="relative"
-            @mouseenter="creatorsDropdownOpen = true"
-            @mouseleave="creatorsDropdownOpen = false"
-          >
-            <button
-              type="button"
-              class="inline-flex items-center gap-1 text-sm font-semibold transition hover:text-[#fc4402]"
-              :class="{ 'text-[#fc4402]': creatorsDropdownOpen }"
-              aria-haspopup="true"
-              :aria-expanded="creatorsDropdownOpen"
-              @click="creatorsDropdownOpen = !creatorsDropdownOpen"
-            >
-              Discover Creators
-              <svg class="h-4 w-4 shrink-0 transition-transform" :class="{ 'rotate-180': creatorsDropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            <Transition
-              enter-active-class="transition duration-150 ease-out"
-              enter-from-class="opacity-0 translate-y-1"
-              enter-to-class="opacity-100 translate-y-0"
-              leave-active-class="transition duration-100 ease-in"
-              leave-from-class="opacity-100 translate-y-0"
-              leave-to-class="opacity-0 translate-y-1"
-            >
-              <div
-                v-show="creatorsDropdownOpen"
-                class="absolute left-1/2 top-full z-50 mt-2 w-[min(95vw,280px)] -translate-x-1/2 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-xl"
-              >
-                <div class="flex flex-col py-2">
-                  <div class="px-4 py-2 border-b border-[#e5e7eb] mb-1">
-                    <span class="text-xs font-bold uppercase tracking-wider text-[#fc4402]">For Creators</span>
-                    <p class="text-[10px] text-[#6b7280] leading-tight">For influencers and content creators.</p>
-                  </div>
-                  <router-link
-                    v-for="(item, idx) in creatorCategoriesExtended"
-                    :key="'cat-' + idx"
-                    :to="creatorCategoryTo(item)"
-                    class="block px-4 py-2 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
-                    @click="creatorsDropdownOpen = false"
-                  >
-                    {{ item.name }}
-                  </router-link>
-                </div>
-              </div>
-            </Transition>
-          </div>
+                <!-- Desktop nav -->
+                <div class="hidden items-center gap-4 md:flex">
+                    <router-link
+                        v-for="link in desktopTopLinks"
+                        :key="link.to"
+                        :to="link.to"
+                        class="text-sm font-semibold transition hover:text-[#fc4402]"
+                    >
+                        {{ link.label }}
+                    </router-link>
+                    <div
+                        ref="creatorsRef"
+                        class="relative"
+                        @mouseenter="creatorsDropdownOpen = true"
+                        @mouseleave="creatorsDropdownOpen = false"
+                    >
+                        <button
+                            type="button"
+                            class="inline-flex items-center gap-1 text-sm font-semibold transition hover:text-[#fc4402]"
+                            :class="{ 'text-[#fc4402]': creatorsDropdownOpen }"
+                            aria-haspopup="true"
+                            :aria-expanded="creatorsDropdownOpen"
+                            @click="
+                                creatorsDropdownOpen = !creatorsDropdownOpen
+                            "
+                        >
+                            Discover Creators
+                            <svg
+                                class="h-4 w-4 shrink-0 transition-transform"
+                                :class="{ 'rotate-180': creatorsDropdownOpen }"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M19 9l-7 7-7-7"
+                                />
+                            </svg>
+                        </button>
+                        <Transition
+                            enter-active-class="transition duration-150 ease-out"
+                            enter-from-class="opacity-0 translate-y-1"
+                            enter-to-class="opacity-100 translate-y-0"
+                            leave-active-class="transition duration-100 ease-in"
+                            leave-from-class="opacity-100 translate-y-0"
+                            leave-to-class="opacity-0 translate-y-1"
+                        >
+                            <div
+                                v-show="creatorsDropdownOpen"
+                                class="absolute left-1/2 top-full z-50 mt-2 w-[min(95vw,280px)] -translate-x-1/2 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-xl"
+                            >
+                                <div class="flex flex-col py-2">
+                                    <div
+                                        class="px-4 py-2 border-b border-[#e5e7eb] mb-1"
+                                    >
+                                        <span
+                                            class="text-xs font-bold uppercase tracking-wider text-[#fc4402]"
+                                            >For Creators</span
+                                        >
+                                        <p
+                                            class="text-[10px] text-[#6b7280] leading-tight"
+                                        >
+                                            For influencers and content
+                                            creators.
+                                        </p>
+                                    </div>
+                                    <router-link
+                                        v-for="(
+                                            item, idx
+                                        ) in creatorCategoriesExtended"
+                                        :key="'cat-' + idx"
+                                        :to="creatorCategoryTo(item)"
+                                        class="block px-4 py-2 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
+                                        @click="creatorsDropdownOpen = false"
+                                    >
+                                        {{ item.name }}
+                                    </router-link>
+                                </div>
+                            </div>
+                        </Transition>
+                    </div>
 
-          <!-- Hire Professionals Dropdown -->
-          <div
-            ref="professionalsRef"
-            class="relative"
-            @mouseenter="professionalsDropdownOpen = true"
-            @mouseleave="professionalsDropdownOpen = false"
-          >
-            <button
-              type="button"
-              class="inline-flex items-center gap-1 text-sm font-semibold transition hover:text-[#fc4402]"
-              :class="{ 'text-[#fc4402]': professionalsDropdownOpen }"
-              aria-haspopup="true"
-              :aria-expanded="professionalsDropdownOpen"
-              @click="professionalsDropdownOpen = !professionalsDropdownOpen"
-            >
-              Hire Professionals
-              <svg class="h-4 w-4 shrink-0 transition-transform" :class="{ 'rotate-180': professionalsDropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            <Transition
-              enter-active-class="transition duration-150 ease-out"
-              enter-from-class="opacity-0 translate-y-1"
-              enter-to-class="opacity-100 translate-y-0"
-              leave-active-class="transition duration-100 ease-in"
-              leave-from-class="opacity-100 translate-y-0"
-              leave-to-class="opacity-0 translate-y-1"
-            >
-              <div
-                v-show="professionalsDropdownOpen"
-                class="absolute left-1/2 top-full z-50 mt-2 w-[min(95vw,280px)] -translate-x-1/2 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-xl"
-              >
-                <div class="flex flex-col py-2">
-                  <div class="px-4 py-2 border-b border-[#e5e7eb] mb-1">
-                    <span class="text-xs font-bold uppercase tracking-wider text-[#fc4402]">Service Marketplace</span>
-                    <p class="text-[10px] text-[#6b7280] leading-tight">Find professionals for your project.</p>
-                  </div>
-                  <router-link
-                    v-for="(item, idx) in professionalCategories"
-                    :key="'prof-' + idx"
-                    :to="professionalCategoryTo(item)"
-                    class="block px-4 py-2 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
-                    @click="professionalsDropdownOpen = false"
-                  >
-                    {{ item.name }}
-                  </router-link>
-                </div>
-              </div>
-            </Transition>
-          </div>
+                    <!-- Hire Professionals Dropdown -->
+                    <div
+                        ref="professionalsRef"
+                        class="relative"
+                        @mouseenter="professionalsDropdownOpen = true"
+                        @mouseleave="professionalsDropdownOpen = false"
+                    >
+                        <button
+                            type="button"
+                            class="inline-flex items-center gap-1 text-sm font-semibold transition hover:text-[#fc4402]"
+                            :class="{
+                                'text-[#fc4402]': professionalsDropdownOpen,
+                            }"
+                            aria-haspopup="true"
+                            :aria-expanded="professionalsDropdownOpen"
+                            @click="
+                                professionalsDropdownOpen =
+                                    !professionalsDropdownOpen
+                            "
+                        >
+                            Hire Professionals
+                            <svg
+                                class="h-4 w-4 shrink-0 transition-transform"
+                                :class="{
+                                    'rotate-180': professionalsDropdownOpen,
+                                }"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M19 9l-7 7-7-7"
+                                />
+                            </svg>
+                        </button>
+                        <Transition
+                            enter-active-class="transition duration-150 ease-out"
+                            enter-from-class="opacity-0 translate-y-1"
+                            enter-to-class="opacity-100 translate-y-0"
+                            leave-active-class="transition duration-100 ease-in"
+                            leave-from-class="opacity-100 translate-y-0"
+                            leave-to-class="opacity-0 translate-y-1"
+                        >
+                            <div
+                                v-show="professionalsDropdownOpen"
+                                class="absolute left-1/2 top-full z-50 mt-2 w-[min(95vw,280px)] -translate-x-1/2 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-xl"
+                            >
+                                <div class="flex flex-col py-2">
+                                    <div
+                                        class="px-4 py-2 border-b border-[#e5e7eb] mb-1"
+                                    >
+                                        <span
+                                            class="text-xs font-bold uppercase tracking-wider text-[#fc4402]"
+                                            >Service Marketplace</span
+                                        >
+                                        <p
+                                            class="text-[10px] text-[#6b7280] leading-tight"
+                                        >
+                                            Find professionals for your project.
+                                        </p>
+                                    </div>
+                                    <router-link
+                                        v-for="(
+                                            item, idx
+                                        ) in professionalCategories"
+                                        :key="'prof-' + idx"
+                                        :to="professionalCategoryTo(item)"
+                                        class="block px-4 py-2 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
+                                        @click="
+                                            professionalsDropdownOpen = false
+                                        "
+                                    >
+                                        {{ item.name }}
+                                    </router-link>
+                                </div>
+                            </div>
+                        </Transition>
+                    </div>
 
-          <!-- Studios Dropdown -->
-          <div
-            ref="studiosRef"
-            class="relative"
-            @mouseenter="studiosDropdownOpen = true"
-            @mouseleave="studiosDropdownOpen = false"
-          >
-            <button
-              type="button"
-              class="inline-flex items-center gap-1 text-sm font-semibold transition hover:text-[#fc4402]"
-              :class="{ 'text-[#fc4402]': studiosDropdownOpen }"
-              aria-haspopup="true"
-              :aria-expanded="studiosDropdownOpen"
-              @click="studiosDropdownOpen = !studiosDropdownOpen"
-            >
-              Studios
-              <svg class="h-4 w-4 shrink-0 transition-transform" :class="{ 'rotate-180': studiosDropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            <Transition
-              enter-active-class="transition duration-150 ease-out"
-              enter-from-class="opacity-0 translate-y-1"
-              enter-to-class="opacity-100 translate-y-0"
-              leave-active-class="transition duration-100 ease-in"
-              leave-from-class="opacity-100 translate-y-0"
-              leave-to-class="opacity-0 translate-y-1"
-            >
-              <div
-                v-show="studiosDropdownOpen"
-                class="absolute left-1/2 top-full z-50 mt-2 w-[min(95vw,250px)] -translate-x-1/2 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-xl"
-              >
-                <div class="flex flex-col py-2">
-                  <router-link
-                    v-for="(item, idx) in studioCategoriesExtended"
-                    :key="'studio-' + idx"
-                    :to="studioCategoryTo(item)"
-                    class="block px-4 py-2 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
-                    @click="studiosDropdownOpen = false"
-                  >
-                    {{ item.name }}
-                  </router-link>
-                </div>
-              </div>
-            </Transition>
-          </div>
+                    <!-- Studios Dropdown -->
+                    <div
+                        ref="studiosRef"
+                        class="relative"
+                        @mouseenter="studiosDropdownOpen = true"
+                        @mouseleave="studiosDropdownOpen = false"
+                    >
+                        <button
+                            type="button"
+                            class="inline-flex items-center gap-1 text-sm font-semibold transition hover:text-[#fc4402]"
+                            :class="{ 'text-[#fc4402]': studiosDropdownOpen }"
+                            aria-haspopup="true"
+                            :aria-expanded="studiosDropdownOpen"
+                            @click="studiosDropdownOpen = !studiosDropdownOpen"
+                        >
+                            Studios
+                            <svg
+                                class="h-4 w-4 shrink-0 transition-transform"
+                                :class="{ 'rotate-180': studiosDropdownOpen }"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M19 9l-7 7-7-7"
+                                />
+                            </svg>
+                        </button>
+                        <Transition
+                            enter-active-class="transition duration-150 ease-out"
+                            enter-from-class="opacity-0 translate-y-1"
+                            enter-to-class="opacity-100 translate-y-0"
+                            leave-active-class="transition duration-100 ease-in"
+                            leave-from-class="opacity-100 translate-y-0"
+                            leave-to-class="opacity-0 translate-y-1"
+                        >
+                            <div
+                                v-show="studiosDropdownOpen"
+                                class="absolute left-1/2 top-full z-50 mt-2 w-[min(95vw,250px)] -translate-x-1/2 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-xl"
+                            >
+                                <div class="flex flex-col py-2">
+                                    <router-link
+                                        v-for="(
+                                            item, idx
+                                        ) in studioCategoriesExtended"
+                                        :key="'studio-' + idx"
+                                        :to="studioCategoryTo(item)"
+                                        class="block px-4 py-2 text-sm text-[#1a1a1a] transition hover:bg-[#fc4402]/5 hover:text-[#fc4402]"
+                                        @click="studiosDropdownOpen = false"
+                                    >
+                                        {{ item.name }}
+                                    </router-link>
+                                </div>
+                            </div>
+                        </Transition>
+                    </div>
 
-          <router-link
-            v-for="link in desktopBottomLinks"
-            :key="link.to"
-            :to="link.to"
-            class="text-sm font-semibold transition hover:text-[#fc4402]"
-          >
-            {{ link.label }}
-          </router-link>
+                    <router-link
+                        v-for="link in desktopBottomLinks"
+                        :key="link.to"
+                        :to="link.to"
+                        class="text-sm font-semibold transition hover:text-[#fc4402]"
+                    >
+                        {{ link.label }}
+                    </router-link>
 
                     <template v-if="displayUser">
                         <div class="relative" ref="userMenuRef">
@@ -239,11 +311,16 @@
                                 type="button"
                                 class="flex items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-4 py-2 text-sm font-medium text-[#1a1a1a] shadow-sm transition hover:border-[#fc4402] hover:bg-[#fafafa] focus:outline-none focus:ring-2 focus:ring-[#fc4402]/20"
                                 :class="{
-                                    'hover:border-[#10b981] focus:ring-[#10b981]/20': user.role === 'creator',
-                                    'hover:border-[#1e293b] focus:ring-[#1e293b]/20': user.role === 'admin',
-                                    'hover:border-[#7c3aed] focus:ring-[#7c3aed]/20': user.role === 'agency',
-                                    'hover:border-[#f59e0b] focus:ring-[#f59e0b]/20': user.role === 'professional',
-                                    'hover:border-[#e63946] focus:ring-[#e63946]/20': user.role === 'studio_owner',
+                                    'hover:border-[#10b981] focus:ring-[#10b981]/20':
+                                        user.role === 'creator',
+                                    'hover:border-[#1e293b] focus:ring-[#1e293b]/20':
+                                        user.role === 'admin',
+                                    'hover:border-[#7c3aed] focus:ring-[#7c3aed]/20':
+                                        user.role === 'agency',
+                                    'hover:border-[#f59e0b] focus:ring-[#f59e0b]/20':
+                                        user.role === 'professional',
+                                    'hover:border-[#e63946] focus:ring-[#e63946]/20':
+                                        user.role === 'studio_owner',
                                 }"
                                 @click="userMenuOpen = !userMenuOpen"
                             >
@@ -346,13 +423,17 @@
                                         v-else-if="user.role === 'professional'"
                                     >
                                         <router-link
-                                            :to="ROUTE_PATHS.professionalDashboard"
+                                            :to="
+                                                ROUTE_PATHS.professionalDashboard
+                                            "
                                             class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#f59e0b]/5 hover:text-[#f59e0b]"
                                             @click="userMenuOpen = false"
                                             >Professional Dashboard</router-link
                                         >
                                         <router-link
-                                            :to="ROUTE_PATHS.professionalProfile"
+                                            :to="
+                                                ROUTE_PATHS.professionalProfile
+                                            "
                                             class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#f59e0b]/5 hover:text-[#f59e0b]"
                                             @click="userMenuOpen = false"
                                             >My Profile</router-link
@@ -539,9 +620,7 @@
                                     >Agency Dashboard</router-link
                                 >
                             </template>
-                            <template
-                                v-else-if="user.role === 'professional'"
-                            >
+                            <template v-else-if="user.role === 'professional'">
                                 <router-link
                                     :to="ROUTE_PATHS.professionalDashboard"
                                     class="rounded-lg px-4 py-3 text-sm text-[#1a1a1a] transition hover:bg-[#f59e0b]/5 hover:text-[#f59e0b]"
@@ -654,13 +733,10 @@ const desktopBottomLinks = [
     { label: "Campaigns", to: "/campaign" },
     { label: "How It Works", to: "/how-it-works" },
     { label: "Pricing", to: "/pricing" },
-    { label: "For Brands", to: "/brand-landing" },
-    { label: "For Creators", to: "/creator-landing" },
+    { label: "For Brands", to: "/brand" },
+    { label: "For Creators", to: "/creator" },
 ];
-const mobileMainLinks = [
-    { label: "Home", to: "/" },
-    ...desktopBottomLinks,
-];
+const mobileMainLinks = [{ label: "Home", to: "/" }, ...desktopBottomLinks];
 
 // Keep all frequently used routes centralized (used in template directly).
 const ROUTE_PATHS = {
@@ -742,7 +818,10 @@ const creatorCategoriesExtended = ref([
 ]);
 const professionalCategories = [
     { name: "Graphic & Video Editors", slug: "graphic-video-editors" },
-    { name: "Photographers & Videographers", slug: "photographers-videographers" },
+    {
+        name: "Photographers & Videographers",
+        slug: "photographers-videographers",
+    },
     { name: "Social Media Managers", slug: "social-media-managers" },
     { name: "Script/ Content writers", slug: "content-writers" },
     { name: "Marketing/ Advertising Agencies", slug: "marketing-agencies" },
@@ -842,7 +921,7 @@ onMounted(() => {
         .get("/api/creators/options/filters")
         .then((r) => {
             const cats = r.data.categories || [];
-            const navCats = cats.filter(c => c.show_on_navbar);
+            const navCats = cats.filter((c) => c.show_on_navbar);
             if (navCats.length > 0) {
                 creatorCategoriesExtended.value = navCats;
             }

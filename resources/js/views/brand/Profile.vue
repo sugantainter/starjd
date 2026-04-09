@@ -31,9 +31,38 @@
         <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Company name</label>
         <input v-model="form.company_name" type="text" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" />
       </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Industry</label>
+          <input v-model="form.industry" type="text" placeholder="e.g. Fashion, Tech" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">HQ Location</label>
+          <input v-model="form.hq_location" type="text" placeholder="e.g. Mumbai, India" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" />
+        </div>
+      </div>
       <div>
         <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Website</label>
-        <input v-model="form.website" type="url" class="w-full rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" />
+        <input v-model="form.website" type="url" class="w-full rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" />
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Public Profile URL</label>
+          <div class="flex items-center">
+            <span class="rounded-l-xl border border-r-0 border-[#e2e8f0] bg-[#f1f5f9] px-3 py-3 text-sm text-[#64748b]">starjd.com/brands/</span>
+            <input v-model="form.slug" type="text" class="w-full rounded-r-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]" placeholder="your-brand-slug" />
+          </div>
+          <p class="mt-1 text-xs text-[#64748b]">This is your unique profile link.</p>
+        </div>
+        <div class="flex flex-col justify-center">
+          <label class="mb-2 block text-sm font-medium text-[#1a1a1a]">Profile Visibility</label>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" v-model="form.is_public" class="sr-only peer">
+            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+            <span class="ml-3 text-sm font-medium text-[#64748b]">{{ form.is_public ? 'Publicly Visible' : 'Hidden from Public' }}</span>
+          </label>
+        </div>
       </div>
       <div>
         <div class="flex items-center justify-between mb-1">
@@ -74,7 +103,7 @@ import axios from 'axios';
 import CitySearchSelect from '../../components/CitySearchSelect.vue';
 
 const profile = ref(null);
-const form = reactive({ company_name: '', website: '', bio: '', state_id: null, city_id: null });
+const form = reactive({ company_name: '', website: '', bio: '', state_id: null, city_id: null, slug: '', is_public: true, industry: '', hq_location: '' });
 const states = ref([]);
 const cities = ref([]);
 const logoFile = ref(null);
@@ -110,6 +139,10 @@ onMounted(async () => {
   form.company_name = data.company_name ?? '';
   form.website = data.website ?? '';
   form.bio = data.bio ?? '';
+  form.slug = data.slug ?? '';
+  form.is_public = data.is_public ?? true;
+  form.industry = data.industry ?? '';
+  form.hq_location = data.hq_location ?? '';
   form.state_id = data.user?.state_id ?? null;
   form.city_id = data.user?.city_id ?? null;
 
@@ -166,6 +199,10 @@ async function save() {
       fd.append('company_name', form.company_name);
       fd.append('website', form.website);
       fd.append('bio', form.bio);
+      fd.append('slug', form.slug);
+      fd.append('is_public', form.is_public ? 1 : 0);
+      fd.append('industry', form.industry);
+      fd.append('hq_location', form.hq_location);
       if (form.state_id) fd.append('state_id', form.state_id);
       if (form.city_id) fd.append('city_id', form.city_id);
       fd.append('logo', logoFile.value, logoFile.value.name || 'logo');

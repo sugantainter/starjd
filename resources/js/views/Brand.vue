@@ -115,7 +115,21 @@
           </div>
         </div>
       </div>
+       <!-- Trusted By Brands Section -->
+    <section class="border-b border-[#e5e7eb] bg-[#f8fafc] py-12">
+      <div class="mx-auto max-w-6xl px-4">
+        <p class="text-center text-[10px] font-bold uppercase tracking-[0.2em] text-[#94a3b8] mb-8">Trusted by leading brands across India</p>
+        <div class="flex flex-wrap justify-center items-center gap-8 md:gap-14 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+           <router-link v-for="b in brands" :key="b.id" :to="'/brands/' + b.slug" class="h-6 md:h-9">
+             <img :src="b.logo_url" :alt="b.company_name" class="h-full w-auto object-contain" />
+           </router-link>
+           <template v-if="!brands.length">
+              <div v-for="i in 5" :key="i" class="h-8 w-24 bg-gray-200 rounded animate-pulse"></div>
+           </template>
+        </div>
+      </div>
     </section>
+  </section>
 
     <!-- Creators in India: cards move – 2nd card→1st, 3rd→2nd, 4th→3rd, 5th→4th (positions with W-curve) -->
     <section class="border-b border-[#e5e7eb] bg-white overflow-x-hidden py-10 md:py-14">
@@ -795,6 +809,8 @@ Make smarter marketing decisions with transparent reporting, streamlined analyti
 import { ref, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 
+const brands = ref([]);
+
 // 8 avatars evenly on orbit circle (45° each); orbit radius and angle applied via style
 // Increase this value to push avatars further away from the center card
 const orbitRadiusPx = 150;
@@ -866,6 +882,11 @@ function advanceCreatorsCarousel() {
 let creatorsIntervalId = null;
 onMounted(() => {
   creatorsIntervalId = setInterval(advanceCreatorsCarousel, CREATORS_INTERVAL_MS);
+  
+  axios.get('/api/brands').then(res => {
+    brands.value = res.data.data || res.data || [];
+  });
+
   axios.get('/api/shorts').then((r) => {
     const shorts = r.data?.shorts ?? [];
     const merged = shorts.slice(0, 3).map((s) => ({

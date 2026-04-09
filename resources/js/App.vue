@@ -256,7 +256,9 @@
                                             >Admin Panel</router-link
                                         >
                                     </template>
-                                    <template v-else-if="navUser.role === 'agency'">
+                                    <template
+                                        v-else-if="navUser.role === 'agency'"
+                                    >
                                         <router-link
                                             to="/agency/dashboard"
                                             class="block px-4 py-2.5 text-sm text-[#1a1a1a] transition hover:bg-[#7c3aed]/5 hover:text-[#7c3aed]"
@@ -284,12 +286,12 @@
                             >Login</router-link
                         >
                         <router-link
-                            to="/creator-landing"
+                            to="/creator"
                             class="cursor-link join-creator rounded-lg border border-[#e5e7eb] px-4 py-2 text-sm font-medium transition hover:border-[#10b981] hover:bg-[#10b981]/5 hover:text-[#10b981]"
                             >Join as Creator</router-link
                         >
                         <router-link
-                            to="/brand-landing"
+                            to="/brand"
                             class="join-brand rounded-lg bg-[#e63946] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#c1121f]"
                             >Join as Brand</router-link
                         >
@@ -439,13 +441,13 @@
                                         >Login</router-link
                                     >
                                     <router-link
-                                        to="/creator-landing"
+                                        to="/creator"
                                         class="rounded-lg border border-[#10b981] px-4 py-3 text-center text-sm font-medium text-[#10b981] transition hover:bg-[#10b981]/5"
                                         @click="navMobileOpen = false"
                                         >Join as Creator</router-link
                                     >
                                     <router-link
-                                        to="/brand-landing"
+                                        to="/brand  "
                                         class="rounded-lg bg-[#e63946] px-4 py-3 text-center text-sm font-medium text-white transition hover:bg-[#c1121f]"
                                         @click="navMobileOpen = false"
                                         >Join as Brand</router-link
@@ -504,7 +506,7 @@
                     >
                         <router-link
                             v-if="isInternalHeroUrl(heroData?.btn_creator_url)"
-                            :to="heroData.btn_creator_url || '/creator-landing'"
+                            :to="heroData.btn_creator_url || '/creator'"
                             class="btn-hero-creator shrink-0 rounded-xl border border-emerald-400/60 bg-white/95 px-3 py-2 text-sm font-medium text-[#059669] shadow-lg backdrop-blur-sm transition hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-xl sm:px-5 sm:py-2.5"
                             >{{
                                 heroData?.btn_creator_label || "Join as Creator"
@@ -520,7 +522,7 @@
                         >
                         <router-link
                             v-if="isInternalHeroUrl(heroData?.btn_brand_url)"
-                            :to="heroData.btn_brand_url || '/brand-landing'"
+                            :to="heroData.btn_brand_url || '/brand'"
                             class="join-brand shrink-0 rounded-xl bg-[#e63946] px-3 py-2 text-sm font-medium text-white shadow-lg shadow-[#e63946]/35 transition hover:bg-[#c1121f] hover:shadow-xl hover:shadow-[#e63946]/45 sm:px-5 sm:py-2.5"
                             >{{
                                 heroData?.btn_brand_label || "Join as Brand"
@@ -663,7 +665,10 @@
                             </option>
                         </select>
                     </div>
-                    <div v-show="heroAvailableSubCategories.length" class="min-w-0 sm:w-auto sm:min-w-[130px]">
+                    <div
+                        v-show="heroAvailableSubCategories.length"
+                        class="min-w-0 sm:w-auto sm:min-w-[130px]"
+                    >
                         <label
                             for="hero-filter-subcategory"
                             class="mb-1 block text-xs font-medium text-[#6b7280]"
@@ -873,19 +878,28 @@
         >
             <div class="mx-auto max-w-7xl">
                 <div class="mb-12 text-center">
-                    <h2 class="section-title mb-4 text-3xl font-extrabold tracking-tight text-[#1a1a1a] md:text-5xl">
+                    <h2
+                        class="section-title mb-4 text-3xl font-extrabold tracking-tight text-[#1a1a1a] md:text-5xl"
+                    >
                         Hire Top Professionals
                     </h2>
                     <p class="mx-auto max-w-2xl text-lg text-[#6b7280]">
-                        Unlock elite talent for your next project. From cinematic editing to strategic marketing, we connect you with the best in the industry.
+                        Unlock elite talent for your next project. From
+                        cinematic editing to strategic marketing, we connect you
+                        with the best in the industry.
                     </p>
                 </div>
 
-                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div
+                    class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
+                >
                     <router-link
                         v-for="service in professionalServices"
                         :key="service.slug"
-                        :to="{ name: 'marketplace', query: { category: service.slug } }"
+                        :to="{
+                            name: 'marketplace',
+                            query: { category: service.slug },
+                        }"
                         class="group relative flex h-[320px] flex-col overflow-hidden rounded-3xl bg-white shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl"
                     >
                         <!-- Image Container -->
@@ -896,20 +910,38 @@
                                 class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                             />
                             <!-- Dark Overlay -->
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent transition-opacity duration-300 group-hover:opacity-80" />
+                            <div
+                                class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent transition-opacity duration-300 group-hover:opacity-80"
+                            />
 
                             <!-- Text Content -->
-                            <div class="absolute bottom-0 left-0 right-0 p-6 text-white transform transition-transform duration-500 group-hover:translate-y-[-8px]">
+                            <div
+                                class="absolute bottom-0 left-0 right-0 p-6 text-white transform transition-transform duration-500 group-hover:translate-y-[-8px]"
+                            >
                                 <h3 class="text-xl font-bold md:text-2xl">
                                     {{ service.name }}
                                 </h3>
-                                <p class="mt-2 text-sm text-white/80 line-clamp-2 opacity-0 transition-all duration-500 group-hover:opacity-100">
+                                <p
+                                    class="mt-2 text-sm text-white/80 line-clamp-2 opacity-0 transition-all duration-500 group-hover:opacity-100"
+                                >
                                     {{ service.description }}
                                 </p>
-                                <div class="mt-4 flex items-center gap-2 text-sm font-semibold text-[#fc4402] opacity-0 transition-all duration-500 group-hover:opacity-100">
+                                <div
+                                    class="mt-4 flex items-center gap-2 text-sm font-semibold text-[#fc4402] opacity-0 transition-all duration-500 group-hover:opacity-100"
+                                >
                                     Find Professionals
-                                    <svg class="h-4 w-4 transform transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                    <svg
+                                        class="h-4 w-4 transform transition-transform group-hover:translate-x-1"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M17 8l4 4m0 0l-4 4m4-4H3"
+                                        />
                                     </svg>
                                 </div>
                             </div>
@@ -918,14 +950,32 @@
                 </div>
 
                 <!-- Call to Action for Dynamic Features -->
-                <div class="mt-16 rounded-3xl bg-white p-8 border border-[#e5e7eb] shadow-sm md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
+                <div
+                    class="mt-16 rounded-3xl bg-white p-8 border border-[#e5e7eb] shadow-sm md:p-12 flex flex-col md:flex-row items-center justify-between gap-8"
+                >
                     <div class="max-w-xl text-center md:text-left">
-                        <h3 class="text-2xl font-bold text-[#1a1a1a]">List Your Skills or Organization</h3>
-                        <p class="mt-2 text-[#6b7280]">Are you a professional seeking work or an agency looking for clients? Join our marketplace and get discovered by thousands of brands.</p>
+                        <h3 class="text-2xl font-bold text-[#1a1a1a]">
+                            List Your Skills or Organization
+                        </h3>
+                        <p class="mt-2 text-[#6b7280]">
+                            Are you a professional seeking work or an agency
+                            looking for clients? Join our marketplace and get
+                            discovered by thousands of brands.
+                        </p>
                     </div>
-                    <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                        <router-link to="/register?role=professional" class="flex h-12 items-center justify-center rounded-full bg-[#1a1a1a] px-8 text-sm font-bold text-white transition hover:bg-[#374151]">Join as Individual</router-link>
-                        <router-link to="/register?role=agency" class="flex h-12 items-center justify-center rounded-full border-2 border-[#1a1a1a] px-8 text-sm font-bold text-[#1a1a1a] transition hover:bg-[#1a1a1a] hover:text-white">Register Agency</router-link>
+                    <div
+                        class="flex flex-col sm:flex-row gap-4 w-full md:w-auto"
+                    >
+                        <router-link
+                            to="/register?role=professional"
+                            class="flex h-12 items-center justify-center rounded-full bg-[#1a1a1a] px-8 text-sm font-bold text-white transition hover:bg-[#374151]"
+                            >Join as Individual</router-link
+                        >
+                        <router-link
+                            to="/register?role=agency"
+                            class="flex h-12 items-center justify-center rounded-full border-2 border-[#1a1a1a] px-8 text-sm font-bold text-[#1a1a1a] transition hover:bg-[#1a1a1a] hover:text-white"
+                            >Register Agency</router-link
+                        >
                     </div>
                 </div>
             </div>
@@ -990,7 +1040,9 @@
             class="animate-on-scroll overflow-x-hidden border-b border-[#e5e7eb] bg-[#fafaf9] px-4 py-10 md:py-16"
         >
             <div class="mx-auto max-w-6xl">
-                <h2 class="section-title mb-2 text-2xl font-bold text-[#1a1a1a] md:text-3xl">
+                <h2
+                    class="section-title mb-2 text-2xl font-bold text-[#1a1a1a] md:text-3xl"
+                >
                     Explore by Category
                 </h2>
                 <p class="section-subtitle mb-10 text-[#6b7280] md:mb-12">
@@ -998,7 +1050,7 @@
                 </p>
                 <div
                     class="category-carousel relative mx-auto flex items-center justify-center"
-                    style="--category-card-w: 230px; --category-card-gap: 16px;"
+                    style="--category-card-w: 230px; --category-card-gap: 16px"
                 >
                     <!-- Prev arrow - theme -->
                     <button
@@ -1007,8 +1059,18 @@
                         aria-label="Previous category"
                         @click="categoryCarouselPrev()"
                     >
-                        <svg class="h-5 w-5 md:h-6 md:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        <svg
+                            class="h-5 w-5 md:h-6 md:w-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M15 19l-7-7 7-7"
+                            />
                         </svg>
                     </button>
                     <!-- Cards track: exactly 4 cards visible -->
@@ -1023,17 +1085,27 @@
                                 v-for="(cat, i) in categories"
                                 :key="cat.name"
                                 class="category-carousel-card flex shrink-0 cursor-pointer flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-500"
-                                :class="i === categoryCenterIndex ? 'category-carousel-card--center border-[#e63946] shadow-md ring-2 ring-[#e63946]/20' : 'border-[#e5e7eb] hover:border-[#e63946]/50'"
+                                :class="
+                                    i === categoryCenterIndex
+                                        ? 'category-carousel-card--center border-[#e63946] shadow-md ring-2 ring-[#e63946]/20'
+                                        : 'border-[#e5e7eb] hover:border-[#e63946]/50'
+                                "
                                 :style="{
                                     width: 'var(--category-card-w)',
-                                    opacity: i === categoryCenterIndex ? 1 : 0.4,
-                                    transform: i === categoryCenterIndex ? 'scale(1.1)' : 'scale(1)',
+                                    opacity:
+                                        i === categoryCenterIndex ? 1 : 0.4,
+                                    transform:
+                                        i === categoryCenterIndex
+                                            ? 'scale(1.1)'
+                                            : 'scale(1)',
                                     transformOrigin: 'center center',
                                 }"
                                 @click="categoryCarouselGoTo(i)"
                             >
                                 <!-- Image only (no text overlay); text niche dikhega -->
-                                <div class="relative aspect-[3/4] w-full overflow-hidden">
+                                <div
+                                    class="relative aspect-[3/4] w-full overflow-hidden"
+                                >
                                     <img
                                         :src="cat.image_url || cat.image"
                                         :alt="cat.name"
@@ -1046,9 +1118,15 @@
                                     </span>
                                 </div>
                                 <!-- Text image ke niche -->
-                                <div class="flex flex-1 flex-col justify-center border-t border-[#e5e7eb] bg-white p-3">
-                                    <h3 class="font-semibold text-[#1a1a1a]">{{ cat.name }}</h3>
-                                    <p class="mt-0.5 text-xs text-[#6b7280]">{{ cat.count }} creators</p>
+                                <div
+                                    class="flex flex-1 flex-col justify-center border-t border-[#e5e7eb] bg-white p-3"
+                                >
+                                    <h3 class="font-semibold text-[#1a1a1a]">
+                                        {{ cat.name }}
+                                    </h3>
+                                    <p class="mt-0.5 text-xs text-[#6b7280]">
+                                        {{ cat.count }} creators
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -1060,8 +1138,18 @@
                         aria-label="Next category"
                         @click="categoryCarouselNext()"
                     >
-                        <svg class="h-5 w-5 md:h-6 md:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        <svg
+                            class="h-5 w-5 md:h-6 md:w-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M9 5l7 7-7 7"
+                            />
                         </svg>
                     </button>
                 </div>
@@ -1072,7 +1160,11 @@
                         :key="'dot-' + cat.name"
                         type="button"
                         class="h-2 w-2 rounded-full transition-all md:h-2.5 md:w-2.5"
-                        :class="i === categoryCenterIndex ? 'scale-125 bg-[#e63946]' : 'bg-[#e5e7eb] hover:bg-[#d1d5db]'"
+                        :class="
+                            i === categoryCenterIndex
+                                ? 'scale-125 bg-[#e63946]'
+                                : 'bg-[#e5e7eb] hover:bg-[#d1d5db]'
+                        "
                         :aria-label="'Go to ' + cat.name"
                         @click="categoryCarouselGoTo(i)"
                     />
@@ -1268,9 +1360,14 @@
                     >
                 </div>
                 <div v-if="loadingCreators" class="flex justify-center py-20">
-                     <div class="w-12 h-12 border-4 border-[#e63946] border-t-transparent rounded-full animate-spin"></div>
+                    <div
+                        class="w-12 h-12 border-4 border-[#e63946] border-t-transparent rounded-full animate-spin"
+                    ></div>
                 </div>
-                <div v-else-if="!featuredCreators.length" class="rounded-2xl border border-[#e5e7eb] bg-white p-20 text-center text-[#6b7280]">
+                <div
+                    v-else-if="!featuredCreators.length"
+                    class="rounded-2xl border border-[#e5e7eb] bg-white p-20 text-center text-[#6b7280]"
+                >
                     No featured creators found in this category.
                 </div>
                 <div v-else class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -1327,7 +1424,9 @@
                                 <div
                                     class="flex items-center justify-between gap-2"
                                 >
-                                    <h3 class="font-bold text-[#1a1a1a] transition group-hover:text-[#e63946]">
+                                    <h3
+                                        class="font-bold text-[#1a1a1a] transition group-hover:text-[#e63946]"
+                                    >
                                         {{ creator.name }}
                                     </h3>
                                     <span
@@ -1803,9 +1902,10 @@
                                 v-else
                                 class="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#e63946]/10 to-[#1a1a1a]/5"
                             >
-                                <span class="text-5xl font-bold text-[#e63946]/25">{{
-                                    featuredArticle.title.charAt(0)
-                                }}</span>
+                                <span
+                                    class="text-5xl font-bold text-[#e63946]/25"
+                                    >{{ featuredArticle.title.charAt(0) }}</span
+                                >
                             </div>
                             <span
                                 class="absolute left-4 top-4 rounded-lg bg-[#1a1a1a] px-3 py-1.5 text-xs font-semibold text-white"
@@ -1870,9 +1970,10 @@
                                     v-else
                                     class="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#e63946]/10 to-[#1a1a1a]/5"
                                 >
-                                    <span class="text-3xl font-bold text-[#e63946]/25">{{
-                                        article.title.charAt(0)
-                                    }}</span>
+                                    <span
+                                        class="text-3xl font-bold text-[#e63946]/25"
+                                        >{{ article.title.charAt(0) }}</span
+                                    >
                                 </div>
                             </div>
                             <div class="min-w-0 flex-1">
@@ -1890,7 +1991,9 @@
                                 >
                                     {{ article.title }}
                                 </h3>
-                                <p class="mt-1 line-clamp-2 text-sm text-[#6b7280]">
+                                <p
+                                    class="mt-1 line-clamp-2 text-sm text-[#6b7280]"
+                                >
                                     {{ article.excerpt }}
                                 </p>
                             </div>
@@ -2097,7 +2200,6 @@ const navUserMenuOpen = ref(false);
 const navServicesOpen = ref(false);
 const navMobileOpen = ref(false);
 
-
 function onNavUserMenuClickOutside(e) {
     if (navUserMenuRef.value && !navUserMenuRef.value.contains(e.target)) {
         navUserMenuOpen.value = false;
@@ -2109,9 +2211,18 @@ function onNavUserMenuClickOutside(e) {
 
 function navLogout() {
     navUserMenuOpen.value = false;
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    const token = document
+        .querySelector('meta[name="csrf-token"]')
+        ?.getAttribute("content");
     axios
-        .post("/api/logout", {}, { withCredentials: true, headers: token ? { 'X-CSRF-TOKEN': token } : {} })
+        .post(
+            "/api/logout",
+            {},
+            {
+                withCredentials: true,
+                headers: token ? { "X-CSRF-TOKEN": token } : {},
+            },
+        )
         .then(() => {
             navUser.value = null;
             navMobileOpen.value = false;
@@ -2175,7 +2286,9 @@ const heroFilterOptions = ref({
 
 const heroAvailableSubCategories = computed(() => {
     if (!heroSearchCategory.value) return [];
-    return (heroFilterOptions.value.sub_categories || []).filter(sc => sc.category_name === heroSearchCategory.value);
+    return (heroFilterOptions.value.sub_categories || []).filter(
+        (sc) => sc.category_name === heroSearchCategory.value,
+    );
 });
 
 watch(heroSearchCategory, () => {
@@ -2211,18 +2324,20 @@ function submitHeroSearch() {
     if (heroSearchQuery.value?.trim()) q.search = heroSearchQuery.value.trim();
     if (heroSearchPlatform.value) q.platform = heroSearchPlatform.value;
     if (heroSearchCategory.value) q.category = heroSearchCategory.value;
-    if (heroSearchSubCategory.value) q.sub_category = heroSearchSubCategory.value;
+    if (heroSearchSubCategory.value)
+        q.sub_category = heroSearchSubCategory.value;
     if (heroSearchGender.value) q.gender = heroSearchGender.value;
     if (heroSearchLanguage.value) q.language = heroSearchLanguage.value;
-    if (heroSearchLocation.value?.trim()) q.location = heroSearchLocation.value.trim();
-    
+    if (heroSearchLocation.value?.trim())
+        q.location = heroSearchLocation.value.trim();
+
     // Construct budget range string for Creators.vue compatibility
     const min = heroSearchMinRate.value;
     const max = heroSearchMaxRate.value;
     if ((min !== "" && min != null) || (max !== "" && max != null)) {
         q.price_range = `${min || 0}-${max || 100000}`;
     }
-    
+
     router.push({ path: "/creators", query: q });
 }
 function clearHeroSearch() {
@@ -2351,20 +2466,61 @@ const categories = ref([
 ]);
 
 const professionalServices = [
-    { name: "Graphic & Video Editors", slug: "graphic-video-editors", image: "/images/services/graphic_video_editors.png", description: "Expert editors for cinematic results." },
-    { name: "Photographers & Videographers", slug: "photographers-videographers", image: "/images/services/photographers_videographers.png", description: "Capturing moments with precision." },
-    { name: "Social Media Managers", slug: "social-media-managers", image: "/images/services/social_media_managers.png", description: "Grow your online presence." },
-    { name: "Script/ Content writers", slug: "content-writers", image: "/images/services/content_writers.png", description: "Compelling stories and copy." },
-    { name: "Marketing/ Advertising Agencies", slug: "marketing-agencies", image: "/images/services/marketing_agencies.png", description: "Strategic growth for brands." },
-    { name: "Anchors", slug: "anchors", image: "/images/services/anchors.png", description: "Professional hosts for your event." },
-    { name: "Makeup Artists", slug: "makeup-artists", image: "/images/services/makeup_artists.png", description: "Stunning looks for every occasion." },
-    { name: "Wedding Planners", slug: "wedding-planners", image: "/images/services/wedding_planners.png", description: "Dream weddings managed perfectly." },
+    {
+        name: "Graphic & Video Editors",
+        slug: "graphic-video-editors",
+        image: "/images/services/graphic_video_editors.png",
+        description: "Expert editors for cinematic results.",
+    },
+    {
+        name: "Photographers & Videographers",
+        slug: "photographers-videographers",
+        image: "/images/services/photographers_videographers.png",
+        description: "Capturing moments with precision.",
+    },
+    {
+        name: "Social Media Managers",
+        slug: "social-media-managers",
+        image: "/images/services/social_media_managers.png",
+        description: "Grow your online presence.",
+    },
+    {
+        name: "Script/ Content writers",
+        slug: "content-writers",
+        image: "/images/services/content_writers.png",
+        description: "Compelling stories and copy.",
+    },
+    {
+        name: "Marketing/ Advertising Agencies",
+        slug: "marketing-agencies",
+        image: "/images/services/marketing_agencies.png",
+        description: "Strategic growth for brands.",
+    },
+    {
+        name: "Anchors",
+        slug: "anchors",
+        image: "/images/services/anchors.png",
+        description: "Professional hosts for your event.",
+    },
+    {
+        name: "Makeup Artists",
+        slug: "makeup-artists",
+        image: "/images/services/makeup_artists.png",
+        description: "Stunning looks for every occasion.",
+    },
+    {
+        name: "Wedding Planners",
+        slug: "wedding-planners",
+        image: "/images/services/wedding_planners.png",
+        description: "Dream weddings managed perfectly.",
+    },
 ];
 
 const categoryCarouselIndex = ref(0);
 function categoryCarouselNext() {
     categoryCarouselIndex.value =
-        (categoryCarouselIndex.value + 1) % Math.max(1, categories.value.length);
+        (categoryCarouselIndex.value + 1) %
+        Math.max(1, categories.value.length);
 }
 function categoryCarouselPrev() {
     categoryCarouselIndex.value =
@@ -2373,10 +2529,7 @@ function categoryCarouselPrev() {
 }
 function categoryCarouselGoTo(i) {
     const len = categories.value.length;
-    const targetScroll = Math.max(
-        0,
-        Math.min(len - CATEGORY_CARDS_PER_ROW, i),
-    );
+    const targetScroll = Math.max(0, Math.min(len - CATEGORY_CARDS_PER_ROW, i));
     categoryCarouselIndex.value = targetScroll;
 }
 const CATEGORY_CARD_WIDTH = 220;
@@ -2619,7 +2772,7 @@ onMounted(() => {
             featuredStudios.value = [];
         });
     fetchFeaturedCreators();
-    
+
     // Watch for category changes to refetch featured creators
     watch(activeCategory, () => {
         fetchFeaturedCreators();
@@ -2650,7 +2803,8 @@ onMounted(() => {
         .get("/api/creators/options/filters")
         .then((r) => {
             heroFilterOptions.value.categories = r.data.categories ?? [];
-            heroFilterOptions.value.sub_categories = r.data.sub_categories ?? [];
+            heroFilterOptions.value.sub_categories =
+                r.data.sub_categories ?? [];
             heroFilterOptions.value.genders = r.data.genders ?? {};
             heroFilterOptions.value.languages = r.data.languages ?? [];
             heroFilterOptions.value.platforms = r.data.platforms ?? {};
@@ -2702,7 +2856,7 @@ function fetchFeaturedCreators() {
                 price: p.min_rate,
                 location: p.location,
                 category: p.category,
-                rating: p.average_rating || p.rating_avg
+                rating: p.average_rating || p.rating_avg,
             }));
         })
         .catch(() => {

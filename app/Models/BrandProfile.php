@@ -11,12 +11,65 @@ class BrandProfile extends Model
     protected $fillable = [
         'user_id',
         'company_name',
+        'slug',
         'logo',
         'website',
         'bio',
+        'industry',
+        'hq_location',
+        'is_public',
+    ];
+
+    protected $casts = [
+        'is_public' => 'boolean',
     ];
 
     protected $appends = ['logo_url'];
+
+    protected static function booted(): void
+    {
+        static::creating(function (BrandProfile $profile) {
+            if (blank($profile->slug) && $profile->user_id) {
+                $user = User::query()->find($profile->user_id);
+                if ($user) {
+                    $profile->slug = static::generateUniqueSlugForUser($user);
+                }
+            }
+        });
+    }
+
+    public static function generateUniqueSlugForUser(User $user, ?int $exceptProfileId = null): string
+    {
+        $base = \Illuminate\Support\Str::slug($user->name ?: 'brand');
+        $base = rtrim(substr($base, 0, 180), '-');
+        if ($base === '') {
+            $base = 'brand';
+        }
+
+        $suffix = '-' . $user->id;
+        $candidate = $base . $suffix;
+
+        $slugTaken = static function (string $slug) use ($exceptProfileId): bool {
+            $q = static::query()->where('slug', $slug);
+            if ($exceptProfileId !== null) {
+                $q->where('id', '!=', $exceptProfileId);
+            }
+
+            return $q->exists();
+        };
+
+        if (! $slugTaken($candidate)) {
+            return $candidate;
+        }
+
+        $n = 2;
+        do {
+            $candidate = $base . $suffix . '-' . $n;
+            $n++;
+        } while ($slugTaken($candidate));
+
+        return $candidate;
+    }
 
     public function getLogoUrlAttribute(): ?string
     {
