@@ -148,7 +148,7 @@
                   <td class="px-5 py-4">
                     <router-link
                       v-if="app.creator?.profile_slug"
-                      :to="'/creators/' + app.creator.profile_slug"
+                      :to="'/creator-profile/' + app.creator.profile_slug"
                       class="font-medium text-[#e63946] hover:underline"
                     >
                       {{ app.creator?.name || 'Creator' }}
@@ -174,7 +174,7 @@
                   <td class="px-5 py-4 text-right">
                     <router-link
                       v-if="app.creator?.profile_slug"
-                      :to="'/creators/' + app.creator.profile_slug"
+                      :to="'/creator-profile/' + app.creator.profile_slug"
                       class="mr-2 inline-flex items-center text-sm text-[#e63946] hover:underline"
                     >
                       View profile

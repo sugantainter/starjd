@@ -221,10 +221,7 @@
                         </li>
                         <li v-for="c in blogCategories" :key="c.slug">
                             <router-link
-                                :to="
-                                    '/blog?category=' +
-                                    encodeURIComponent(c.slug)
-                                "
+                                :to="'/blog/category/' + c.slug"
                                 class="transition hover:text-[#fc4402]"
                                 >{{ c.label }}</router-link
                             >

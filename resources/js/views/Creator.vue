@@ -153,7 +153,7 @@
                 <router-link 
                     v-for="c in featuredCreators.slice(0, 4)" 
                     :key="c.id"
-                    :to="'/creators/' + c.slug"
+                    :to="'/creator-profile/' + c.slug"
                     class="group bg-white border border-[#e2e8f0] rounded-3xl overflow-hidden hover:border-emerald-500/40 hover:shadow-2xl transition-all duration-500"
                 >
                     <div class="h-64 relative overflow-hidden">

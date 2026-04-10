@@ -763,22 +763,23 @@ const ROUTE_PATHS = {
 };
 
 function creatorCategoryTo(item) {
-    return item.name
-        ? { path: "/creators", query: { category: item.name } }
-        : "/creators";
+    if (!item.name) return "/creators";
+    // We assume the backend uses a slugified version of the name or a dedicated slug field.
+    const slug = (item.slug || item.name).toLowerCase().replace(/ /g, '-');
+    return `/creators/${slug}`;
 }
 
 function professionalCategoryTo(item) {
-    // Keep desktop & mobile consistent (Service Marketplace)
+    // Keep internal name-based routing for professionals for now unless specific routes exist
     return item.slug
         ? { name: "marketplace", query: { category: item.slug } }
         : "/marketplace";
 }
 
 function studioCategoryTo(item) {
-    return item.slug
-        ? { path: "/studios", query: { category: item.slug } }
-        : "/studios";
+    if (!item.slug && !item.name) return "/studios";
+    const slug = (item.slug || item.name).toLowerCase().replace(/ /g, '-');
+    return `/studios/${slug}`;
 }
 
 const fallbackServicesColumn1 = [

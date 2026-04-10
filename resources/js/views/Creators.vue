@@ -52,7 +52,7 @@
       <router-link
         v-for="p in listWithSlug"
         :key="p.id"
-        :to="'/creators/' + p.slug"
+        :to="'/creator-profile/' + p.slug"
         class="group flex flex-col md:flex-row bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden hover:border-[#fc4402]/40 hover:shadow-2xl transition-all duration-300"
       >
         <!-- Image Section -->
@@ -175,12 +175,9 @@ watch(() => filters.category, () => {
   filters.sub_category = '';
 });
 
-function applyQueryToFilters() {
-  const q = route.query;
-  const p = route.params;
-
-  // From Flexible SEO Paths (/creators/category/state/city)
-  if (p.paths) {
+const applyQueryToFilters = async () => {
+    const p = route.params;
+    const q = route.query;
     const segments = Array.isArray(p.paths) ? p.paths : (typeof p.paths === 'string' ? p.paths.split('/') : []);
     
     // Reset path-based filters before re-applying
@@ -189,50 +186,56 @@ function applyQueryToFilters() {
     filters.city_id = '';
     filters.platform = '';
 
-    segments.forEach(seg => {
-      const s = seg.toLowerCase();
-      // Try match category
+    for (const s of segments) {
+      if (!s) continue;
+      
+      // 1. Try Category
       const cat = filterOptions.categories.find(c => (c.slug && c.slug.toLowerCase() === s) || c.name.toLowerCase() === s);
       if (cat) {
         filters.category = cat.name;
-        return;
+        continue;
       }
-      // Try match state
-      const state = states.value.find(st => (st.slug && st.slug.toLowerCase() === s) || st.name.toLowerCase() === s);
-      if (state) {
-        filters.state_id = String(state.id);
-        return;
-      }
-      // Try match city
-      const city = cities.value.find(ci => (ci.slug && ci.slug.toLowerCase() === s) || ci.name.toLowerCase() === s);
-      if (city) {
-        filters.city_id = String(city.id);
-        return;
-      }
-      // Try match platform
-      if (filterOptions.platforms[s]) {
-        filters.platform = s;
-        return;
-      }
-    });
-  }
 
-  // From Specific Params
-  if (p.search != null) search.value = p.search;
+      // 2. Try State
+      const st = states.value.find(st => (st.slug && st.slug.toLowerCase() === s) || st.name.toLowerCase() === s);
+      if (st) {
+        filters.state_id = String(st.id);
+        continue;
+      }
 
-  // From Query (Backward compatibility & other filters)
-  if (q.search != null) search.value = q.search;
-  if (q.category != null && !filters.category) filters.category = q.category;
-  if (q.sub_category != null) filters.sub_category = q.sub_category;
-  if (q.gender != null) filters.gender = q.gender;
-  if (q.language != null) filters.language = q.language;
-  if (q.platform != null && !filters.platform) filters.platform = q.platform;
-  if (q.location != null) filters.location = q.location;
-  if (q.price_range != null) filters.price_range = q.price_range;
-  if (q.state_id != null && !filters.state_id) filters.state_id = String(q.state_id);
-  if (q.city_id != null && !filters.city_id) filters.city_id = String(q.city_id);
-  if (q.min_rate != null) filters.min_rate = q.min_rate === '' ? '' : Number(q.min_rate);
-}
+      // 3. Try City (only if state is known)
+      if (filters.state_id) {
+        try {
+          const res = await axios.get('/api/cities', { params: { state_id: filters.state_id } });
+          const cities = res.data || [];
+          const cityRes = cities.find(ci => (ci.slug && ci.slug.toLowerCase() === s) || ci.name.toLowerCase() === s);
+          if (cityRes) {
+            filters.city_id = String(cityRes.id);
+            continue;
+          }
+        } catch (err) {
+          console.error('Error fetching city for segment:', s, err);
+        }
+      }
+
+      // 4. Try Platform
+      const lowerS = s.toLowerCase();
+      if (filterOptions.platforms && (filterOptions.platforms[lowerS] || ['instagram', 'youtube', 'tiktok', 'facebook', 'linkedin', 'twitter', 'pinterest'].includes(lowerS))) {
+        filters.platform = lowerS;
+        continue;
+      }
+    }
+
+    // Apply query parameters (if any override)
+    if (q.category) filters.category = q.category;
+    if (q.gender) filters.gender = q.gender;
+    if (q.language) filters.language = q.language;
+    if (q.state_id) filters.state_id = String(q.state_id);
+    if (q.city_id) filters.city_id = String(q.city_id);
+    if (q.platform) filters.platform = q.platform;
+    if (q.sort) filters.sort = q.sort;
+    if (q.search) search.value = String(q.search);
+};
 
 onMounted(async () => {
   const [filtersRes, statesRes] = await Promise.all([
@@ -245,7 +248,7 @@ onMounted(async () => {
   filterOptions.languages = filtersRes.data.languages ?? [];
   filterOptions.platforms = filtersRes.data.platforms ?? {};
   states.value = statesRes.data ?? [];
-  applyQueryToFilters();
+  await applyQueryToFilters();
   if (filters.state_id) {
     await loadCities(filters.state_id);
   }
@@ -268,10 +271,10 @@ onUnmounted(() => {
   if (observer) observer.disconnect();
 });
 
-watch(() => [route.query, route.params], () => {
-  applyQueryToFilters();
+watch(() => route.params, async () => {
+  await applyQueryToFilters();
   refresh();
-}, { deep: true });
+});
 
 function clearFilters() {
   search.value = '';

@@ -184,8 +184,9 @@ function applyQueryToFilters() {
   const q = route.query;
   const p = route.params;
 
-  if (p.state != null) filters.city = p.state; // Using City/State param
+  if (p.category != null) filters.category = p.category;
   if (p.city != null) filters.city = p.city;
+  if (p.state != null && !p.city) filters.city = p.state;
 
   if (q.category != null) filters.category = q.category;
   if (q.city != null) filters.city = q.city;
@@ -219,8 +220,10 @@ function refresh() {
   finished.value = false;
 
   let path = '/studios';
-  if (filters.city) {
-    path = `/studios/location/${filters.city}`;
+  if (filters.category) {
+    path = `/studios/category/${filters.category.toLowerCase().replace(/ /g, '-')}`;
+  } else if (filters.city) {
+    path = `/studios/location/${filters.city.toLowerCase().replace(/ /g, '-')}`;
   }
 
   if (route.path !== path) {

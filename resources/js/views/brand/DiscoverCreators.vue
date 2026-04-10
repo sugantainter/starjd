@@ -24,7 +24,7 @@
       <router-link
         v-for="p in list"
         :key="p.id"
-        :to="'/creators/' + p.slug"
+        :to="'/creator-profile/' + p.slug"
         class="group flex flex-col overflow-hidden rounded-2xl border border-[#e2e8f0] bg-white shadow-sm transition hover:border-[#e63946]/30 hover:shadow-md"
       >
         <div class="relative aspect-[4/5] shrink-0 overflow-hidden bg-[#f1f5f9]">

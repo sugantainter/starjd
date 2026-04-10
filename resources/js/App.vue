@@ -1360,7 +1360,7 @@
                         class="hover-lift group rounded-2xl border border-[#e5e7eb] bg-white shadow-sm overflow-hidden"
                     >
                         <router-link
-                            :to="'/creators/' + (creator.slug || creator.id)"
+                            :to="'/creator-profile/' + (creator.slug || creator.id)"
                             class="block"
                         >
                             <div
@@ -2303,25 +2303,41 @@ function cascadeHasLink(img) {
     return img?.link && String(img.link).trim() !== "";
 }
 function submitHeroSearch() {
+    const segments = [];
+    if (heroSearchCategory.value) {
+        // We assume categories have slugs, or we slugify the name
+        const slug = heroSearchCategory.value.toLowerCase().replace(/ /g, "-");
+        segments.push(slug);
+    }
+    
+    // Parse location if it's a simple city or state
+    if (heroSearchLocation.value?.trim()) {
+        const locSlug = heroSearchLocation.value.trim().toLowerCase().replace(/ /g, "-");
+        segments.push(locSlug);
+    }
+
+    if (heroSearchPlatform.value) {
+        segments.push(heroSearchPlatform.value.toLowerCase());
+    }
+
+    let fullPath = "/creators";
+    if (segments.length > 0) {
+        fullPath += "/" + segments.join("/");
+    }
+
     const q = {};
     if (heroSearchQuery.value?.trim()) q.search = heroSearchQuery.value.trim();
-    if (heroSearchPlatform.value) q.platform = heroSearchPlatform.value;
-    if (heroSearchCategory.value) q.category = heroSearchCategory.value;
-    if (heroSearchSubCategory.value)
-        q.sub_category = heroSearchSubCategory.value;
+    if (heroSearchSubCategory.value) q.sub_category = heroSearchSubCategory.value;
     if (heroSearchGender.value) q.gender = heroSearchGender.value;
     if (heroSearchLanguage.value) q.language = heroSearchLanguage.value;
-    if (heroSearchLocation.value?.trim())
-        q.location = heroSearchLocation.value.trim();
 
-    // Construct budget range string for Creators.vue compatibility
     const min = heroSearchMinRate.value;
     const max = heroSearchMaxRate.value;
     if ((min !== "" && min != null) || (max !== "" && max != null)) {
         q.price_range = `${min || 0}-${max || 100000}`;
     }
 
-    router.push({ path: "/creators", query: q });
+    router.push({ path: fullPath, query: q });
 }
 function clearHeroSearch() {
     heroSearchQuery.value = "";

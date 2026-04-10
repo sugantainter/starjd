@@ -21,6 +21,7 @@ const routes = [
   { path: '/campaigns/:slug', component: AppLayout, children: [ { path: '', name: 'campaign-detail', component: () => import('../views/CampaignDetail.vue') } ] },
   { path: '/creator', component: AppLayout, children: [ { path: '', name: 'creator', component: () => import('../views/Creator.vue') } ] },
   { path: '/blog', component: AppLayout, children: [ { path: '', name: 'blog', component: () => import('../views/Blog.vue') } ] },
+  { path: '/blog/category/:category', component: AppLayout, children: [ { path: '', name: 'blog-category', component: () => import('../views/Blog.vue') } ] },
   { path: '/blog/:slug', component: AppLayout, children: [ { path: '', name: 'blog-post', component: () => import('../views/BlogPost.vue') } ] },
   { path: '/success-stories', component: AppLayout, children: [ { path: '', name: 'success-stories', component: () => import('../views/SuccessStories.vue') } ] },
   { path: '/success-stories/:slug', component: AppLayout, children: [ { path: '', name: 'success-story-detail', component: () => import('../views/SuccessStoryDetail.vue') } ] },
@@ -34,13 +35,14 @@ const routes = [
   { path: '/creators', component: AppLayout, children: [ { path: '', name: 'creators', component: () => import('../views/Creators.vue') } ] },
   { path: '/creators/:paths+', component: AppLayout, children: [ { path: '', name: 'creators-flexible', component: () => import('../views/Creators.vue') } ] },
   { path: '/creators/search/:search', component: AppLayout, children: [ { path: '', name: 'creators-search', component: () => import('../views/Creators.vue') } ] },
-  { path: '/creators/:slug', component: AppLayout, children: [ { path: '', name: 'creator-public', component: () => import('../views/CreatorPublicProfile.vue') } ] },
+  { path: '/creator-profile/:slug', component: AppLayout, children: [ { path: '', name: 'creator-public', component: () => import('../views/CreatorPublicProfile.vue') } ] },
 
   { path: '/brands', component: AppLayout, children: [ { path: '', name: 'brands', component: () => import('../views/Brands.vue') } ] },
   { path: '/brands/industry/:industry', component: AppLayout, children: [ { path: '', name: 'brands-industry', component: () => import('../views/Brands.vue') } ] },
   { path: '/brands/:slug', component: AppLayout, children: [ { path: '', name: 'brand-public', component: () => import('../views/BrandPublicProfile.vue') } ] },
 
   { path: '/studios', component: AppLayout, children: [ { path: '', name: 'studios', component: () => import('../views/Studios.vue') } ] },
+  { path: '/studios/category/:category', component: AppLayout, children: [ { path: '', name: 'studios-category', component: () => import('../views/Studios.vue') } ] },
   { path: '/studios/location/:state/:city?', component: AppLayout, children: [ { path: '', name: 'studios-location', component: () => import('../views/Studios.vue') } ] },
   { path: '/studios/:slug', component: AppLayout, children: [ { path: '', name: 'studio-detail', component: () => import('../views/StudioDetail.vue') } ] },
   
