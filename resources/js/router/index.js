@@ -8,11 +8,11 @@ import StudioLayout from '../layouts/StudioLayout.vue';
 
 const routes = [
   { path: '/', component: AppLayout, children: [ { path: '', name: 'home', component: () => import('../App.vue'), props: { noHeaderFooter: true } } ] },
-  { path: '/about', component: AppLayout, children: [ { path: '', name: 'about', component: () => import('../views/About.vue') } ] },
+  { path: '/about-us', alias: '/about', component: AppLayout, children: [ { path: '', name: 'about', component: () => import('../views/About.vue') } ] },
   { path: '/how-it-works', component: AppLayout, children: [ { path: '', name: 'how-it-works', component: () => import('../views/HowItWorks.vue') } ] },
-  { path: '/contact', component: AppLayout, children: [ { path: '', name: 'contact', component: () => import('../views/Contact.vue') } ] },
-  { path: '/privacy', alias: '/privacy-policy', component: AppLayout, children: [ { path: '', name: 'privacy', component: () => import('../views/DynamicPage.vue'), meta: { pageSlug: 'privacy' } } ] },
-  { path: '/terms', alias: '/terms-and-conditions', component: AppLayout, children: [ { path: '', name: 'terms', component: () => import('../views/DynamicPage.vue'), meta: { pageSlug: 'terms' } } ] },
+  { path: '/contact-us', alias: '/contact', component: AppLayout, children: [ { path: '', name: 'contact', component: () => import('../views/Contact.vue') } ] },
+  { path: '/privacy-policy', alias: '/privacy', component: AppLayout, children: [ { path: '', name: 'privacy', component: () => import('../views/DynamicPage.vue'), meta: { pageSlug: 'privacy' } } ] },
+  { path: '/terms-and-conditions', alias: '/terms', component: AppLayout, children: [ { path: '', name: 'terms', component: () => import('../views/DynamicPage.vue'), meta: { pageSlug: 'terms' } } ] },
   { path: '/cookie-policy', component: AppLayout, children: [ { path: '', name: 'cookie-policy', component: () => import('../views/DynamicPage.vue'), meta: { pageSlug: 'cookie-policy' } } ] },
   { path: '/child-safety', component: AppLayout, children: [ { path: '', name: 'child-safety', component: () => import('../views/ChildSafety.vue') } ] },
   { path: '/brand', component: AppLayout, children: [ { path: '', name: 'brand', component: () => import('../views/Brand.vue') } ] },
@@ -32,12 +32,32 @@ const routes = [
   // Legacy /page/{slug} → canonical /{slug} (same DynamicPage as catch-all; avoids duplicate URLs)
   { path: '/page/:slug', redirect: (to) => ({ path: `/${to.params.slug}` }) },
   { path: '/creators', component: AppLayout, children: [ { path: '', name: 'creators', component: () => import('../views/Creators.vue') } ] },
+  { path: '/creators/niche/:category/:sub_category?', component: AppLayout, children: [ { path: '', name: 'creators-niche', component: () => import('../views/Creators.vue') } ] },
+  { path: '/creators/location/:state/:city?', component: AppLayout, children: [ { path: '', name: 'creators-location', component: () => import('../views/Creators.vue') } ] },
+  { path: '/creators/search/:search', component: AppLayout, children: [ { path: '', name: 'creators-search', component: () => import('../views/Creators.vue') } ] },
   { path: '/creators/:slug', component: AppLayout, children: [ { path: '', name: 'creator-public', component: () => import('../views/CreatorPublicProfile.vue') } ] },
+
   { path: '/brands', component: AppLayout, children: [ { path: '', name: 'brands', component: () => import('../views/Brands.vue') } ] },
+  { path: '/brands/industry/:industry', component: AppLayout, children: [ { path: '', name: 'brands-industry', component: () => import('../views/Brands.vue') } ] },
   { path: '/brands/:slug', component: AppLayout, children: [ { path: '', name: 'brand-public', component: () => import('../views/BrandPublicProfile.vue') } ] },
+
   { path: '/studios', component: AppLayout, children: [ { path: '', name: 'studios', component: () => import('../views/Studios.vue') } ] },
+  { path: '/studios/location/:state/:city?', component: AppLayout, children: [ { path: '', name: 'studios-location', component: () => import('../views/Studios.vue') } ] },
   { path: '/studios/:slug', component: AppLayout, children: [ { path: '', name: 'studio-detail', component: () => import('../views/StudioDetail.vue') } ] },
-  { path: '/payment/result', component: AppLayout, children: [ { path: '', name: 'payment-result', component: () => import('../views/PaymentResult.vue') } ] },
+  
+  { path: '/campaigns', component: AppLayout, children: [ { path: '', name: 'campaigns-explore', component: () => import('../views/CampaignsExplore.vue') } ] },
+  { path: '/campaigns/type/:campaign_type', component: AppLayout, children: [ { path: '', name: 'campaigns-type', component: () => import('../views/CampaignsExplore.vue') } ] },
+  { path: '/campaigns/niche/:niche', component: AppLayout, children: [ { path: '', name: 'campaigns-niche', component: () => import('../views/CampaignsExplore.vue') } ] },
+  { path: '/campaigns/:slug', component: AppLayout, children: [ { path: '', name: 'campaign-detail', component: () => import('../views/CampaignDetail.vue') } ] },
+
+  { path: '/blog', component: AppLayout, children: [ { path: '', name: 'blog', component: () => import('../views/Blog.vue') } ] },
+  { path: '/blog/category/:category', component: AppLayout, children: [ { path: '', name: 'blog-category', component: () => import('../views/Blog.vue') } ] },
+  { path: '/blog/:slug', component: AppLayout, children: [ { path: '', name: 'blog-post', component: () => import('../views/BlogPost.vue') } ] },
+
+  { path: '/success-stories', component: AppLayout, children: [ { path: '', name: 'success-stories', component: () => import('../views/SuccessStories.vue') } ] },
+  { path: '/success-stories/:slug', component: AppLayout, children: [ { path: '', name: 'success-story-detail', component: () => import('../views/SuccessStoryDetail.vue') } ] },
+  
+  { path: '/payment-result', alias: '/payment/result', component: AppLayout, children: [ { path: '', name: 'payment-result', component: () => import('../views/PaymentResult.vue') } ] },
   { path: '/login', component: AppLayout, children: [ { path: '', name: 'login', component: () => import('../views/Login.vue') } ] },
   { path: '/register', component: AppLayout, children: [ { path: '', name: 'register', component: () => import('../views/Register.vue') } ] },
   { path: '/verify-email', component: AppLayout, children: [ { path: '', name: 'verify-email', component: () => import('../views/VerifyEmail.vue') } ] },

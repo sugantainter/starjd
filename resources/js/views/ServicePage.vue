@@ -40,7 +40,7 @@
             <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
             All services
           </router-link>
-          <router-link to="/contact" class="rounded-lg bg-[#fc4402] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[#e63d02]">Contact us</router-link>
+          <router-link to="/contact-us" class="rounded-lg bg-[#fc4402] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[#e63d02]">Contact us</router-link>
         </div>
       </section>
     </template>

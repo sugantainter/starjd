@@ -110,10 +110,11 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 
 const route = useRoute();
+const router = useRouter();
 const list = ref([]);
 const search = ref('');
 const loading = ref(false);
@@ -130,6 +131,11 @@ const filters = reactive({ industry: '' });
 
 function applyQueryToFilters() {
   const q = route.query;
+  const p = route.params;
+
+  if (p.industry != null) filters.industry = p.industry;
+  if (p.search != null) search.value = p.search;
+
   if (q.search != null) search.value = q.search;
   if (q.industry != null) filters.industry = q.industry;
 }
@@ -154,7 +160,7 @@ onUnmounted(() => {
   if (observer) observer.disconnect();
 });
 
-watch(() => route.query, () => {
+watch(() => [route.query, route.params], () => {
   applyQueryToFilters();
   refresh();
 }, { deep: true });
@@ -169,6 +175,17 @@ function refresh() {
   page.value = 1;
   list.value = [];
   finished.value = false;
+
+  let path = '/brands';
+  if (filters.industry) {
+    path = `/brands/industry/${filters.industry}`;
+  }
+
+  if (route.path !== path) {
+    router.push(path);
+    return;
+  }
+
   load(1);
 }
 

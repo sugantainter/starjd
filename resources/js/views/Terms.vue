@@ -26,7 +26,7 @@
           </p>
           <ul class="mt-4 list-inside list-disc space-y-2 text-[#6b7280]">
             <li>You authorize StarJD to receive and use the information that the social provider (Google or Facebook) shares with us, which may include your name, email address, profile picture, and other profile or account data.</li>
-            <li>By choosing social login, you consent to our collection and use of all social data we receive from Google, Facebook, or other social login providers, as described in our <router-link to="/privacy" class="font-medium text-[#e63946] hover:underline">Privacy Policy</router-link>.</li>
+            <li>By choosing social login, you consent to our collection and use of all social data we receive from Google, Facebook, or other social login providers, as described in our <router-link to="/privacy-policy" class="font-medium text-[#e63946] hover:underline">Privacy Policy</router-link>.</li>
             <li>Your use of social login is also subject to the terms and privacy policies of Google and Facebook. We are not responsible for their practices.</li>
           </ul>
 
@@ -57,7 +57,7 @@
 
           <h2 class="mt-10 text-2xl font-bold text-[#1a1a1a]">Contact</h2>
           <p class="mt-2 text-[#6b7280]">
-            For questions about these Terms, please use our <router-link to="/contact" class="font-medium text-[#e63946] hover:underline">Contact</router-link> page.
+            For questions about these Terms, please use our <router-link to="/contact-us" class="font-medium text-[#e63946] hover:underline">Contact</router-link> page.
           </p>
           <p class="mt-6 text-sm text-[#94a3b8]">StarJD is powered by Suganta International.</p>
         </div>

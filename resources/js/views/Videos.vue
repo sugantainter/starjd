@@ -70,7 +70,7 @@
           <div class="relative z-10">
              <h2 class="text-4xl md:text-5xl font-black text-white mb-6">Need more help?</h2>
              <p class="text-[#94a3b8] text-xl max-w-xl mx-auto mb-10">Our support team is available 24/7 to help you with any questions or technical issues.</p>
-             <router-link to="/contact" class="inline-block rounded-2xl bg-white px-12 py-5 text-lg font-black text-black shadow-xl transition-all hover:bg-[#e63946] hover:text-white transform hover:scale-105">Contact Support</router-link>
+             <router-link to="/contact-us" class="inline-block rounded-2xl bg-white px-12 py-5 text-lg font-black text-black shadow-xl transition-all hover:bg-[#e63946] hover:text-white transform hover:scale-105">Contact Support</router-link>
           </div>
        </div>
     </section>

@@ -148,10 +148,11 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 
 const route = useRoute();
+const router = useRouter();
 const list = ref([]);
 const listWithSlug = computed(() => (list.value || []).filter((p) => p.slug));
 const search = ref('');
@@ -176,6 +177,16 @@ watch(() => filters.category, () => {
 
 function applyQueryToFilters() {
   const q = route.query;
+  const p = route.params;
+
+  // From Params (SEO Paths)
+  if (p.category != null) filters.category = p.category;
+  if (p.sub_category != null) filters.sub_category = p.sub_category;
+  if (p.state != null) filters.state_id = p.state;
+  if (p.city != null) filters.city_id = p.city;
+  if (p.search != null) search.value = p.search;
+
+  // From Query (Backward compatibility & other filters)
   if (q.search != null) search.value = q.search;
   if (q.category != null) filters.category = q.category;
   if (q.sub_category != null) filters.sub_category = q.sub_category;
@@ -223,7 +234,7 @@ onUnmounted(() => {
   if (observer) observer.disconnect();
 });
 
-watch(() => route.query, () => {
+watch(() => [route.query, route.params], () => {
   applyQueryToFilters();
   refresh();
 }, { deep: true });
@@ -262,6 +273,27 @@ function refresh() {
   page.value = 1;
   list.value = [];
   finished.value = false;
+
+  // Generate SEO Friendly URL
+  let path = '/creators';
+  if (filters.category) {
+    path = `/creators/niche/${filters.category}`;
+    if (filters.sub_category) {
+      path += `/${filters.sub_category}`;
+    }
+  } else if (filters.state_id) {
+     path = `/creators/location/${filters.state_id}`;
+     if (filters.city_id) path += `/${filters.city_id}`;
+  } else if (search.value) {
+     path = `/creators/search/${encodeURIComponent(search.value)}`;
+  }
+
+  // Only push if path changed to avoid redundant loads
+  if (route.path !== path) {
+    router.push(path);
+    return; // Watcher will trigger refresh
+  }
+
   load(1);
 }
 

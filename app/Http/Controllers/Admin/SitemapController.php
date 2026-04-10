@@ -165,9 +165,9 @@ class SitemapController extends Controller
             ['paths' => ['/'], 'priority' => '1.0', 'changefreq' => 'daily'],
             [
                 'paths' => [
-                    '/about',
+                    '/about-us',
                     '/how-it-works',
-                    '/contact',
+                    '/contact-us',
                     '/brand',
                     '/campaign',
                     '/campaigns',
@@ -185,8 +185,8 @@ class SitemapController extends Controller
             ],
             [
                 'paths' => [
-                    '/privacy',
-                    '/terms',
+                    '/privacy-policy',
+                    '/terms-and-conditions',
                     '/cookie-policy',
                     '/child-safety',
                 ],

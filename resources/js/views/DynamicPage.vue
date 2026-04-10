@@ -434,7 +434,7 @@
               <p class="mx-auto mt-6 max-w-2xl text-lg text-white/80">Connect with local brands, find creative spaces, and take your creator journey to the next level.</p>
               <div class="mt-10 flex flex-wrap justify-center gap-4">
                 <router-link to="/register" class="rounded-xl bg-white px-8 py-4 text-base font-bold text-[#e63946] shadow-lg transition hover:bg-white hover:scale-105 hover:shadow-xl">Get Started for Free</router-link>
-                <router-link to="/contact" class="rounded-xl border-2 border-white/20 px-8 py-4 text-base font-bold text-white transition hover:bg-white/10 hover:border-white">Contact Sales</router-link>
+                <router-link to="/contact-us" class="rounded-xl border-2 border-white/20 px-8 py-4 text-base font-bold text-white transition hover:bg-white/10 hover:border-white">Contact Sales</router-link>
               </div>
             </div>
           </div>

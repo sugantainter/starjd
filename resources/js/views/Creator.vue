@@ -201,7 +201,7 @@
             <router-link to="/register?type=creator" class="w-full sm:w-auto px-10 py-5 bg-white text-emerald-600 rounded-2xl font-black text-xl hover:bg-emerald-50 hover:shadow-2xl transition-all transform hover:-translate-y-1">
               Join StarJD Now
             </router-link>
-            <router-link to="/contact" class="w-full sm:w-auto px-10 py-5 bg-emerald-700/30 text-white border border-white/20 rounded-2xl font-black text-xl hover:bg-emerald-700/40 transition-all">
+            <router-link to="/contact-us" class="w-full sm:w-auto px-10 py-5 bg-emerald-700/30 text-white border border-white/20 rounded-2xl font-black text-xl hover:bg-emerald-700/40 transition-all">
               Talk to Us
             </router-link>
           </div>

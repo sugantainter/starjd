@@ -6,7 +6,7 @@
         <span class="inline-block rounded-full bg-[#e63946]/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-[#e63946] mb-6">StarJD Insights</span>
         <h1 class="text-5xl md:text-7xl font-black tracking-tighter text-[#1a1a1a] mb-8">The Creative Blog</h1>
         <p class="text-xl text-[#64748b] max-w-2xl mx-auto leading-relaxed">Master the art of influencer marketing with our curated collection of insights, trends, and success strategies.</p>
-        <p v-if="route.query.category" class="mt-8 text-sm font-black text-[#e63946] uppercase tracking-widest">Filtering by: {{ categoryLabel }}</p>
+        <p v-if="route.query.category || route.params.category" class="mt-8 text-sm font-black text-[#e63946] uppercase tracking-widest">Filtering by: {{ categoryLabel }}</p>
       </div>
     </section>
 
@@ -104,9 +104,9 @@
                   <router-link 
                     v-for="cat in blogCategories" 
                     :key="cat.slug"
-                    :to="'/blog?category=' + cat.slug"
+                    :to="'/blog/category/' + cat.slug"
                     class="px-4 py-2 rounded-xl text-xs font-bold transition-all border border-[#f1f5f9] hover:border-[#e63946] hover:text-[#e63946] hover:shadow-lg shadow-[#e63946]/5"
-                    :class="route.query.category === cat.slug ? 'bg-[#e63946] text-white border-[#e63946]' : 'bg-[#fafaf9] text-[#64748b]'"
+                    :class="(route.query.category === cat.slug || route.params.category === cat.slug) ? 'bg-[#e63946] text-white border-[#e63946]' : 'bg-[#fafaf9] text-[#64748b]'"
                   >
                     {{ cat.label }}
                   </router-link>
@@ -189,14 +189,14 @@ function slugify(text) {
 }
 
 const categoryLabel = computed(() => {
-  const cat = route.query.category;
+  const cat = route.query.category || route.params.category;
   if (!cat) return '';
   if (posts.value.length) return posts.value[0]?.category || cat.replace(/-/g, ' ');
   return cat.replace(/-/g, ' ');
 });
 
 async function resolveCategoryFilter() {
-  const q = route.query.category;
+  const q = route.query.category || route.params.category;
   resolvedCategoryLabel.value = '';
   if (q == null || q === '') return;
   try {
@@ -239,7 +239,7 @@ async function load(p = 1, append = false) {
     const perPage = r.data.per_page ?? PER_PAGE;
 
     // Legacy ?category=slug links: filter client-side if slug not in /categories
-    const qCat = route.query.category;
+    const qCat = route.query.category || route.params.category;
     if (qCat != null && qCat !== '' && !resolvedCategoryLabel.value) {
       const want = String(qCat).toLowerCase();
       items = items.filter((post) => slugify(post.category) === want);
@@ -298,7 +298,7 @@ onUnmounted(() => {
 });
 
 watch(
-  () => route.query.category,
+  () => [route.query.category, route.params.category],
   async () => {
     await resolveCategoryFilter();
     refresh();

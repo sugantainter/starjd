@@ -61,7 +61,7 @@
 
           <h2 class="mt-10 text-2xl font-bold text-[#1a1a1a]">Contact Us</h2>
           <p class="mt-2 text-[#6b7280]">
-            For questions about this Privacy Policy or our data practices, please use our <router-link to="/contact" class="font-medium text-[#e63946] hover:underline">Contact</router-link> page.
+            For questions about this Privacy Policy or our data practices, please use our <router-link to="/contact-us" class="font-medium text-[#e63946] hover:underline">Contact</router-link> page.
           </p>
           <p class="mt-6 text-sm text-[#94a3b8]">StarJD is powered by Suganta International.</p>
         </div>

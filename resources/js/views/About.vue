@@ -19,7 +19,7 @@
             </p>
             <div class="mt-8 flex flex-wrap items-center gap-4">
               <router-link
-                to="/contact"
+                to="/contact-us"
                 class="inline-flex items-center gap-2 rounded-lg bg-[#fc4402] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#e53d02]"
               >
                 Schedule A Consultation →
@@ -265,7 +265,7 @@
         </p>
         <p class="mt-2 text-[#64748b]">Contact us today to transform your ideas into powerful visual experiences.</p>
         <router-link
-          to="/contact"
+          to="/contact-us"
           class="mt-8 inline-flex items-center gap-2 rounded-lg bg-[#fc4402] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#e53d02]"
         >
           Contact Us →

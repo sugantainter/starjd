@@ -317,7 +317,7 @@ function formatCurrency(amt) {
                 ({{ gig.user?.professional_profile?.total_reviews ?? 0 }} reviews)
               </div>
               <router-link
-                to="/contact"
+                to="/contact-us"
                 class="inline-block rounded-lg border border-[#1a1a1a] px-6 py-2 text-sm font-bold text-[#1a1a1a] transition-all hover:bg-[#1a1a1a] hover:text-white"
                 >Contact</router-link
               >

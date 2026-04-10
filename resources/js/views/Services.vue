@@ -97,7 +97,7 @@
            <div class="relative z-10">
               <h2 class="text-4xl md:text-5xl font-black text-white mb-6">Ready to scale?</h2>
               <p class="text-[#94a3b8] text-xl max-w-xl mx-auto mb-10">We create tailored strategies that actually convert. Let's build something legendary together.</p>
-              <router-link to="/contact" class="inline-block rounded-2xl bg-[#e63946] px-12 py-5 text-lg font-black text-white shadow-xl shadow-[#e63946]/20 transition-all hover:bg-[#c1121f] transform hover:scale-105">Get Started Now</router-link>
+              <router-link to="/contact-us" class="inline-block rounded-2xl bg-[#e63946] px-12 py-5 text-lg font-black text-white shadow-xl shadow-[#e63946]/20 transition-all hover:bg-[#c1121f] transform hover:scale-105">Get Started Now</router-link>
            </div>
         </div>
       </div>

@@ -136,7 +136,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, watch, computed, nextTick } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -144,6 +144,7 @@ import StudioCard from '../components/studio/StudioCard.vue';
 import FilterSidebar from '../components/studio/FilterSidebar.vue';
 
 const route = useRoute();
+const router = useRouter();
 const list = ref([]);
 const loading = ref(false);
 const finished = ref(false);
@@ -179,6 +180,17 @@ const filters = reactive({
   rating: '',
 });
 
+function applyQueryToFilters() {
+  const q = route.query;
+  const p = route.params;
+
+  if (p.state != null) filters.city = p.state; // Using City/State param
+  if (p.city != null) filters.city = p.city;
+
+  if (q.category != null) filters.category = q.category;
+  if (q.city != null) filters.city = q.city;
+}
+
 function clearFilters() {
   filters.category = '';
   filters.city = '';
@@ -205,6 +217,17 @@ function refresh() {
   page.value = 1;
   list.value = [];
   finished.value = false;
+
+  let path = '/studios';
+  if (filters.city) {
+    path = `/studios/location/${filters.city}`;
+  }
+
+  if (route.path !== path) {
+    router.push(path);
+    return;
+  }
+
   load(1);
 }
 
@@ -346,6 +369,7 @@ onMounted(async () => {
   ]);
   categories.value = catRes.data || [];
   amenities.value = amRes.data || [];
+  applyQueryToFilters();
   
   // Initialize Infinite Scroll
   observer = new IntersectionObserver((entries) => {
@@ -367,7 +391,10 @@ onUnmounted(() => {
 });
 
 watch([sort], () => refresh());
-watch(() => route.query, () => refresh(), { deep: true });
+watch(() => [route.query, route.params], () => {
+  applyQueryToFilters();
+  refresh();
+}, { deep: true });
 </script>
 
 <style scoped>

@@ -135,10 +135,11 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 
 const route = useRoute();
+const router = useRouter();
 const list = ref([]);
 const loading = ref(false);
 const finished = ref(false);
@@ -157,9 +158,15 @@ const filters = reactive({
 });
 
 function applyQueryToFilters() {
-  if (route.query.niche != null) filters.niche = route.query.niche;
-  if (route.query.country != null) filters.country = route.query.country;
-  if (route.query.campaign_type != null) filters.campaign_type = route.query.campaign_type;
+  const q = route.query;
+  const p = route.params;
+
+  if (p.campaign_type != null) filters.campaign_type = p.campaign_type;
+  if (p.niche != null) filters.niche = p.niche;
+
+  if (q.niche != null) filters.niche = q.niche;
+  if (q.country != null) filters.country = q.country;
+  if (q.campaign_type != null) filters.campaign_type = q.campaign_type;
 }
 
 function typeLabel(type) {
@@ -198,6 +205,19 @@ function refresh() {
   page.value = 1;
   list.value = [];
   finished.value = false;
+
+  let path = '/campaigns';
+  if (filters.campaign_type) {
+    path = `/campaigns/type/${filters.campaign_type}`;
+  } else if (filters.niche) {
+    path = `/campaigns/niche/${filters.niche}`;
+  }
+
+  if (route.path !== path) {
+    router.push(path);
+    return;
+  }
+
   load(1);
 }
 
@@ -260,7 +280,7 @@ onUnmounted(() => {
   if (observer) observer.disconnect();
 });
 
-watch(() => route.query, () => {
+watch(() => [route.query, route.params], () => {
   applyQueryToFilters();
   refresh();
 }, { deep: true });

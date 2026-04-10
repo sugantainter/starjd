@@ -248,14 +248,14 @@
                     <ul class="mt-4 space-y-2.5 text-sm">
                         <li>
                             <router-link
-                                to="/about"
+                                to="/about-us"
                                 class="transition hover:text-[#fc4402]"
                                 >About Us</router-link
                             >
                         </li>
                         <li>
                             <router-link
-                                to="/contact"
+                                to="/contact-us"
                                 class="transition hover:text-[#fc4402]"
                                 >Contact Us</router-link
                             >
@@ -382,14 +382,14 @@
                     <ul v-else class="mt-4 space-y-2.5 text-sm">
                         <li>
                             <router-link
-                                to="/privacy"
+                                to="/privacy-policy"
                                 class="transition hover:text-[#fc4402]"
                                 >Privacy Policy</router-link
                             >
                         </li>
                         <li>
                             <router-link
-                                to="/terms"
+                                to="/terms-and-conditions"
                                 class="transition hover:text-[#fc4402]"
                                 >Terms of Service</router-link
                             >
@@ -403,7 +403,7 @@
                         </li>
                         <li>
                             <router-link
-                                to="/contact"
+                                to="/contact-us"
                                 class="transition hover:text-[#fc4402]"
                                 >Contact</router-link
                             >
@@ -469,12 +469,12 @@
                 </p>
                 <div class="flex flex-wrap justify-center gap-6 text-sm">
                     <router-link
-                        to="/about"
+                        to="/about-us"
                         class="transition hover:text-[#fc4402]"
                         >About</router-link
                     >
                     <router-link
-                        to="/contact"
+                        to="/contact-us"
                         class="transition hover:text-[#fc4402]"
                         >Contact</router-link
                     >
@@ -484,12 +484,12 @@
                         >Success Stories</router-link
                     >
                     <router-link
-                        to="/privacy"
+                        to="/privacy-policy"
                         class="transition hover:text-[#fc4402]"
                         >Privacy Policy</router-link
                     >
                     <router-link
-                        to="/terms"
+                        to="/terms-and-conditions"
                         class="transition hover:text-[#fc4402]"
                         >Terms of Service</router-link
                     >
