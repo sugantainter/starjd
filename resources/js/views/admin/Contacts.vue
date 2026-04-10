@@ -22,10 +22,53 @@
             <td class="px-4 py-3 text-sm text-[#64748b]">{{ item.subject || '—' }}</td>
             <td class="max-w-xs truncate px-4 py-3 text-sm text-[#64748b]">{{ item.body }}</td>
             <td class="px-4 py-3 text-sm text-[#64748b]">{{ formatDate(item.created_at) }}</td>
-            <td class="px-4 py-3 text-right"><button type="button" class="text-red-600 hover:underline" @click="remove(item)">Delete</button></td>
+            <td class="px-4 py-3 text-right space-x-3">
+              <button type="button" class="text-indigo-600 font-medium hover:underline" @click="selectedItem = item">View</button>
+              <button type="button" class="text-red-600 hover:underline" @click="remove(item)">Delete</button>
+            </td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- View Message Modal -->
+    <div v-if="selectedItem" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" @click.self="selectedItem = null">
+      <div class="relative w-full max-w-2xl transform rounded-2xl bg-white shadow-2xl transition-all">
+        <div class="border-b border-[#e2e8f0] p-6">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xl font-bold text-[#1a1a1a]">Message Details</h3>
+            <button class="rounded-lg p-2 text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#1a1a1a]" @click="selectedItem = null">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          </div>
+        </div>
+        <div class="max-h-[70vh] overflow-y-auto p-8">
+          <div class="grid gap-6 sm:grid-cols-2">
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-widest text-[#94a3b8]">From</p>
+              <p class="mt-1 font-bold text-[#1a1a1a]">{{ selectedItem.name }}</p>
+              <p class="text-sm text-[#64748b]">{{ selectedItem.email }}</p>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-widest text-[#94a3b8]">Date</p>
+              <p class="mt-1 text-sm text-[#1a1a1a]">{{ formatDate(selectedItem.created_at) }}</p>
+            </div>
+          </div>
+          <div class="mt-8">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-[#94a3b8]">Subject</p>
+            <p class="mt-1 font-bold text-[#1a1a1a]">{{ selectedItem.subject || 'No Subject' }}</p>
+          </div>
+          <div class="mt-8">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-[#94a3b8]">Message</p>
+            <div class="mt-4 rounded-xl bg-[#f8fafc] p-6 text-[#475569] leading-relaxed whitespace-pre-wrap ring-1 ring-[#e2e8f0]">
+              {{ selectedItem.body }}
+            </div>
+          </div>
+        </div>
+        <div class="border-t border-[#e2e8f0] p-6 text-right">
+          <button class="rounded-xl bg-[#1a1a1a] px-6 py-2.5 text-sm font-bold text-white transition hover:bg-black" @click="selectedItem = null">Close</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -36,12 +79,13 @@ import axios from 'axios';
 
 const items = ref([]);
 const loading = ref(true);
+const selectedItem = ref(null);
 
 function formatDate(s) {
   if (!s) return '—';
   try {
     const d = new Date(s);
-    return d.toLocaleDateString();
+    return d.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
   } catch {
     return s;
   }

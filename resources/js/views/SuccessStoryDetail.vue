@@ -9,40 +9,51 @@
   </div>
   <div v-else class="min-h-screen bg-white">
     <!-- Story Hero -->
-    <header class="relative h-[60vh] min-h-[400px] w-full overflow-hidden bg-[#1a1a1a]">
-      <img
-        v-if="story.image"
-        :src="story.image"
-        :alt="story.title"
-        class="h-full w-full object-cover opacity-60"
-      />
-      <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
+    <header class="relative overflow-hidden bg-[#1a1a1a] py-20 px-4 md:py-32">
+      <!-- Background Image with Overlay -->
+      <div v-if="story.image" class="absolute inset-0 z-0">
+        <img
+          :src="story.image"
+          :alt="story.title"
+          class="h-full w-full object-cover opacity-40 grayscale-[50%]"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a]/40 to-transparent"></div>
+      </div>
       
-      <div class="absolute inset-0 flex items-end pb-16">
-        <div class="mx-auto max-w-4xl px-4 w-full">
-           <router-link to="/success-stories" class="inline-flex items-center gap-2 text-white/70 hover:text-white mb-8 font-bold uppercase tracking-widest text-xs transition">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-              Success Stories
-           </router-link>
-           
-           <div v-if="story.role" class="mb-4 inline-block rounded-full bg-[#e63946] px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-white">
-              {{ story.role.name }}
-           </div>
-           
-           <h1 class="text-4xl md:text-6xl font-black text-white leading-tight mb-8">{{ story.title }}</h1>
-           
-           <div v-if="story.author_name" class="flex items-center gap-4 text-white">
-              <div class="h-12 w-12 rounded-full border-2 border-white/20 bg-white/10 flex items-center justify-center font-bold text-xl uppercase">
-                 {{ story.author_name.charAt(0) }}
-              </div>
-              <div>
-                 <p class="font-black text-lg leading-none">{{ story.author_name }}</p>
-                 <p v-if="story.author_designation" class="text-white/60 text-sm mt-1 uppercase tracking-widest font-bold">{{ story.author_designation }}</p>
-              </div>
-              <span class="mx-2 h-4 w-[1px] bg-white/20"></span>
-              <p class="text-white/60 text-sm uppercase tracking-widest font-bold">{{ formatDate(story.created_at) }}</p>
-           </div>
-        </div>
+      <div class="relative z-10 mx-auto max-w-4xl">
+         <!-- Breadcrumbs -->
+         <nav class="mb-12 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-white/50">
+            <router-link to="/" class="hover:text-white transition">Home</router-link>
+            <span>/</span>
+            <router-link to="/success-stories" class="hover:text-white transition">Success Stories</router-link>
+            <template v-if="story.role">
+               <span>/</span>
+               <span class="text-[#e63946]">{{ story.role.name }}</span>
+            </template>
+         </nav>
+         
+         <div v-if="story.role" class="mb-8 inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-2 pr-6 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-md">
+            <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-[#e63946] text-white shadow-lg shadow-[#e63946]/40">★</span>
+            {{ story.role.name }} Success Story
+         </div>
+         
+         <h1 class="text-4xl md:text-7xl font-black text-white leading-[1.05] tracking-tight mb-12 animate-fade-in-up">
+            {{ story.title }}
+         </h1>
+         
+         <div v-if="story.author_name" class="flex items-center gap-6 text-white animate-fade-in-up animation-delay-200">
+            <div class="h-16 w-16 rounded-[1.25rem] border-2 border-white/20 bg-white/10 flex items-center justify-center font-black text-2xl shadow-2xl backdrop-blur-xl">
+               {{ story.author_name.charAt(0) }}
+            </div>
+            <div>
+               <p class="text-xl font-black leading-tight tracking-tight">{{ story.author_name }}</p>
+               <div class="mt-2 flex items-center gap-3">
+                  <p v-if="story.author_designation" class="text-white/50 text-[10px] uppercase tracking-widest font-black">{{ story.author_designation }}</p>
+                  <span class="h-1 w-1 rounded-full bg-[#e63946]"></span>
+                  <p class="text-white/50 text-[10px] uppercase tracking-widest font-black">{{ formatDate(story.created_at) }}</p>
+               </div>
+            </div>
+         </div>
       </div>
     </header>
 

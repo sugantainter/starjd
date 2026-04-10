@@ -84,6 +84,21 @@
           <div class="grid items-center gap-16 lg:grid-cols-2">
             <!-- Hero Text content -->
             <div class="text-center lg:text-left">
+              <!-- Breadcrumbs for Tree Structure -->
+              <nav class="mb-6 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#64748b]">
+                <router-link to="/" class="hover:text-[#e63946] transition">Home</router-link>
+                <span>/</span>
+                <router-link to="/creators" class="hover:text-[#e63946] transition">Creators</router-link>
+                <template v-if="stateName">
+                  <span>/</span>
+                  <router-link :to="'/' + page.slug + '-in-' + (page.state?.slug || stateName.toLowerCase().replace(/ /g, '-'))" class="hover:text-[#e63946] transition">{{ stateName }}</router-link>
+                </template>
+                <template v-if="cityName">
+                  <span>/</span>
+                  <span class="text-[#e63946]">{{ cityName }}</span>
+                </template>
+              </nav>
+
               <div class="mb-8 inline-flex items-center gap-3 rounded-2xl border border-[#e63946]/10 bg-white/40 p-2 pr-6 text-xs font-bold text-[#1a1a1a] backdrop-blur-xl shadow-lg ring-1 ring-[#e63946]/5 animate-fade-in">
                 <span class="flex items-center justify-center h-8 w-8 rounded-xl bg-[#e63946] text-white">★</span>
                 Verified Hub {{ locationName ? 'in ' + locationName : '' }}
@@ -218,32 +233,62 @@
                  <router-link to="/blog" class="mt-6 block text-center text-xs font-bold text-[#64748b] hover:text-[#e63946] transition">View all blog posts →</router-link>
                </div>
 
-              <!-- City-based creator search links -->
-              <div v-if="locationName" class="rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm">
-                <h3 class="text-sm font-bold uppercase tracking-wider text-[#1a1a1a]">
-                  Creators in {{ locationName }}
+              <!-- Hierarchical Tree Navigation -->
+              <div v-if="locationName" class="rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm overflow-hidden relative group">
+                <div class="absolute -right-6 -top-6 h-12 w-12 rounded-full bg-[#e63946]/5 transition group-hover:scale-150"></div>
+                <h3 class="text-xs font-black uppercase tracking-widest text-[#1a1a1a] border-b border-[#f1f5f9] pb-3 mb-4">
+                  Location Hierarchy
                 </h3>
-                <p class="mt-2 text-xs text-[#64748b]">Quick links to the city-filtered creators search.</p>
-                <div class="mt-4 flex flex-wrap gap-2">
-                  <router-link
-                    :to="{ name: 'creators', query: { location: locationName } }"
-                    class="rounded-full border border-[#e63946] bg-white px-4 py-2 text-xs font-bold text-[#e63946] hover:bg-[#fff1f1] transition"
-                  >
-                    {{ cityName || locationName }}
-                  </router-link>
-                  <router-link
-                    v-if="stateName && stateName !== cityName"
-                    :to="{ name: 'creators', query: { location: stateName } }"
-                    class="rounded-full border border-[#e2e8f0] bg-white px-4 py-2 text-xs font-bold text-[#475569] hover:bg-[#f8fafc] transition"
-                  >
-                    {{ stateName }}
-                  </router-link>
-                  <router-link
-                    to="/creators"
-                    class="rounded-full border border-[#e2e8f0] bg-white px-4 py-2 text-xs font-bold text-[#475569] hover:bg-[#f8fafc] transition"
-                  >
-                    All creators
-                  </router-link>
+                
+                <div class="space-y-4">
+                  <!-- Root level -->
+                  <div class="flex items-center gap-3">
+                    <div class="h-1.5 w-1.5 rounded-full bg-emerald-500"></div>
+                    <router-link to="/creators" class="text-xs font-bold text-[#475569] hover:text-[#e63946]">India Hub</router-link>
+                  </div>
+                  
+                  <!-- State level -->
+                  <div v-if="stateName" class="ml-4 flex items-center gap-3 border-l-2 border-[#f1f5f9] pl-3">
+                    <div class="h-1.5 w-1.5 rounded-full bg-[#fbbf24]"></div>
+                    <router-link 
+                      :to="'/' + page.slug + '-in-' + (page.state?.slug || stateName.toLowerCase().replace(/ /g, '-'))" 
+                      class="text-xs font-bold text-[#475569] hover:text-[#e63946]"
+                      :class="{ 'text-[#e63946]': !cityName }"
+                    >
+                      {{ stateName }}
+                    </router-link>
+                  </div>
+                  
+                  <!-- City level (Current or sibling) -->
+                  <div v-if="cityName" class="ml-8 flex items-center gap-3 border-l-2 border-[#f1f5f9] pl-3">
+                    <div class="h-1.5 w-1.5 rounded-full bg-[#e63946]"></div>
+                    <span class="text-xs font-black text-[#e63946]">{{ cityName }}</span>
+                  </div>
+
+                  <!-- Direct Links to Creators/Studios Search -->
+                  <div class="mt-6 pt-4 border-t border-[#f1f5f9] flex flex-wrap gap-2">
+                    <router-link
+                      :to="{ name: 'creators', query: { location: locationName } }"
+                      class="rounded-lg bg-[#fff1f1] px-3 py-1.5 text-[10px] font-black text-[#e63946] hover:bg-[#e63946] hover:text-white transition uppercase tracking-tighter"
+                    >
+                      Visit {{ cityName || locationName }} Hall
+                    </router-link>
+                  </div>
+                </div>
+
+                <!-- Explore more in same State -->
+                <div v-if="stateName && siblingPages.length" class="mt-8">
+                   <p class="text-[9px] font-black text-[#94a3b8] uppercase tracking-[0.2em] mb-3 ml-1">Explore Neighboring Cities</p>
+                   <div class="grid grid-cols-2 gap-2">
+                      <router-link 
+                        v-for="sp in siblingPages" 
+                        :key="sp.id" 
+                        :to="'/' + (sp.full_slug || sp.slug)"
+                        class="px-3 py-2 rounded-lg bg-[#fafaf9] border border-[#f1f5f9] text-[10px] font-bold text-[#64748b] hover:border-[#e63946]/30 hover:text-[#e63946] transition-all line-clamp-1"
+                      >
+                        {{ sp.city?.name || sp.title.split(' in ').pop() }}
+                      </router-link>
+                   </div>
                 </div>
               </div>
                
@@ -471,6 +516,7 @@ const studios = ref([]);
 const blogs = ref([]);
 const services = ref([]);
 const creatorCategories = ref([]);
+const siblingPages = ref([]);
 
 const sidebarSearch = ref('');
 const sidebarCategory = ref('');
@@ -561,6 +607,13 @@ async function fetchRelatedData() {
         categoryQuery.value = sidebarCategory.value || '';
       }
     }
+
+    // Fetch sibling pages (cities in same state for the tree)
+    if (page.value?.state_id) {
+       const pgRes = await axios.get('/api/pages', { params: { state_id: page.value.state_id, per_page: 8 } });
+       siblingPages.value = (Array.isArray(pgRes.data) ? pgRes.data : [])
+         .filter(p => p.id !== page.value.id && p.slug === page.value.slug);
+    }
   } catch (err) {
     console.error('Error fetching related data:', err);
   }
@@ -568,6 +621,8 @@ async function fetchRelatedData() {
 
 async function loadPage() {
   let slug = route.meta?.pageSlug || route.params.slug;
+  const stateSlugFromUrl = route.params.state_slug;
+  
   if (!slug) {
     loading.value = false;
     return;
@@ -577,7 +632,7 @@ async function loadPage() {
   let locationSlug = null;
   if (slug.includes('-in-')) {
     const parts = slug.split('-in-');
-    locationSlug = parts.pop();
+    locationSlug = parts.pop(); // Reverted format: slug-in-location
     slug = parts.join('-in-');
   }
 
@@ -588,9 +643,15 @@ async function loadPage() {
     if (route.query.state_slug) params.state_slug = route.query.state_slug;
     if (route.query.city_slug) params.city_slug = route.query.city_slug;
     
-    if (locationSlug && !params.state_slug && !params.city_slug) {
+    // Priority: URL param > query param > slug extraction
+    if (stateSlugFromUrl) {
+      params.state_slug = stateSlugFromUrl;
+      // If we are in /state/city-in-slug, the locationSlug from split above is the city.
+      if (locationSlug) {
+        params.city_slug = locationSlug;
+      }
+    } else if (locationSlug && !params.state_slug && !params.city_slug) {
       params.state_slug = locationSlug;
-      params.city_slug = locationSlug;
     }
 
     const r = await axios.get(`/api/pages/${encodeURIComponent(slug)}`, { params });

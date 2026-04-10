@@ -80,8 +80,8 @@ class PageController extends Controller
         $pages = Page::published()->with(['state', 'city'])->inRandomOrder()->limit(18)->get();
         return response()->json($pages->map(function($p) {
             $fullSlug = $p->slug;
-            if ($p->city_id && $p->city) {
-                $fullSlug = $p->slug.'-in-'.Str::slug($p->city->slug);
+            if ($p->city_id && $p->city && $p->state) {
+                $fullSlug = Str::slug($p->state->slug).'/'.$p->slug.'-in-'.Str::slug($p->city->slug);
             } elseif ($p->state_id && $p->state) {
                 $fullSlug = $p->slug.'-in-'.Str::slug($p->state->slug);
             }

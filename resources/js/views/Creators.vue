@@ -179,24 +179,58 @@ function applyQueryToFilters() {
   const q = route.query;
   const p = route.params;
 
-  // From Params (SEO Paths)
-  if (p.category != null) filters.category = p.category;
-  if (p.sub_category != null) filters.sub_category = p.sub_category;
-  if (p.state != null) filters.state_id = p.state;
-  if (p.city != null) filters.city_id = p.city;
+  // From Flexible SEO Paths (/creators/category/state/city)
+  if (p.paths) {
+    const segments = Array.isArray(p.paths) ? p.paths : (typeof p.paths === 'string' ? p.paths.split('/') : []);
+    
+    // Reset path-based filters before re-applying
+    filters.category = '';
+    filters.state_id = '';
+    filters.city_id = '';
+    filters.platform = '';
+
+    segments.forEach(seg => {
+      const s = seg.toLowerCase();
+      // Try match category
+      const cat = filterOptions.categories.find(c => (c.slug && c.slug.toLowerCase() === s) || c.name.toLowerCase() === s);
+      if (cat) {
+        filters.category = cat.name;
+        return;
+      }
+      // Try match state
+      const state = states.value.find(st => (st.slug && st.slug.toLowerCase() === s) || st.name.toLowerCase() === s);
+      if (state) {
+        filters.state_id = String(state.id);
+        return;
+      }
+      // Try match city
+      const city = cities.value.find(ci => (ci.slug && ci.slug.toLowerCase() === s) || ci.name.toLowerCase() === s);
+      if (city) {
+        filters.city_id = String(city.id);
+        return;
+      }
+      // Try match platform
+      if (filterOptions.platforms[s]) {
+        filters.platform = s;
+        return;
+      }
+    });
+  }
+
+  // From Specific Params
   if (p.search != null) search.value = p.search;
 
   // From Query (Backward compatibility & other filters)
   if (q.search != null) search.value = q.search;
-  if (q.category != null) filters.category = q.category;
+  if (q.category != null && !filters.category) filters.category = q.category;
   if (q.sub_category != null) filters.sub_category = q.sub_category;
   if (q.gender != null) filters.gender = q.gender;
   if (q.language != null) filters.language = q.language;
-  if (q.platform != null) filters.platform = q.platform;
+  if (q.platform != null && !filters.platform) filters.platform = q.platform;
   if (q.location != null) filters.location = q.location;
   if (q.price_range != null) filters.price_range = q.price_range;
-  if (q.state_id != null) filters.state_id = String(q.state_id);
-  if (q.city_id != null) filters.city_id = String(q.city_id);
+  if (q.state_id != null && !filters.state_id) filters.state_id = String(q.state_id);
+  if (q.city_id != null && !filters.city_id) filters.city_id = String(q.city_id);
   if (q.min_rate != null) filters.min_rate = q.min_rate === '' ? '' : Number(q.min_rate);
 }
 
@@ -274,24 +308,42 @@ function refresh() {
   list.value = [];
   finished.value = false;
 
-  // Generate SEO Friendly URL
-  let path = '/creators';
+  // Generate SEO Friendly URL Hierarchy
+  const segments = [];
   if (filters.category) {
-    path = `/creators/niche/${filters.category}`;
-    if (filters.sub_category) {
-      path += `/${filters.sub_category}`;
-    }
-  } else if (filters.state_id) {
-     path = `/creators/location/${filters.state_id}`;
-     if (filters.city_id) path += `/${filters.city_id}`;
-  } else if (search.value) {
-     path = `/creators/search/${encodeURIComponent(search.value)}`;
+    const cat = filterOptions.categories.find(c => c.name === filters.category);
+    segments.push(cat?.slug || filters.category.toLowerCase().replace(/ /g, '-'));
+  }
+  if (filters.state_id) {
+    const state = states.value.find(s => String(s.id) === String(filters.state_id));
+    if (state) segments.push(state.slug || state.name.toLowerCase().replace(/ /g, '-'));
+  }
+  if (filters.city_id) {
+    const city = cities.value.find(c => String(c.id) === String(filters.city_id));
+    if (city) segments.push(city.slug || city.name.toLowerCase().replace(/ /g, '-'));
+  }
+  if (filters.platform) {
+    segments.push(filters.platform.toLowerCase());
   }
 
-  // Only push if path changed to avoid redundant loads
-  if (route.path !== path) {
-    router.push(path);
-    return; // Watcher will trigger refresh
+  let fullPath = '/creators';
+  if (segments.length > 0) {
+    fullPath += '/' + segments.join('/');
+  } else if (search.value) {
+    fullPath = `/creators/search/${encodeURIComponent(search.value)}`;
+  }
+
+  // Handle other query-only filters
+  const query = {};
+  if (filters.sub_category) query.sub_category = filters.sub_category;
+  if (filters.gender) query.gender = filters.gender;
+  if (filters.language) query.language = filters.language;
+  if (filters.min_rate) query.min_rate = filters.min_rate;
+
+  // Clear if same but keep query if needed
+  if (route.path !== fullPath || JSON.stringify(route.query) !== JSON.stringify(query)) {
+    router.push({ path: fullPath, query });
+    return;
   }
 
   load(1);

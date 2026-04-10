@@ -50,11 +50,13 @@ class Page extends Model
             return null;
         }
 
-        if ($this->city_id && $this->city?->slug) {
-            return '/'.$this->slug.'-in-'.Str::slug($this->city->slug);
+        if ($this->city_id && $this->city?->slug && $this->state?->slug) {
+            // New structure: state/slug-in-city
+            return '/'.Str::slug($this->state->slug).'/'.$this->slug.'-in-'.Str::slug($this->city->slug);
         }
 
         if ($this->state_id && $this->state?->slug) {
+            // State structure: slug-in-state
             return '/'.$this->slug.'-in-'.Str::slug($this->state->slug);
         }
 
