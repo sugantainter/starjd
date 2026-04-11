@@ -18,6 +18,7 @@
     <meta name="theme-color" content="#e63946">
     <meta name="msapplication-TileColor" content="#e63946">
     <meta name="msapplication-config" content="{{ asset('browserconfig.xml') }}">
+    <meta name="yandex-verification" content="6f4978de44202583">
     {{-- Default social preview (pages can override with @stack / @section later) --}}
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="{{ config('app.name', 'StarJD') }}">
