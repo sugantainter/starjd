@@ -276,15 +276,15 @@
                   </div>
                 </div>
 
-                <!-- Explore more in same State -->
-                <div v-if="stateName && siblingPages.length" class="mt-8">
-                   <p class="text-[9px] font-black text-[#94a3b8] uppercase tracking-[0.2em] mb-3 ml-1">Explore Neighboring Cities</p>
-                   <div class="grid grid-cols-2 gap-2">
+                   <!-- Explore more in same State -->
+                <div v-if="stateName && siblingPages.length" class="mt-8 pr-2">
+                   <p class="text-[9px] font-black text-[#94a3b8] uppercase tracking-[0.2em] mb-4 ml-1">Explore Neighboring Cities</p>
+                   <div class="grid grid-cols-2 gap-3">
                       <router-link 
                         v-for="sp in siblingPages" 
                         :key="sp.id" 
                         :to="'/' + (sp.full_slug || sp.slug)"
-                        class="px-3 py-2 rounded-lg bg-[#fafaf9] border border-[#f1f5f9] text-[10px] font-bold text-[#64748b] hover:border-[#e63946]/30 hover:text-[#e63946] transition-all line-clamp-1"
+                        class="px-4 py-3.5 rounded-xl bg-[#fafaf9] border border-[#f1f5f9] text-[10px] font-bold text-[#475569] hover:border-[#e63946]/40 hover:bg-white hover:text-[#e63946] transition-all line-clamp-2 min-h-[54px] flex items-center leading-tight shadow-sm hover:shadow-md"
                       >
                         {{ sp.city?.name || sp.title.split(' in ').pop() }}
                       </router-link>
