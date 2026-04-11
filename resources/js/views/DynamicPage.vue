@@ -631,7 +631,7 @@ async function fetchRelatedData() {
        siblingPages.value = toArr(pgRes).filter(p => p.id !== cmsPage.value.id && p.slug === cmsPage.value.slug);
     }
   } catch (err) {
-    console.error('Error fetching related data:', err);
+    // Fail silently in production or handle via monitoring service
   }
 }
 
@@ -683,7 +683,6 @@ async function loadPage() {
        cmsPage.value = null;
     }
   } catch (e) {
-    console.error('[DynamicPage] Fetch error:', e);
     cmsPage.value = null;
   } finally {
     loading.value = false;
