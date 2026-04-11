@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { useHead } from '@unhead/vue';
 import AppLayout from '../layouts/AppLayout.vue';
 import AdminLayout from '../layouts/AdminLayout.vue';
 import CreatorLayout from '../layouts/CreatorLayout.vue';
@@ -7,10 +8,10 @@ import AgencyLayout from '../layouts/AgencyLayout.vue';
 import StudioLayout from '../layouts/StudioLayout.vue';
 
 const routes = [
-  { path: '/', component: AppLayout, children: [ { path: '', name: 'home', component: () => import('../App.vue'), props: { noHeaderFooter: true } } ] },
-  { path: '/about-us', alias: '/about', component: AppLayout, children: [ { path: '', name: 'about', component: () => import('../views/About.vue') } ] },
-  { path: '/how-it-works', component: AppLayout, children: [ { path: '', name: 'how-it-works', component: () => import('../views/HowItWorks.vue') } ] },
-  { path: '/contact-us', alias: '/contact', component: AppLayout, children: [ { path: '', name: 'contact', component: () => import('../views/Contact.vue') } ] },
+  { path: '/', component: AppLayout, children: [ { path: '', name: 'home', component: () => import('../App.vue'), props: { noHeaderFooter: true }, meta: { title: 'StarJD — Connect. Create. Collaborate.', description: 'Connect with vetted creators, build your brand, and get high-performing content. StarJD is the ultimate marketplace for influencer marketing.' } } ] },
+  { path: '/about-us', alias: '/about', component: AppLayout, children: [ { path: '', name: 'about', component: () => import('../views/About.vue'), meta: { title: 'About Us | StarJD', description: 'Learn about StarJD mission to simplify influencer marketing and connect brands with talented creators worldwide.' } } ] },
+  { path: '/how-it-works', component: AppLayout, children: [ { path: '', name: 'how-it-works', component: () => import('../views/HowItWorks.vue'), meta: { title: 'How It Works | StarJD', description: 'Discover how StarJD helps brands find creators and helps creators get discovered by top brands.' } } ] },
+  { path: '/contact-us', alias: '/contact', component: AppLayout, children: [ { path: '', name: 'contact', component: () => import('../views/Contact.vue'), meta: { title: 'Contact Us | StarJD', description: 'Have questions? Get in touch with the StarJD team for support, partnerships, or inquiries.' } } ] },
   { path: '/privacy-policy', alias: '/privacy', component: AppLayout, children: [ { path: '', name: 'privacy', component: () => import('../views/DynamicPage.vue'), meta: { pageSlug: 'privacy' } } ] },
   { path: '/terms-and-conditions', alias: '/terms', component: AppLayout, children: [ { path: '', name: 'terms', component: () => import('../views/DynamicPage.vue'), meta: { pageSlug: 'terms' } } ] },
   { path: '/cookie-policy', component: AppLayout, children: [ { path: '', name: 'cookie-policy', component: () => import('../views/DynamicPage.vue'), meta: { pageSlug: 'cookie-policy' } } ] },
@@ -20,28 +21,29 @@ const routes = [
   { path: '/campaigns', component: AppLayout, children: [ { path: '', name: 'campaigns-explore', component: () => import('../views/CampaignsExplore.vue') } ] },
   { path: '/campaigns/:slug', component: AppLayout, children: [ { path: '', name: 'campaign-detail', component: () => import('../views/CampaignDetail.vue') } ] },
   { path: '/creator', component: AppLayout, children: [ { path: '', name: 'creator', component: () => import('../views/Creator.vue') } ] },
-  { path: '/blog', component: AppLayout, children: [ { path: '', name: 'blog', component: () => import('../views/Blog.vue') } ] },
+  { path: '/blog', component: AppLayout, children: [ { path: '', name: 'blog', component: () => import('../views/Blog.vue'), meta: { title: 'Insights & Tips for Creators & Brands | StarJD Blog', description: 'Read the latest trends in influencer marketing, content creation tips, and industry news on the StarJD blog.' } } ] },
   { path: '/blog/category/:category', component: AppLayout, children: [ { path: '', name: 'blog-category', component: () => import('../views/Blog.vue') } ] },
   { path: '/blog/:slug', component: AppLayout, children: [ { path: '', name: 'blog-post', component: () => import('../views/BlogPost.vue') } ] },
-  { path: '/success-stories', component: AppLayout, children: [ { path: '', name: 'success-stories', component: () => import('../views/SuccessStories.vue') } ] },
+  { path: '/success-stories', component: AppLayout, children: [ { path: '', name: 'success-stories', component: () => import('../views/SuccessStories.vue'), meta: { title: 'Success Stories & Case Studies | StarJD', description: 'See how brands and creators have achieved massive growth through collaborations on StarJD.' } } ] },
   { path: '/success-stories/:slug', component: AppLayout, children: [ { path: '', name: 'success-story-detail', component: () => import('../views/SuccessStoryDetail.vue') } ] },
-  { path: '/videos', component: AppLayout, children: [ { path: '', name: 'videos', component: () => import('../views/Videos.vue') } ] },
-  { path: '/services', component: AppLayout, children: [ { path: '', name: 'services', component: () => import('../views/Services.vue') } ] },
+  { path: '/videos', component: AppLayout, children: [ { path: '', name: 'videos', component: () => import('../views/Videos.vue'), meta: { title: 'Watch Creative Content & Highlights | StarJD Videos', description: 'Explore premium video content, creator reels, and highlights from the StarJD community.' } } ] },
+  { path: '/services', component: AppLayout, children: [ { path: '', name: 'services', component: () => import('../views/Services.vue'), meta: { title: 'Our Professional Creative Services | StarJD', description: 'From video production to brand identity, explore our full suite of professional services for creators.' } } ] },
   { path: '/services/:slug', component: AppLayout, children: [ { path: '', name: 'service-page', component: () => import('../views/ServicePage.vue') } ] },
-  { path: '/marketplace', component: AppLayout, children: [ { path: '', name: 'marketplace', component: () => import('../views/Marketplace.vue') } ] },
+  { path: '/marketplace', component: AppLayout, children: [ { path: '', name: 'marketplace', component: () => import('../views/Marketplace.vue'), meta: { title: 'Service Marketplace | Hire Creative Experts | StarJD', description: 'Hire vetted professionals for photography, editing, marketing, and more in our creative marketplace.' } } ] },
+  { path: '/marketplace/:paths+', component: AppLayout, children: [ { path: '', name: 'marketplace-flexible', component: () => import('../views/Marketplace.vue') } ] },
   { path: '/gigs/:slug', component: AppLayout, children: [ { path: '', name: 'gig-detail', component: () => import('../views/GigDetail.vue') } ] },
   // Legacy /page/{slug} → canonical /{slug} (same DynamicPage as catch-all; avoids duplicate URLs)
   { path: '/page/:slug', redirect: (to) => ({ path: `/${to.params.slug}` }) },
-  { path: '/creators', component: AppLayout, children: [ { path: '', name: 'creators', component: () => import('../views/Creators.vue') } ] },
+  { path: '/creators', component: AppLayout, children: [ { path: '', name: 'creators', component: () => import('../views/Creators.vue'), meta: { title: 'Discover Top Creators & Influencers | StarJD', description: 'Browse and hire thousands of vetted creators across Instagram, YouTube, TikTok and more.' } } ] },
   { path: '/creators/:paths+', component: AppLayout, children: [ { path: '', name: 'creators-flexible', component: () => import('../views/Creators.vue') } ] },
   { path: '/creators/search/:search', component: AppLayout, children: [ { path: '', name: 'creators-search', component: () => import('../views/Creators.vue') } ] },
   { path: '/creator-profile/:slug', component: AppLayout, children: [ { path: '', name: 'creator-public', component: () => import('../views/CreatorPublicProfile.vue') } ] },
 
-  { path: '/brands', component: AppLayout, children: [ { path: '', name: 'brands', component: () => import('../views/Brands.vue') } ] },
+  { path: '/brands', component: AppLayout, children: [ { path: '', name: 'brands', component: () => import('../views/Brands.vue'), meta: { title: 'Browse Top Brands | StarJD', description: 'Discover brands looking for creators to collaborate on high-impact marketing campaigns.' } } ] },
   { path: '/brands/industry/:industry', component: AppLayout, children: [ { path: '', name: 'brands-industry', component: () => import('../views/Brands.vue') } ] },
   { path: '/brands/:slug', component: AppLayout, children: [ { path: '', name: 'brand-public', component: () => import('../views/BrandPublicProfile.vue') } ] },
 
-  { path: '/studios', component: AppLayout, children: [ { path: '', name: 'studios', component: () => import('../views/Studios.vue') } ] },
+  { path: '/studios', component: AppLayout, children: [ { path: '', name: 'studios', component: () => import('../views/Studios.vue'), meta: { title: 'Book Professional Content Studios | StarJD', description: 'Find and book professional photo and video studios near you. Premium locations for creators and brands.' } } ] },
   { path: '/studios/category/:category', component: AppLayout, children: [ { path: '', name: 'studios-category', component: () => import('../views/Studios.vue') } ] },
   { path: '/studios/location/:state/:city?', component: AppLayout, children: [ { path: '', name: 'studios-location', component: () => import('../views/Studios.vue') } ] },
   { path: '/studios/:slug', component: AppLayout, children: [ { path: '', name: 'studio-detail', component: () => import('../views/StudioDetail.vue') } ] },
@@ -193,6 +195,28 @@ const router = createRouter({
       setTimeout(() => resolve({ top: 0, left: 0 }), 50);
     });
   },
+});
+
+router.beforeEach((to) => {
+  const meta = to.meta || {};
+  const parentMeta = to.matched.find(m => m.meta && m.meta.title)?.meta || {};
+  
+  const title = meta.title || parentMeta.title || 'StarJD — Connect. Create. Collaborate.';
+  const description = meta.description || parentMeta.description || 'Connect with creators. Build your brand. StarJD helps brands find vetted creators and creators get discovered.';
+
+  useHead({
+    title,
+    meta: [
+      { name: 'description', content: description },
+      { property: 'og:title', content: title },
+      { property: 'og:description', content: description },
+      { property: 'og:url', content: window.location.origin + to.fullPath },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:title', content: title },
+      { name: 'twitter:description', content: description },
+      { rel: 'canonical', href: window.location.origin + to.path }
+    ]
+  });
 });
 
 export default router;

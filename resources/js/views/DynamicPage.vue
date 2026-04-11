@@ -499,6 +499,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
+import { useHead } from '@unhead/vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
@@ -658,11 +659,18 @@ async function loadPage() {
     page.value = r.data;
     
     if (page.value) {
-      document.title = page.value.meta_title || page.value.title || 'StarJD';
-      const metaDescription = document.querySelector('meta[name="description"]');
-      if (metaDescription) {
-        metaDescription.setAttribute('content', page.value.meta_description || '');
-      }
+      const title = page.value.meta_title || page.value.title || 'StarJD';
+      const description = page.value.meta_description || '';
+      
+      useHead({
+        title,
+        meta: [
+          { name: 'description', content: description },
+          { property: 'og:title', content: title },
+          { property: 'og:description', content: description },
+          { property: 'og:type', content: 'website' }
+        ]
+      });
       fetchRelatedData();
     }
   } catch (e) {

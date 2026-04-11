@@ -53,6 +53,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
+import { useHead } from '@unhead/vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import RichTextContent from '../components/RichTextContent.vue';
@@ -84,14 +85,35 @@ function updateDocumentMeta() {
   if (!service.value) return;
   const title = service.value.meta_title || service.value.name;
   const description = service.value.meta_description || service.value.short_description || '';
-  document.title = title ? `${title} | Starjd` : document.title;
-  let meta = document.querySelector('meta[name="description"]');
-  if (!meta) {
-    meta = document.createElement('meta');
-    meta.name = 'description';
-    document.head.appendChild(meta);
-  }
-  meta.setAttribute('content', description);
+  const image = service.value.banner_image || (window.location.origin + '/logo.png');
+
+  useHead({
+    title: `${title} | StarJD`,
+    meta: [
+      { name: 'description', content: description },
+      { property: 'og:title', content: title },
+      { property: 'og:description', content: description },
+      { property: 'og:image', content: image },
+      { property: 'og:type', content: 'website' }
+    ],
+    script: [
+      {
+        type: 'application/ld+json',
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "name": service.value.name,
+          "description": service.value.short_description || description,
+          "provider": {
+            "@type": "Organization",
+            "name": "StarJD"
+          },
+          "image": image,
+          "url": window.location.href
+        })
+      }
+    ]
+  });
 }
 
 watch(service, updateDocumentMeta, { immediate: true });

@@ -223,6 +223,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
+import { useHead } from '@unhead/vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import RichTextContent from '../components/RichTextContent.vue';
@@ -264,14 +265,45 @@ function updateDocumentMeta() {
   if (!post.value) return;
   const title = post.value.meta_title || post.value.title;
   const description = post.value.meta_description || post.value.excerpt || '';
-  document.title = title ? `${title} | Starjd` : document.title;
-  let meta = document.querySelector('meta[name="description"]');
-  if (!meta) {
-    meta = document.createElement('meta');
-    meta.name = 'description';
-    document.head.appendChild(meta);
-  }
-  meta.setAttribute('content', description);
+  const image = post.value.image || (window.location.origin + '/logo.png');
+
+  useHead({
+    title: `${title} | StarJD`,
+    meta: [
+      { name: 'description', content: description },
+      { property: 'og:title', content: title },
+      { property: 'og:description', content: description },
+      { property: 'og:image', content: image },
+      { property: 'og:type', content: 'article' },
+      { name: 'twitter:card', content: 'summary_large_image' }
+    ],
+    script: [
+      {
+        type: 'application/ld+json',
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          "headline": title,
+          "image": image,
+          "author": {
+            "@type": "Person",
+            "name": post.value.author || "StarJD Team"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "StarJD",
+            "logo": {
+              "@type": "ImageObject",
+              "url": window.location.origin + "/logo.png"
+            }
+          },
+          "datePublished": post.value.created_at || post.value.date,
+          "dateModified": post.value.updated_at || post.value.date,
+          "description": description
+        })
+      }
+    ]
+  });
 }
 
 function share(platform) {

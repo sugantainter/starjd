@@ -770,9 +770,8 @@ function creatorCategoryTo(item) {
 }
 
 function professionalCategoryTo(item) {
-    // Keep internal name-based routing for professionals for now unless specific routes exist
     return item.slug
-        ? { name: "marketplace", query: { category: item.slug } }
+        ? { name: "marketplace-flexible", params: { paths: [item.slug] } }
         : "/marketplace";
 }
 

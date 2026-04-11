@@ -315,6 +315,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { useHead } from '@unhead/vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import SocialPlatformIcon from '../components/SocialPlatformIcon.vue';
@@ -483,6 +484,48 @@ onMounted(async () => {
     const res = await axios.get('/api/creators/' + slug);
     profile.value = res.data;
     if (selectedPackage.value) collabForm.amount = Number(selectedPackage.value.price);
+
+    // Dynamic SEO
+    if (profile.value) {
+      const name = profile.value.user?.name || 'Creator';
+      const category = profile.value.category || 'Influencer';
+      const location = [profile.value.city_name, profile.value.state_name].filter(Boolean).join(', ');
+      const title = `${name} | ${category} Creator in ${location || 'India'} | StarJD`;
+      const description = profile.value.tagline || `Collaborate with ${name}, a ${category} creator. Browse packages, check analytics, and book high-quality content services on StarJD.`;
+      const avatar = profile.value.avatar_url || (window.location.origin + '/logo.png');
+
+      useHead({
+        title,
+        meta: [
+          { name: 'description', content: description },
+          { property: 'og:title', content: title },
+          { property: 'og:description', content: description },
+          { property: 'og:image', content: avatar },
+          { property: 'og:type', content: 'profile' },
+          { property: 'profile:username', content: slug },
+          { name: 'twitter:card', content: 'summary' }
+        ],
+        script: [
+          {
+            type: 'application/ld+json',
+            children: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Person",
+              "name": name,
+              "description": description,
+              "image": avatar,
+              "jobTitle": category,
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": profile.value.city_name,
+                "addressRegion": profile.value.state_name
+              },
+              "url": window.location.href
+            })
+          }
+        ]
+      });
+    }
   } catch (e) {
     profile.value = null;
   } finally {

@@ -897,8 +897,8 @@
                         v-for="service in professionalServices"
                         :key="service.slug"
                         :to="{
-                            name: 'marketplace',
-                            query: { category: service.slug },
+                            name: 'marketplace-flexible',
+                            params: { paths: [service.slug] },
                         }"
                         class="group relative flex h-[320px] flex-col overflow-hidden rounded-3xl bg-white shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl"
                     >

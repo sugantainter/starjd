@@ -102,6 +102,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, onMounted } from 'vue';
+import { useHead } from '@unhead/vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import StudioCard from '../components/studio/StudioCard.vue';
@@ -134,6 +135,51 @@ async function fetchStudio() {
   try {
     const res = await axios.get('/api/studios/' + route.params.slug);
     studio.value = res.data;
+
+    // Dynamic SEO for Studio
+    if (studio.value) {
+      const name = studio.value.name;
+      const city = studio.value.city || 'India';
+      const category = studio.value.category?.name || 'Content Studio';
+      const title = `${name} | ${category} in ${city} | StarJD`;
+      const description = studio.value.description?.substring(0, 160) || `Book ${name}, a professional ${category} in ${city}. Features including ${studio.value.amenities?.map(a => a.name).slice(0, 3).join(', ')}.`;
+      const mainImg = studio.value.main_image || (window.location.origin + '/logo.png');
+
+      useHead({
+        title,
+        meta: [
+          { name: 'description', content: description },
+          { property: 'og:title', content: title },
+          { property: 'og:description', content: description },
+          { property: 'og:image', content: mainImg },
+          { property: 'og:type', content: 'place' },
+          { name: 'twitter:card', content: 'summary_large_image' }
+        ],
+        script: [
+          {
+            type: 'application/ld+json',
+            children: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "LocalBusiness",
+              "name": name,
+              "image": mainImg,
+              "description": description,
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": studio.value.city,
+                "addressRegion": studio.value.state
+              },
+              "url": window.location.href,
+              "aggregateRating": studio.value.rating_avg ? {
+                "@type": "AggregateRating",
+                "ratingValue": studio.value.rating_avg,
+                "reviewCount": studio.value.reviews_count
+              } : undefined
+            })
+          }
+        ]
+      });
+    }
   } catch {
     studio.value = null;
   } finally {

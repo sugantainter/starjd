@@ -21,14 +21,14 @@
         <!-- Category Chips -->
         <div class="flex flex-wrap gap-3 mt-12 pb-2 overflow-x-auto no-scrollbar">
            <button 
-             @click="selectedCategory = ''"
-             :class="['px-6 py-3 rounded-xl text-sm font-bold border transition-all whitespace-nowrap', !selectedCategory ? 'bg-[#1a1a1a] text-white border-[#1a1a1a] shadow-lg shadow-black/20' : 'bg-white text-[#64748b] border-[#e2e8f0] hover:border-[#1a1a1a] hover:text-[#1a1a1a]']">
+             @click="handleCategoryClick('')"
+             :class="['px-6 py-3 rounded-xl text-sm font-bold border transition-all whitespace-nowrap', !selectedCategorySlug ? 'bg-[#1a1a1a] text-white border-[#1a1a1a] shadow-lg shadow-black/20' : 'bg-white text-[#64748b] border-[#e2e8f0] hover:border-[#1a1a1a] hover:text-[#1a1a1a]']">
              All Marketplace
            </button>
            <button 
              v-for="cat in categories" :key="cat.id"
-             @click="selectedCategory = cat.id"
-             :class="['px-6 py-3 rounded-xl text-sm font-bold border transition-all whitespace-nowrap', selectedCategory == cat.id ? 'bg-[#1a1a1a] text-white border-[#1a1a1a] shadow-lg shadow-black/20' : 'bg-white text-[#64748b] border-[#e2e8f0] hover:border-[#1a1a1a] hover:text-[#1a1a1a]']">
+             @click="handleCategoryClick(cat.slug || cat.id)"
+             :class="['px-6 py-3 rounded-xl text-sm font-bold border transition-all whitespace-nowrap', selectedCategorySlug == (cat.slug || cat.id) ? 'bg-[#1a1a1a] text-white border-[#1a1a1a] shadow-lg shadow-black/20' : 'bg-white text-[#64748b] border-[#e2e8f0] hover:border-[#1a1a1a] hover:text-[#1a1a1a]']">
              {{ cat.name }}
            </button>
         </div>
@@ -124,7 +124,7 @@
           </div>
           <h2 class="text-2xl font-bold text-[#1a1a1a]">No services found</h2>
           <p class="text-[#64748b] mt-2">Try adjusting your filters or searching for something else.</p>
-          <button @click="selectedCategory = ''" class="mt-8 px-8 py-4 bg-black text-white font-bold rounded-2xl shadow-xl shadow-black/20">View All Services</button>
+          <button @click="handleCategoryClick('')" class="mt-8 px-8 py-4 bg-black text-white font-bold rounded-2xl shadow-xl shadow-black/20">View All Services</button>
         </div>
       </div>
     </div>
@@ -132,10 +132,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
+import { useHead } from '@unhead/vue';
+import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 
+const router = useRouter();
 const route = useRoute();
 /** When signed URLs expire or paths were wrong */
 const GIG_IMAGE_FALLBACK =
@@ -151,11 +153,46 @@ function onGigImageError(e) {
 const loading = ref(true);
 const listings = ref([]);
 const categories = ref([]);
-const selectedCategory = ref(route.query.category || '');
+
+// Slug based category
+const selectedCategorySlug = ref(route.params.paths?.[0] || route.query.category || '');
 const page = ref(1);
 const finished = ref(false);
 const scrollTrigger = ref(null);
 let observer = null;
+
+const currentCategory = computed(() => {
+  if (!selectedCategorySlug.value) return null;
+  return categories.value.find(c => c.slug === selectedCategorySlug.value || c.id == selectedCategorySlug.value);
+});
+
+// Dynamic SEO
+useHead({
+  title: computed(() => {
+    if (currentCategory.value) return `${currentCategory.value.name} Marketplace | Hire Professional Service Experts | StarJD`;
+    return 'Professional Service Marketplace | Hire Creative Experts | StarJD';
+  }),
+  meta: [
+    { 
+      name: 'description', 
+      content: computed(() => {
+        if (currentCategory.value) return `Hire vetted professional ${currentCategory.value.name} experts on StarJD. Browse ${listings.value.length}+ verified listings for your next project.`;
+        return 'Hire vetted professionals for photography, video editing, digital marketing, and more in our creative marketplace. StarJD connects you with top-tier talent.';
+      })
+    },
+    { property: 'og:title', content: 'Professional Service Marketplace | StarJD' },
+    { property: 'og:type', content: 'website' }
+  ]
+});
+
+function handleCategoryClick(catSlug) {
+  selectedCategorySlug.value = catSlug || '';
+  if (catSlug) {
+     router.push({ name: 'marketplace-flexible', params: { paths: [catSlug] } });
+  } else {
+     router.push({ name: 'marketplace' });
+  }
+}
 
 onMounted(async () => {
   await fetchCategories();
@@ -197,12 +234,8 @@ async function fetchData(p = 1) {
   loading.value = true;
   try {
     const params = { page: p };
-    if (selectedCategory.value) {
-      if (typeof selectedCategory.value === 'number') {
-        params.service_id = selectedCategory.value;
-      } else {
-        params.category = selectedCategory.value;
-      }
+    if (selectedCategorySlug.value) {
+      params.category = selectedCategorySlug.value;
     }
     const res = await axios.get('/api/gigs', { params });
     const resData = res.data;
@@ -225,11 +258,19 @@ async function fetchData(p = 1) {
   }
 }
 
-watch(selectedCategory, () => {
+watch(selectedCategorySlug, () => {
   page.value = 1;
   listings.value = [];
   finished.value = false;
   fetchData(1);
+});
+
+// Watch for route changes (e.g. back button)
+watch(() => route.params.paths, (newPaths) => {
+  const newSlug = newPaths?.[0] || '';
+  if (newSlug !== selectedCategorySlug.value) {
+    selectedCategorySlug.value = newSlug;
+  }
 });
 
 function formatCurrency(amt) {
