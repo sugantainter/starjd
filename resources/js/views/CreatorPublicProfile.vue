@@ -309,7 +309,7 @@
       </div>
     </div>
   </div>
-  <div v-else-if="!loading" class="mx-auto max-w-4xl px-4 pt-12 pb-20 md:pb-24 text-center text-[#64748b]">Creator not found.</div>
+  <div v-else-if="!loading" class="mx-auto max-w-4xl px-4 pt-12 pb-20 md:pb-24 text-center text-[#64748b]">{{ error || 'Creator not found.' }}</div>
   <div v-else class="mx-auto max-w-4xl px-4 pt-12 pb-20 md:pb-24 text-center text-[#64748b]">Loading…</div>
 </template>
 
@@ -348,6 +348,60 @@ const isLoggedIn = ref(false);
 
 const selectedPlatform = ref('');
 const activeTab = ref('views');
+
+// SEO & Head Management
+const seoData = computed(() => {
+    if (!profile.value) {
+        return { 
+            title: 'Discover Creators | StarJD', 
+            description: 'Connect with vetted creators, build your brand, and get high-performing content.',
+            avatar: '/logo.png',
+            name: '',
+            category: '',
+            slug: route.params.slug
+        };
+    }
+    const name = profile.value.user?.name || 'Creator';
+    const category = profile.value.category || 'Influencer';
+    const location = [profile.value.city_name, profile.value.state_name].filter(Boolean).join(', ');
+    const title = `${name} | ${category} Creator in ${location || 'India'} | StarJD`;
+    const description = profile.value.tagline || `Collaborate with ${name}, a ${category} creator. Browse packages, check analytics, and book high-quality content services on StarJD.`;
+    const avatar = profile.value.avatar_url || '/logo.png';
+    
+    return { title, description, avatar, name, category, location, slug: route.params.slug };
+});
+
+useHead({
+  title: () => seoData.value.title,
+  meta: [
+    { name: 'description', content: () => seoData.value.description },
+    { property: 'og:title', content: () => seoData.value.title },
+    { property: 'og:description', content: () => seoData.value.description },
+    { property: 'og:image', content: () => seoData.value.avatar.startsWith('http') ? seoData.value.avatar : window.location.origin + seoData.value.avatar },
+    { property: 'og:type', content: 'profile' },
+    { property: 'profile:username', content: () => seoData.value.slug },
+    { name: 'twitter:card', content: 'summary' }
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      children: () => JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": seoData.value.name,
+        "description": seoData.value.description,
+        "image": seoData.value.avatar.startsWith('http') ? seoData.value.avatar : window.location.origin + seoData.value.avatar,
+        "jobTitle": seoData.value.category,
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": profile.value?.city_name,
+          "addressRegion": profile.value?.state_name
+        },
+        "url": window.location.href
+      })
+    }
+  ]
+});
 
 const platformTabs = {
     youtube: [
@@ -482,52 +536,16 @@ onMounted(async () => {
   try {
     const slug = route.params.slug;
     const res = await axios.get('/api/creators/' + slug);
-    profile.value = res.data;
+    // Handle both wrapped (.data.data) and unwrapped (.data) responses
+    profile.value = res.data.data || res.data;
+    
     if (selectedPackage.value) collabForm.amount = Number(selectedPackage.value.price);
 
-    // Dynamic SEO
-    if (profile.value) {
-      const name = profile.value.user?.name || 'Creator';
-      const category = profile.value.category || 'Influencer';
-      const location = [profile.value.city_name, profile.value.state_name].filter(Boolean).join(', ');
-      const title = `${name} | ${category} Creator in ${location || 'India'} | StarJD`;
-      const description = profile.value.tagline || `Collaborate with ${name}, a ${category} creator. Browse packages, check analytics, and book high-quality content services on StarJD.`;
-      const avatar = profile.value.avatar_url || (window.location.origin + '/logo.png');
-
-      useHead({
-        title,
-        meta: [
-          { name: 'description', content: description },
-          { property: 'og:title', content: title },
-          { property: 'og:description', content: description },
-          { property: 'og:image', content: avatar },
-          { property: 'og:type', content: 'profile' },
-          { property: 'profile:username', content: slug },
-          { name: 'twitter:card', content: 'summary' }
-        ],
-        script: [
-          {
-            type: 'application/ld+json',
-            children: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Person",
-              "name": name,
-              "description": description,
-              "image": avatar,
-              "jobTitle": category,
-              "address": {
-                "@type": "PostalAddress",
-                "addressLocality": profile.value.city_name,
-                "addressRegion": profile.value.state_name
-              },
-              "url": window.location.href
-            })
-          }
-        ]
-      });
-    }
+    if (selectedPackage.value) collabForm.amount = Number(selectedPackage.value.price);
   } catch (e) {
+    console.error('Error loading profile:', e);
     profile.value = null;
+    error.value = e.response?.data?.message || e.message || 'Failed to load profile';
   } finally {
     loading.value = false;
   }

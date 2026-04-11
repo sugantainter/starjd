@@ -1,150 +1,225 @@
 <template>
-  <div class="mx-auto max-w-7xl px-4 pt-8 pb-20 md:pb-24">
-    <div class="mb-10 text-center">
-      <h1 class="text-4xl font-extrabold text-[#1a1a1a] tracking-tight">Discover Top Creators</h1>
-      <p class="mt-3 text-lg text-[#64748b] max-w-2xl mx-auto">Connect with the world's most talented creators and influencers for your next big project.</p>
+  <div class="mx-auto max-w-[1400px] px-6 pt-12 pb-24 bg-[#f8fafc]">
+    <div class="mb-14 text-center">
+      <h1 class="text-5xl font-[900] text-[#0f172a] tracking-tight mb-4">Discover Top Creators</h1>
+      <p class="text-xl text-[#64748b] max-w-3xl mx-auto font-medium">Connect with vetted influencers and content creators worldwide to amplify your brand's reach.</p>
     </div>
 
-    <!-- Enhanced Filters -->
-    <div class="mb-12 sticky top-4 z-20">
-      <div class="bg-white/80 backdrop-blur-md rounded-2xl border border-[#e2e8f0] p-4 shadow-xl flex flex-wrap gap-3 items-center">
-        <div class="relative flex-1 min-w-[240px]">
-          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#94a3b8]">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    <!-- Premium Filter Bar -->
+    <div class="mb-16 sticky top-6 z-30 px-2">
+      <div class="bg-white/90 backdrop-blur-xl rounded-[2rem] border border-white shadow-[0_20px_50px_rgba(0,0,0,0.05)] p-2.5 flex flex-wrap lg:flex-nowrap gap-3 items-center transition-all hover:shadow-[0_25px_60px_rgba(0,0,0,0.08)]">
+        <div class="relative flex-1 min-w-[280px] group">
+          <span class="absolute left-6 top-1/2 -translate-y-1/2 text-[#94a3b8] group-focus-within:text-[#fc4402] transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
           </span>
-          <input v-model="search" type="text" placeholder="Search creators, niches or categories..." class="w-full pl-12 pr-4 py-3 rounded-xl border border-[#e2e8f0] focus:border-[#fc4402] focus:outline-none focus:ring-4 focus:ring-[#fc4402]/10 transition-all bg-white" @keyup.enter="refresh" />
+          <input v-model="search" type="text" placeholder="Search creators, niches or categories..." class="w-full pl-16 pr-6 py-4 rounded-[1.5rem] border-transparent focus:border-transparent focus:outline-none focus:ring-0 text-lg font-semibold text-[#1e293b] placeholder-[#94a3b8] bg-transparent" @keyup.enter="refresh" />
         </div>
         
-        <div class="flex flex-wrap gap-2">
-          <select v-model="filters.state_id" @change="onStateChange" class="rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#fc4402] focus:outline-none bg-white text-sm font-medium">
-            <option :value="''">Any State</option>
-            <option v-for="s in states" :key="s.id" :value="String(s.id)">{{ s.name }}</option>
-          </select>
-          <select v-model="filters.city_id" :disabled="!filters.state_id" class="rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#fc4402] focus:outline-none bg-white text-sm font-medium disabled:opacity-60">
-            <option :value="''">Any City</option>
-            <option v-for="c in cities" :key="c.id" :value="String(c.id)">{{ c.name }}</option>
-          </select>
-          <select v-model="filters.category" class="rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#fc4402] focus:outline-none bg-white text-sm font-medium">
-            <option value="">All Categories</option>
-            <option v-for="c in filterOptions.categories" :key="c.slug" :value="c.name">{{ c.name }}</option>
-          </select>
-          <select v-show="availableSubCategories.length" v-model="filters.sub_category" class="rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#fc4402] focus:outline-none bg-white text-sm font-medium">
-            <option value="">All Sub Categories</option>
-            <option v-for="sc in availableSubCategories" :key="sc.slug" :value="sc.name">{{ sc.name }}</option>
-          </select>
-          <select v-model="filters.platform" class="rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#fc4402] focus:outline-none bg-white text-sm font-medium">
-            <option value="">Any Platform</option>
-            <option v-for="(label, key) in filterOptions.platforms" :key="key" :value="key">{{ label }}</option>
-          </select>
-          <select v-model="filters.language" class="rounded-xl border border-[#e2e8f0] px-4 py-3 focus:border-[#fc4402] focus:outline-none bg-white text-sm font-medium">
-            <option value="">Any Language</option>
-            <option v-for="lang in filterOptions.languages" :key="lang" :value="lang">{{ lang }}</option>
-          </select>
+        <div class="flex flex-wrap lg:flex-nowrap gap-2 items-center px-4">
+          <div class="h-10 w-[1px] bg-slate-200 mx-2 hidden lg:block"></div>
           
-          <button type="button" class="cursor-link rounded-xl bg-[#fc4402] px-6 py-3 text-white font-bold hover:bg-[#e63d02] transition-colors shadow-lg shadow-[#fc4402]/20" @click="refresh">Search</button>
-          <button type="button" class="cursor-link rounded-xl border border-[#e2e8f0] px-4 py-3 hover:bg-[#f1f5f9] transition-colors font-medium text-[#64748b]" @click="clearFilters">Reset</button>
+          <div class="flex flex-wrap gap-2">
+            <select v-model="filters.state_id" @change="onStateChange" class="premium-select">
+              <option :value="''">Any State</option>
+              <option v-for="s in states" :key="s.id" :value="String(s.id)">{{ s.name }}</option>
+            </select>
+            <select v-model="filters.city_id" :disabled="!filters.state_id" class="premium-select disabled:opacity-40">
+              <option :value="''">Any City</option>
+              <option v-for="c in cities" :key="c.id" :value="String(c.id)">{{ c.name }}</option>
+            </select>
+            <select v-model="filters.category" class="premium-select">
+              <option value="">Categories</option>
+              <option v-for="c in filterOptions.categories" :key="c.slug" :value="c.name">{{ c.name }}</option>
+            </select>
+            <select v-model="filters.platform" class="premium-select">
+              <option value="">Platform</option>
+              <option v-for="(label, key) in filterOptions.platforms" :key="key" :value="key">{{ label }}</option>
+            </select>
+          </div>
+          
+          <div class="flex gap-2 ml-2">
+            <button type="button" class="cursor-link rounded-2xl bg-[#0f172a] px-8 py-4 text-white font-[800] hover:bg-[#fc4402] hover:scale-[1.02] active:scale-95 transition-all duration-300 shadow-xl shadow-slate-200" @click="refresh">Search</button>
+            <button type="button" class="cursor-link rounded-2xl bg-slate-100 px-6 py-4 text-[#475569] font-[700] hover:bg-slate-200 transition-all" @click="clearFilters">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Horizontal Listing -->
+    <!-- Premium Horizontal Listing -->
     <div class="flex flex-col gap-6">
       <router-link
         v-for="p in listWithSlug"
         :key="p.id"
         :to="'/creator-profile/' + p.slug"
-        class="group flex flex-col md:flex-row bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden hover:border-[#fc4402]/40 hover:shadow-2xl transition-all duration-300"
+        class="group relative bg-white rounded-[1.5rem] border border-[#f1f5f9] hover:border-white shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] transition-all duration-300 overflow-hidden"
       >
-        <!-- Image Section -->
-        <div class="relative w-full md:w-72 h-64 md:h-80 overflow-hidden bg-[#f1f5f9] shrink-0">
-          <img
-            :src="p.avatar_url || 'https://ui-avatars.com/api?name=' + encodeURIComponent(p.user?.name || '') + '&size=400&background=fc4402&color=fff'"
-            :alt="p.user?.name"
-            class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-          />
-          <div v-if="p.is_featured" class="absolute top-4 left-4">
-             <span class="bg-[#f59e0b] text-white text-[10px] uppercase font-black px-3 py-1 rounded-full shadow-lg">Featured</span>
-          </div>
-          <div v-if="p.category" class="absolute bottom-4 left-4 flex flex-wrap gap-2">
-             <span class="bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-lg border border-white/20">{{ p.category }}</span>
-             <span v-if="p.sub_category" class="bg-[#fc4402]/80 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-lg border border-white/20">{{ p.sub_category }}</span>
-          </div>
-        </div>
-
-        <!-- Content Section -->
-        <div class="flex-1 p-6 md:p-8 flex flex-col">
-          <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
-            <div>
-              <div class="flex items-center gap-2 mb-2">
-                <h3 class="text-2xl font-bold text-[#1a1a1a] group-hover:text-[#fc4402] transition-colors">{{ p.user?.name }}</h3>
-                <svg v-if="p.is_verified" class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.64.304 1.24.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
-              </div>
-              <p v-if="p.tagline" class="text-lg text-[#475569] font-medium mb-4 line-clamp-1">{{ p.tagline }}</p>
-              
-              <div class="flex flex-wrap gap-4 text-sm text-[#64748b]">
-                <div v-if="p.location" class="flex items-center gap-1.5">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                  {{ p.location }}
-                </div>
-                <div v-if="p.language" class="flex items-center gap-1.5">
-                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
-                   {{ p.language }}
-                </div>
-                <div v-if="p.platforms?.length" class="flex items-center gap-1.5">
-                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-                   {{ p.platforms.join(', ') }}
-                </div>
-              </div>
+        <div class="flex flex-col xl:flex-row items-stretch">
+          <!-- Left: Profile Info -->
+          <div class="p-6 xl:p-8 flex flex-col md:flex-row items-center gap-6 xl:border-r border-slate-100 xl:min-w-[400px]">
+            <div class="relative shrink-0">
+               <!-- Premium Avatar with Background -->
+               <div class="w-28 h-28 rounded-[1.8rem] p-1 bg-gradient-to-br from-[#fc4402] via-[#ff8a5c] to-[#4f46e5]">
+                  <div class="w-full h-full rounded-[1.6rem] overflow-hidden bg-white">
+                      <img
+                        :src="p.avatar_url || 'https://ui-avatars.com/api?name=' + encodeURIComponent(p.user?.name || '') + '&size=400&background=f1f5f9&color=64748b'"
+                        :alt="p.user?.name"
+                        class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                  </div>
+               </div>
+               <!-- Action Buttons overlapping avatar -->
+               <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 flex items-center bg-white rounded-full shadow-xl p-0.5 gap-0.5 border border-slate-50">
+                  <button class="w-8 h-8 rounded-full flex items-center justify-center text-rose-500 hover:bg-rose-50 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                  </button>
+                  <div class="w-[1px] h-4 bg-slate-100"></div>
+                  <button class="w-8 h-8 rounded-full flex items-center justify-center text-teal-500 hover:bg-teal-50 transition-colors">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.5 3c1.557 0 3.046.727 4 2.015Q12.454 3 14 3c2.786 0 5.25 2.322 5.25 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0z"/></svg>
+                  </button>
+               </div>
             </div>
 
-            <div class="flex flex-col items-start md:items-end shrink-0">
-               <div class="text-[10px] font-bold text-[#94a3b8] uppercase tracking-wider mb-1">Starting from</div>
-               <div class="text-3xl font-black text-[#1a1a1a]">₹{{ p.min_rate || '0' }}</div>
-               <div class="text-xs text-[#64748b]">per project</div>
+            <div class="flex-1 text-center md:text-left pt-2 md:pt-0">
+               <div class="flex items-center justify-center md:justify-start gap-2 mb-1.5">
+                  <h3 class="text-2xl font-[900] text-[#0f172a] group-hover:text-[#fc4402] transition-colors leading-tight">{{ p.user?.name }}</h3>
+                  <div class="text-[#4f46e5]/80 bg-[#4f46e5]/10 p-0.5 rounded-lg">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 24c6.627 0 12-5.373 12-12S18.627 0 12 0 0 5.373 0 12s5.373 12 12 12z"/><path fill="#fff" d="M18.825 8.257c.214-.23.18-.588-.075-.776a4.83 4.83 0 00-2.834-1.107c-.12-.012-.236.04-.308.136l-3.328 4.41-1.89-1.89a.4.4 0 00-.565 0l-.826.826a.4.4 0 000 .565l2.457 2.457c.4.4 1.05.358 1.4-.083l4.004-5.32c.118-.156.326-.192.485-.098.42.247.785.57 1.08.95.2.257.564.29.81.08l.385-.306z"/></svg>
+                  </div>
+               </div>
+               
+               <div class="flex items-center justify-center md:justify-start gap-2 text-[13px] font-bold text-slate-500 mb-2.5 bg-slate-50 w-fit px-3 py-1 rounded-full mx-auto md:mx-0">
+                  <span class="text-base">🇮🇳</span>
+                  <span>{{ p.city_name || 'Mumbai' }}{{ p.state_name ? ', ' + p.state_name : ', MH' }}</span>
+               </div>
+
+               <p class="text-slate-600 text-sm font-medium leading-[1.5] line-clamp-2">
+                  {{ p.tagline || p.bio || 'Sustainable fashion lover & content creator sharing conscious wardrobe tips.' }}
+               </p>
             </div>
           </div>
 
-          <div class="mt-auto pt-6 flex flex-wrap items-center justify-between gap-4">
-             <div class="flex -space-x-2 overflow-hidden">
-                <div v-for="i in 3" :key="i" class="inline-block h-8 w-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-[10px] font-bold text-[#64748b]">
-                  <img :src="'https://i.pravatar.cc/100?u=' + i" />
-                </div>
-                <div class="inline-block h-8 w-8 rounded-full border-2 border-white bg-[#f1f5f9] flex items-center justify-center text-[10px] font-bold text-[#64748b]">
-                  +12
-                </div>
-                <span class="ml-4 self-center text-xs font-medium text-[#64748b]">Collaborations</span>
+          <!-- Middle: Recent Posts Gallery -->
+          <div class="flex-1 p-6 xl:p-8 flex flex-col justify-center border-b xl:border-b-0 xl:border-r border-slate-100 bg-[#fafbfc]/50">
+             <div class="flex items-center gap-3 overflow-x-auto pb-1 no-scrollbar">
+                <template v-if="p.recent_posts && p.recent_posts.length">
+                  <div v-for="(post, idx) in p.recent_posts" :key="post.id" class="relative group/post w-24 h-32 xl:w-28 xl:h-36 rounded-xl overflow-hidden shrink-0 shadow-md">
+                     <img :src="post.image_url" class="w-full h-full object-cover transition-transform duration-700 group-hover/post:scale-110" />
+                  </div>
+                </template>
+                <template v-else>
+                  <!-- Placeholder Gallery -->
+                  <div v-for="i in 3" :key="i" class="w-24 h-32 xl:w-28 xl:h-36 rounded-xl overflow-hidden shrink-0 bg-slate-100 border border-slate-100 flex items-center justify-center">
+                      <svg class="w-6 h-6 text-slate-200" fill="currentColor" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                  </div>
+                </template>
              </div>
-             
-             <button class="px-8 py-3 bg-[#1a1a1a] text-white rounded-xl font-bold hover:bg-[#fc4402] transition-all transform group-hover:scale-105 shadow-lg">
-                View Full Profile
-             </button>
+          </div>
+
+          <!-- Right: Stats & Tags -->
+          <div class="p-6 xl:p-8 flex flex-col md:flex-row xl:flex-col justify-between gap-6 xl:w-[280px] bg-white">
+             <!-- Top: Metrics -->
+             <div class="flex flex-wrap items-center gap-6 xl:gap-3">
+                <div class="flex flex-col">
+                   <span class="text-[22px] font-black text-emerald-500 leading-none mb-0.5">{{ p.engagement_rate || '94' }}%</span>
+                   <span class="text-[9px] font-[800] text-slate-400 uppercase tracking-widest leading-none">Real Rate</span>
+                </div>
+                
+                <div class="flex flex-col gap-2.5">
+                   <div v-for="sa in p.social_accounts" :key="sa.platform" class="flex items-center gap-2">
+                      <div :class="['w-8 h-8 rounded-lg flex items-center justify-center text-white p-1.5 shadow-md', 
+                          sa.platform === 'instagram' ? 'bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7]' : 'bg-black' ]">
+                         <img v-if="sa.platform === 'instagram'" src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" class="w-full invert brightness-0" />
+                         <svg v-else fill="currentColor" viewBox="0 0 24 24" class="w-full"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.01.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.59-1.01-.01 2.62-.01 5.24-.01 7.86a7.12 7.12 0 011.08 8.44 7.21 7.21 0 01-11.83-1.02 7.13 7.13 0 014.2-10.05v4.09l-.02.46c-.52.29-.9.84-1.01 1.43a2.91 2.91 0 105.12 2.78c.01-4.74.01-9.48.01-14.22-.05-.14-.11-.29-.11-.45-.19-1.63-.5-3.23-.74-4.84.01 0-.01 0-.01-.01z"/></svg>
+                      </div>
+                      <span class="text-[15px] font-[900] text-[#1e293b]">{{ (sa.followers_count / 1000).toFixed(1) }}K</span>
+                   </div>
+                   <!-- Mocked default if no accounts -->
+                   <template v-if="!p.social_accounts || !p.social_accounts.length">
+                      <div class="flex items-center gap-2">
+                          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white p-1.5 bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7]">
+                              <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" class="w-full invert brightness-0" />
+                          </div>
+                          <span class="text-[15px] font-[900] text-[#1e293b]">{{ (p.total_followers / 1000).toFixed(1) || '1.2' }}M</span>
+                      </div>
+                   </template>
+                </div>
+             </div>
+
+             <!-- Bottom Tags & Price -->
+             <div class="flex flex-col gap-3">
+                <div class="flex flex-wrap gap-1.5">
+                   <div v-if="p.category" class="tag-pill bg-amber-50 text-amber-600 !px-3 !py-1 text-[10px]">
+                      {{ p.category }}
+                   </div>
+                </div>
+                
+                <div class="flex items-end justify-between border-t border-slate-50 pt-3">
+                   <div class="flex flex-col">
+                      <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Price</span>
+                      <span class="text-2xl font-[1000] text-[#0f172a]">₹{{ p.min_rate || '5,000' }}</span>
+                   </div>
+                   <div class="group-hover:translate-x-1.5 transition-transform duration-300">
+                      <svg class="w-7 h-7 text-[#fc4402]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                   </div>
+                </div>
+             </div>
           </div>
         </div>
       </router-link>
     </div>
 
     <!-- Infinite Scroll Trigger -->
-    <div ref="scrollTrigger" class="py-12 flex justify-center">
-      <div v-if="loading" class="flex items-center gap-3">
-        <div class="w-2 h-2 bg-[#fc4402] rounded-full animate-bounce" style="animation-delay: 0s"></div>
-        <div class="w-2 h-2 bg-[#fc4402] rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-        <div class="w-2 h-2 bg-[#fc4402] rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
-        <span class="text-sm font-medium text-[#64748b] ml-2">Loading more creators...</span>
+    <div ref="scrollTrigger" class="py-20 flex flex-col items-center">
+      <div v-if="loading" class="flex flex-col items-center gap-6">
+        <div class="flex gap-2">
+          <div class="w-3 h-3 bg-[#fc4402] rounded-full animate-bounce" style="animation-delay: 0s"></div>
+          <div class="w-3 h-3 bg-[#fc4402] rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+          <div class="w-3 h-3 bg-[#fc4402] rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+        </div>
+        <span class="text-lg font-bold text-[#475569]">Fetching more top talent...</span>
       </div>
-      <div v-else-if="finished && list.length" class="text-[#94a3b8] font-medium text-sm">
-        You've reached the end of the list.
+      <div v-else-if="finished && list.length" class="bg-white px-10 py-4 rounded-full shadow-lg border border-slate-100 text-slate-400 font-bold text-sm tracking-widest uppercase">
+        End of listing
       </div>
-      <div v-else-if="!list.length" class="text-center py-20">
-         <div class="w-20 h-20 bg-[#f1f5f9] rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-10 h-10 text-[#cbd5e1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <div v-else-if="!list.length" class="text-center py-20 bg-white rounded-[3rem] w-full border border-[#f1f5f9] shadow-inner">
+         <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
+            <svg class="w-12 h-12 text-[#cbd5e1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
          </div>
-         <h3 class="text-xl font-bold text-[#1a1a1a]">No creators found</h3>
-         <p class="text-[#64748b] mt-1">Try adjusting your search or filters.</p>
-         <button @click="clearFilters" class="mt-6 text-[#fc4402] font-bold hover:underline">Clear all filters</button>
+         <h3 class="text-3xl font-[900] text-[#0f172a] mb-2">No creators found</h3>
+         <p class="text-xl text-[#64748b] font-medium">Try broadening your search or resetting all filters.</p>
+         <button @click="clearFilters" class="mt-10 px-10 py-4 bg-[#0f172a] text-white rounded-2xl font-bold hover:bg-[#fc4402] transition-colors shadow-2xl">Reset Filters</button>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+@reference "../../css/app.css";
+
+.premium-select {
+  @apply rounded-2xl border-transparent px-6 py-4 focus:border-transparent focus:outline-none bg-slate-100 hover:bg-slate-200 text-sm font-[800] text-[#475569] transition-all cursor-pointer min-w-[140px];
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1.25rem center;
+  background-size: 1rem;
+  padding-right: 3rem;
+}
+
+.tag-pill {
+  @apply flex items-center gap-1.5 px-4 py-2 rounded-xl text-[11px] font-[900] uppercase tracking-wider group-hover:scale-105 transition-transform;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style>
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue';

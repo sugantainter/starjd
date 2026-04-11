@@ -14,7 +14,7 @@ class CreatorPublicController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = CreatorProfile::query()
-            ->with('user.socialAccounts', 'user.state', 'user.city')
+            ->with('user.socialAccounts', 'user.state', 'user.city', 'user.creatorImagePosts')
             ->withAvg(['reviews as average_rating' => fn ($q) => $q->where('status', 'approved')], 'rating')
             ->where('is_public', true)
             ->whereNotNull('slug')
@@ -144,6 +144,6 @@ class CreatorPublicController extends Controller
             ->firstOrFail();
 
         $profile->user?->makeHidden(['email']);
-        return response()->json(new CreatorProfileDetailResource($profile));
+        return response()->json((new CreatorProfileDetailResource($profile))->resolve());
     }
 }
