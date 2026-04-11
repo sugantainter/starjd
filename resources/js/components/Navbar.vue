@@ -16,6 +16,10 @@
                     src="/logo.png"
                     alt="StarJD"
                     class="h-14 w-auto object-contain sm:h-20"
+                    width="140"
+                    height="80"
+                    fetchpriority="high"
+                    loading="eager"
                     onerror="
                         this.style.display = 'none';
                         this.nextElementSibling?.classList.remove('hidden');
