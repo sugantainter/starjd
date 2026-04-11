@@ -77,7 +77,7 @@
         </div>
       </div>
     </template>
-    <template v-else-if="page">
+    <template v-else-if="cmsPage">
       <!-- Hero Section (New Split Layout) -->
       <section class="relative z-10 pt-16 pb-20 md:pt-24 md:pb-32">
         <div class="mx-auto max-w-7xl px-4 lg:px-8">
@@ -91,7 +91,7 @@
                 <router-link to="/creators" class="hover:text-[#e63946] transition">Creators</router-link>
                 <template v-if="stateName">
                   <span>/</span>
-                  <router-link :to="'/' + page.slug + '-in-' + (page.state?.slug || stateName.toLowerCase().replace(/ /g, '-'))" class="hover:text-[#e63946] transition">{{ stateName }}</router-link>
+                  <router-link :to="'/' + cmsPage.slug + '-in-' + (cmsPage.state?.slug || stateName.toLowerCase().replace(/ /g, '-'))" class="hover:text-[#e63946] transition">{{ stateName }}</router-link>
                 </template>
                 <template v-if="cityName">
                   <span>/</span>
@@ -104,7 +104,7 @@
                 Verified Hub {{ locationName ? 'in ' + locationName : '' }}
               </div>
               <h1 class="animate-fade-in-up text-5xl font-black leading-[1.05] tracking-tight text-[#1a1a1a] sm:text-6xl md:text-7xl lg:text-7xl">
-                {{ page.title }}
+                {{ cmsPage.title }}
               </h1>
               <p v-if="locationName" class="mt-10 animate-fade-in-up animation-delay-200 text-lg leading-relaxed text-[#64748b] md:text-xl lg:max-w-xl">
                  Experience personal branding at its peak. We provide <span class="text-[#1a1a1a] font-bold underline decoration-[#e63946]/30 decoration-4">high-performance solutions</span> for top-tier creators and professional studios in <span class="bg-gradient-to-r from-[#e63946] to-[#c1121f] bg-clip-text font-black text-transparent">{{ locationName }}</span>.
@@ -151,14 +151,14 @@
       </section>
 
       <!-- Content Section with Sidebar (Glassmorphism) -->
-      <section v-if="page.content" class="relative z-10 py-12 md:py-20 overflow-hidden">
+      <section v-if="cmsPage.content" class="relative z-10 py-12 md:py-20 overflow-hidden">
         <div class="mx-auto max-w-7xl px-4 lg:px-8">
           <div class="grid gap-12 lg:grid-cols-[1fr_360px]">
              <!-- Main Content (Left) -->
              <div class="min-w-0">
                <div class="group relative rounded-[2.5rem] border border-white/40 bg-white/70 p-8 shadow-[0_20px_50px_rgba(0,0,0,0.05)] backdrop-blur-xl md:p-14">
                  <div class="absolute -left-2 top-10 h-12 w-1.5 rounded-r-full bg-[#e63946] transition-all group-hover:h-24"></div>
-                 <RichTextContent :content="page.content" class="prose-lg max-w-none" />
+                 <RichTextContent :content="cmsPage.content" class="prose-lg max-w-none" />
                </div>
              </div>
              
@@ -251,7 +251,7 @@
                   <div v-if="stateName" class="ml-4 flex items-center gap-3 border-l-2 border-[#f1f5f9] pl-3">
                     <div class="h-1.5 w-1.5 rounded-full bg-[#fbbf24]"></div>
                     <router-link 
-                      :to="'/' + page.slug + '-in-' + (page.state?.slug || stateName.toLowerCase().replace(/ /g, '-'))" 
+                      :to="'/' + cmsPage.slug + '-in-' + (cmsPage.state?.slug || stateName.toLowerCase().replace(/ /g, '-'))" 
                       class="text-xs font-bold text-[#475569] hover:text-[#e63946]"
                       :class="{ 'text-[#e63946]': !cityName }"
                     >
@@ -508,7 +508,7 @@ import StudioCard from '../components/studio/StudioCard.vue';
 
 const route = useRoute();
 const router = useRouter();
-const page = ref(null);
+const cmsPage = ref(null);
 const loading = ref(true);
 
 const creators = ref([]);
@@ -531,14 +531,28 @@ const stats = [
   { value: '25k+', label: 'Success Bookings' },
 ];
 
+const headTitle = ref('StarJD');
+const headDescription = ref('');
+
+useHead({
+  title: headTitle,
+  meta: [
+    { name: 'description', content: headDescription },
+    { property: 'og:title', content: headTitle },
+    { property: 'og:description', content: headDescription },
+    { property: 'og:type', content: 'website' }
+  ]
+});
+
 const locationName = computed(() => {
-  if (page.value?.city) return page.value.city.name;
-  if (page.value?.state) return page.value.state.name;
+  if (cmsPage.value?.city) return cmsPage.value.city.name;
+  if (cmsPage.value?.state) return cmsPage.value.state.name;
   return '';
 });
 
-const cityName = computed(() => page.value?.city?.name || '');
-const stateName = computed(() => page.value?.state?.name || '');
+const cityName = computed(() => cmsPage.value?.city?.name || '');
+const stateName = computed(() => cmsPage.value?.state?.name || '');
+
 const filteredCreatorCategories = computed(() => {
   const q = categoryQuery.value.trim().toLowerCase();
   if (!q) return creatorCategories.value;
@@ -574,46 +588,47 @@ function handleSidebarSearch() {
   router.push({ name: 'creators', query });
 }
 
+// Helper to ensure we always have an array
+const toArr = (res) => (Array.isArray(res.data) ? res.data : (res.data?.data || []));
+
 async function fetchRelatedData() {
   try {
     const loc = locationName.value;
     
     // Fetch creators (filtered by location if possible)
     const crRes = await axios.get('/api/creators', { params: { per_page: 4, location: loc } });
-    creators.value = (crRes.data?.data || crRes.data || []).slice(0, 4);
+    creators.value = toArr(crRes).slice(0, 4);
     
     // Fetch studios (filtered by city string)
     const stRes = await axios.get('/api/studios', { params: { per_page: 4, city: loc } });
-    studios.value = (stRes.data?.data || stRes.data || []).slice(0, 4);
+    studios.value = toArr(stRes).slice(0, 4);
     
     // Fetch campaigns
     const cpRes = await axios.get('/api/campaigns', { params: { per_page: 3 } });
-    campaigns.value = (cpRes.data?.data || cpRes.data?.campaigns || []).slice(0, 3);
+    campaigns.value = toArr(cpRes).slice(0, 3);
     
     // Fetch blogs
     const blRes = await axios.get('/api/posts', { params: { per_page: 3 } });
-    blogs.value = (blRes.data?.data || blRes.data || []).slice(0, 3);
+    blogs.value = toArr(blRes).slice(0, 3);
     
     // Fetch services (only once)
     if (!services.value.length) {
       const svRes = await axios.get('/api/services');
-      services.value = (svRes.data || []).slice(0, 6);
+      services.value = toArr(svRes).slice(0, 6);
     }
 
     // Fetch creator categories for sidebar search filter
     if (!creatorCategories.value.length) {
       const cfRes = await axios.get('/api/creators/options/filters');
-      creatorCategories.value = cfRes.data?.categories ?? [];
-      if (!categoryQuery.value) {
-        categoryQuery.value = sidebarCategory.value || '';
+      if (cfRes.data && cfRes.data.categories) {
+        creatorCategories.value = cfRes.data.categories;
       }
     }
 
     // Fetch sibling pages (cities in same state for the tree)
-    if (page.value?.state_id) {
-       const pgRes = await axios.get('/api/pages', { params: { state_id: page.value.state_id, per_page: 8 } });
-       siblingPages.value = (Array.isArray(pgRes.data) ? pgRes.data : [])
-         .filter(p => p.id !== page.value.id && p.slug === page.value.slug);
+    if (cmsPage.value?.state_id) {
+       const pgRes = await axios.get('/api/pages', { params: { state_id: cmsPage.value.state_id, per_page: 8 } });
+       siblingPages.value = toArr(pgRes).filter(p => p.id !== cmsPage.value.id && p.slug === cmsPage.value.slug);
     }
   } catch (err) {
     console.error('Error fetching related data:', err);
@@ -626,6 +641,7 @@ async function loadPage() {
   
   if (!slug) {
     loading.value = false;
+    cmsPage.value = null;
     return;
   }
 
@@ -633,21 +649,19 @@ async function loadPage() {
   let locationSlug = null;
   if (slug.includes('-in-')) {
     const parts = slug.split('-in-');
-    locationSlug = parts.pop(); // Reverted format: slug-in-location
+    locationSlug = parts.pop();
     slug = parts.join('-in-');
   }
 
   loading.value = true;
-  page.value = null;
+  cmsPage.value = null;
   try {
     const params = {};
     if (route.query.state_slug) params.state_slug = route.query.state_slug;
     if (route.query.city_slug) params.city_slug = route.query.city_slug;
     
-    // Priority: URL param > query param > slug extraction
     if (stateSlugFromUrl) {
       params.state_slug = stateSlugFromUrl;
-      // If we are in /state/city-in-slug, the locationSlug from split above is the city.
       if (locationSlug) {
         params.city_slug = locationSlug;
       }
@@ -656,27 +670,21 @@ async function loadPage() {
     }
 
     const r = await axios.get(`/api/pages/${encodeURIComponent(slug)}`, { params });
-    page.value = r.data;
     
-    if (page.value) {
-      const title = page.value.meta_title || page.value.title || 'StarJD';
-      const description = page.value.meta_description || '';
-      
-      useHead({
-        title,
-        meta: [
-          { name: 'description', content: description },
-          { property: 'og:title', content: title },
-          { property: 'og:description', content: description },
-          { property: 'og:type', content: 'website' }
-        ]
-      });
-      fetchRelatedData();
+    if (r.data && typeof r.data === 'object' && r.data.id) {
+       cmsPage.value = r.data;
+       
+       // Update SEO Reactive Object
+       headTitle.value = cmsPage.value.meta_title || cmsPage.value.title || 'StarJD';
+       headDescription.value = cmsPage.value.meta_description || '';
+       
+       fetchRelatedData();
+    } else {
+       cmsPage.value = null;
     }
   } catch (e) {
-    if (e.response?.status !== 404) {
-      page.value = null;
-    }
+    console.error('[DynamicPage] Fetch error:', e);
+    cmsPage.value = null;
   } finally {
     loading.value = false;
   }

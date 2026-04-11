@@ -1,0 +1,185 @@
+const route = useRoute();
+const router = useRouter();
+const cmsPage = ref(null);
+const loading = ref(true);
+
+const creators = ref([]);
+const campaigns = ref([]);
+const studios = ref([]);
+const blogs = ref([]);
+const services = ref([]);
+const creatorCategories = ref([]);
+const siblingPages = ref([]);
+
+const sidebarSearch = ref('');
+const sidebarCategory = ref('');
+const categoryQuery = ref('');
+const categoryDropdownOpen = ref(false);
+
+const stats = [
+  { value: '2500+', label: 'Local Creators' },
+  { value: '150+', label: 'Creative Studios' },
+  { value: '400+', label: 'Active Campaigns' },
+  { value: '25k+', label: 'Success Bookings' },
+];
+
+const headTitle = ref('StarJD');
+const headDescription = ref('');
+
+useHead({
+  title: headTitle,
+  meta: [
+    { name: 'description', content: headDescription },
+    { property: 'og:title', content: headTitle },
+    { property: 'og:description', content: headDescription },
+    { property: 'og:type', content: 'website' }
+  ]
+});
+
+const locationName = computed(() => {
+  if (cmsPage.value?.city) return cmsPage.value.city.name;
+  if (cmsPage.value?.state) return cmsPage.value.state.name;
+  return '';
+});
+
+const cityName = computed(() => cmsPage.value?.city?.name || '');
+const stateName = computed(() => cmsPage.value?.state?.name || '');
+
+const filteredCreatorCategories = computed(() => {
+  const q = categoryQuery.value.trim().toLowerCase();
+  if (!q) return creatorCategories.value;
+  return creatorCategories.value.filter((c) => String(c).toLowerCase().includes(q));
+});
+
+function selectSidebarCategory(category) {
+  sidebarCategory.value = category || '';
+  categoryQuery.value = category || '';
+  categoryDropdownOpen.value = false;
+}
+
+function getServiceIcon(slug) {
+  const icons = {
+    'influencer-marketing': '🚀',
+    'photography': '📸',
+    'video-production': '🎬',
+    'social-media-management': '📱',
+    'brand-identity': '🎨',
+    'graphic-design': '🖌️',
+    'content-writing': '✍️',
+    'pr-marketing': '📢',
+  };
+  return icons[slug] || '✨';
+}
+
+function handleSidebarSearch() {
+  const query = {};
+  if (sidebarSearch.value) query.search = sidebarSearch.value;
+  if (sidebarCategory.value) query.category = sidebarCategory.value;
+  if (locationName.value) query.location = locationName.value;
+  
+  router.push({ name: 'creators', query });
+}
+
+async function fetchRelatedData() {
+  try {
+    const loc = locationName.value;
+    
+    // Fetch creators (filtered by location if possible)
+    const crRes = await axios.get('/api/creators', { params: { per_page: 4, location: loc } });
+    creators.value = (crRes.data?.data || crRes.data || []).slice(0, 4);
+    
+    // Fetch studios (filtered by city string)
+    const stRes = await axios.get('/api/studios', { params: { per_page: 4, city: loc } });
+    studios.value = (stRes.data?.data || stRes.data || []).slice(0, 4);
+    
+    // Fetch campaigns
+    const cpRes = await axios.get('/api/campaigns', { params: { per_page: 3 } });
+    campaigns.value = (cpRes.data?.data || cpRes.data?.campaigns || []).slice(0, 3);
+    
+    // Fetch blogs
+    const blRes = await axios.get('/api/posts', { params: { per_page: 3 } });
+    blogs.value = (blRes.data?.data || blRes.data || []).slice(0, 3);
+    
+    // Fetch services (only once)
+    if (!services.value.length) {
+      const svRes = await axios.get('/api/services');
+      services.value = (svRes.data || []).slice(0, 6);
+    }
+
+    // Fetch creator categories for sidebar search filter
+    if (!creatorCategories.value.length) {
+      const cfRes = await axios.get('/api/creators/options/filters');
+      creatorCategories.value = cfRes.data?.categories ?? [];
+      if (!categoryQuery.value) {
+        categoryQuery.value = sidebarCategory.value || '';
+      }
+    }
+
+    // Fetch sibling pages (cities in same state for the tree)
+    if (cmsPage.value?.state_id) {
+       const pgRes = await axios.get('/api/pages', { params: { state_id: cmsPage.value.state_id, per_page: 8 } });
+       siblingPages.value = (Array.isArray(pgRes.data) ? pgRes.data : [])
+         .filter(p => p.id !== cmsPage.value.id && p.slug === cmsPage.value.slug);
+    }
+  } catch (err) {
+    console.error('Error fetching related data:', err);
+  }
+}
+
+async function loadPage() {
+  let slug = route.meta?.pageSlug || route.params.slug;
+  const stateSlugFromUrl = route.params.state_slug;
+  
+  if (!slug) {
+    loading.value = false;
+    cmsPage.value = null;
+    return;
+  }
+
+  // Handle SEO-friendly slug format: slug-in-location
+  let locationSlug = null;
+  if (slug.includes('-in-')) {
+    const parts = slug.split('-in-');
+    locationSlug = parts.pop();
+    slug = parts.join('-in-');
+  }
+
+  loading.value = true;
+  cmsPage.value = null;
+  try {
+    const params = {};
+    if (route.query.state_slug) params.state_slug = route.query.state_slug;
+    if (route.query.city_slug) params.city_slug = route.query.city_slug;
+    
+    if (stateSlugFromUrl) {
+      params.state_slug = stateSlugFromUrl;
+      if (locationSlug) {
+        params.city_slug = locationSlug;
+      }
+    } else if (locationSlug && !params.state_slug && !params.city_slug) {
+      params.state_slug = locationSlug;
+    }
+
+    const r = await axios.get(`/api/pages/${encodeURIComponent(slug)}`, { params });
+    
+    if (r.data && typeof r.data === 'object' && r.data.id) {
+       cmsPage.value = r.data;
+       
+       // Update SEO Reactive Refs
+       headTitle.value = cmsPage.value.meta_title || cmsPage.value.title || 'StarJD';
+       headDescription.value = cmsPage.value.meta_description || '';
+       
+       fetchRelatedData();
+    } else {
+       cmsPage.value = null;
+    }
+  } catch (e) {
+    console.error('[DynamicPage] Fetch error:', e);
+    cmsPage.value = null;
+  } finally {
+    loading.value = false;
+  }
+}
+
+onMounted(loadPage);
+watch(() => [route.meta?.pageSlug, route.params.slug, route.params.state_slug], loadPage);

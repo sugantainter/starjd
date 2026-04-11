@@ -31,9 +31,17 @@ class PageController extends Controller
         }
 
         if (! $cityId && $stateSlug) {
-            $state = \App\Models\State::findByUrlSlug($stateSlug);
-            if ($state) {
-                $stateId = $state->id;
+            // Check if it's a city first (happens in flat URLs)
+            $city = \App\Models\City::findByUrlSlug($stateSlug);
+            if ($city) {
+                $cityId = $city->id;
+                $stateId = $city->state_id;
+            } else {
+                // Otherwise check if it's a state
+                $state = \App\Models\State::findByUrlSlug($stateSlug);
+                if ($state) {
+                    $stateId = $state->id;
+                }
             }
         }
 
@@ -60,23 +68,24 @@ class PageController extends Controller
 
     private function resolvePage(string $slug, ?int $stateId, ?int $cityId): ?Page
     {
-        $query = Page::published()->where(function($q) use ($slug) {
+        $baseUrlQuery = Page::published()->where(function($q) use ($slug) {
             $q->where('slug', $slug)->orWhereRaw('LOWER(slug) = ?', [Str::lower($slug)]);
         });
 
+        // 1. Try Specific City
         if ($cityId) {
-            $page = (clone $query)->where('city_id', $cityId)->first();
-            if ($page) {
-                return $page;
-            }
+            $page = (clone $baseUrlQuery)->where('city_id', $cityId)->first();
+            if ($page) return $page;
         }
+
+        // 2. Try State (fallback or specific)
         if ($stateId) {
-            $page = (clone $query)->where('state_id', $stateId)->whereNull('city_id')->first();
-            if ($page) {
-                return $page;
-            }
+            $page = (clone $baseUrlQuery)->where('state_id', $stateId)->whereNull('city_id')->first();
+            if ($page) return $page;
         }
-        return (clone $query)->global()->first();
+
+        // 3. Try Global
+        return (clone $baseUrlQuery)->global()->first();
     }
 
     public function index(): \Illuminate\Http\JsonResponse
