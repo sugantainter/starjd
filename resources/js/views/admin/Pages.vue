@@ -254,6 +254,10 @@
                 <label class="mb-0.5 block text-xs font-medium text-[#64748b]">Meta description</label>
                 <textarea v-model="form.meta_description" rows="2" class="w-full rounded border border-[#e2e8f0] px-2 py-1.5 text-sm text-[#1a1a1a]" maxlength="160"></textarea>
               </div>
+              <div>
+                <label class="mb-0.5 block text-xs font-medium text-[#64748b]">Meta keywords</label>
+                <input v-model="form.meta_keywords" type="text" class="w-full rounded border border-[#e2e8f0] px-2 py-1.5 text-sm text-[#1a1a1a]" placeholder="Keywords separated by commas" maxlength="255" />
+              </div>
             </div>
           </div>
           <div>
@@ -310,6 +314,7 @@ const form = reactive({
   content: '',
   meta_title: '',
   meta_description: '',
+  meta_keywords: '',
   status: 'draft',
   state_id: '',
   city_id: '',
@@ -522,13 +527,14 @@ function openForm(item = null) {
     form.content = item.content || '';
     form.meta_title = item.meta_title || '';
     form.meta_description = item.meta_description || '';
+    form.meta_keywords = item.meta_keywords || '';
     form.status = item.status || 'draft';
     form.state_id = item.state_id ? String(item.state_id) : '';
     form.city_id = item.city_id ? String(item.city_id) : '';
     scopeType.value = item.city_id ? 'city' : item.state_id ? 'state' : 'global';
     if (item.city) modalCitySearch.value = item.city.name;
   } else {
-    form.title = form.slug = form.content = form.meta_title = form.meta_description = '';
+    form.title = form.slug = form.content = form.meta_title = form.meta_description = form.meta_keywords = '';
     form.status = 'draft';
     form.state_id = form.city_id = '';
     modalCitySearch.value = '';
@@ -548,6 +554,7 @@ async function save() {
       content: form.content || undefined,
       meta_title: form.meta_title || undefined,
       meta_description: form.meta_description || undefined,
+      meta_keywords: form.meta_keywords || undefined,
       status: form.status,
       state_id:
         scopeType.value === 'global'

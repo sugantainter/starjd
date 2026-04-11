@@ -1,4 +1,27 @@
 User-agent: *
-Disallow:
+Allow: /
+Allow: /blog/
+Allow: /creator-profile/
+Allow: /creators
+Allow: /studios
+Allow: /campaigns
+Allow: /how-it-works
+Allow: /about
+Allow: /contact
+Allow: /pricing
 
+# Disallow admin and dashboard areas
+Disallow: /admin/
+Disallow: /creator/
+Disallow: /brand/
+Disallow: /agency/
+Disallow: /studio-owner/
+Disallow: /professional/
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /api/
+
+# Specify the sitemap
 Sitemap: https://starjd.com/sitemap.xml

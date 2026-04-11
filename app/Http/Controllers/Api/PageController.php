@@ -58,6 +58,7 @@ class PageController extends Controller
             'content' => StoragePublicUrl::rewriteStorageUrlsInHtml($contentRaw),
             'meta_title' => $page->meta_title ? html_entity_decode($page->meta_title) : '',
             'meta_description' => $page->meta_description ? html_entity_decode($page->meta_description) : '',
+            'meta_keywords' => $page->meta_keywords ? html_entity_decode($page->meta_keywords) : '',
             'template' => $page->template,
             'state_id' => $page->state_id,
             'city_id' => $page->city_id,

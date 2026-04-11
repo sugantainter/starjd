@@ -531,15 +531,22 @@ const stats = [
   { value: '25k+', label: 'Success Bookings' },
 ];
 
-const headTitle = ref('StarJD');
-const headDescription = ref('');
+const headKeywords = ref('');
+const canonicalUrl = computed(() => {
+  return window.location.origin + route.path;
+});
 
 useHead({
   title: headTitle,
+  link: [
+    { rel: 'canonical', href: canonicalUrl }
+  ],
   meta: [
     { name: 'description', content: headDescription },
+    { name: 'keywords', content: headKeywords },
     { property: 'og:title', content: headTitle },
     { property: 'og:description', content: headDescription },
+    { property: 'og:url', content: () => window.location.origin + route.fullPath },
     { property: 'og:type', content: 'website' }
   ]
 });
@@ -677,6 +684,7 @@ async function loadPage() {
        // Update SEO Reactive Object
        headTitle.value = cmsPage.value.meta_title || cmsPage.value.title || 'StarJD';
        headDescription.value = cmsPage.value.meta_description || '';
+       headKeywords.value = cmsPage.value.meta_keywords || '';
        
        fetchRelatedData();
     } else {

@@ -242,7 +242,7 @@ class SitemapController extends Controller
         // 4. Creators
         CreatorProfile::where('is_public', true)->get()->each(function ($creator) use (&$urls, $now) {
             $urls[] = [
-                'loc' => url('/creators/' . $creator->slug),
+                'loc' => url('/creator-profile/' . $creator->slug),
                 'lastmod' => $creator->updated_at?->toAtomString() ?? $now,
                 'priority' => '0.9',
                 'changefreq' => 'weekly',
