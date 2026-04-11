@@ -6,43 +6,70 @@
     </div>
 
     <!-- Premium Filter Bar -->
-    <div class="mb-16 sticky top-6 z-30 px-2">
-      <div class="bg-white/90 backdrop-blur-xl rounded-[2rem] border border-white shadow-[0_20px_50px_rgba(0,0,0,0.05)] p-2.5 flex flex-wrap lg:flex-nowrap gap-3 items-center transition-all hover:shadow-[0_25px_60px_rgba(0,0,0,0.08)]">
-        <div class="relative flex-1 min-w-[280px] group">
-          <span class="absolute left-6 top-1/2 -translate-y-1/2 text-[#94a3b8] group-focus-within:text-[#fc4402] transition-colors">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          </span>
-          <input v-model="search" type="text" placeholder="Search creators, niches or categories..." class="w-full pl-16 pr-6 py-4 rounded-[1.5rem] border-transparent focus:border-transparent focus:outline-none focus:ring-0 text-lg font-semibold text-[#1e293b] placeholder-[#94a3b8] bg-transparent" @keyup.enter="refresh" />
-        </div>
+    <div class="mb-16 sticky top-6 z-30">
+      <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.04)] p-2 flex flex-col lg:flex-row items-stretch lg:items-center gap-2 transition-all hover:shadow-[0_25px_60px_rgba(0,0,0,0.06)]">
         
-        <div class="flex flex-wrap lg:flex-nowrap gap-2 items-center px-4">
-          <div class="h-10 w-[1px] bg-slate-200 mx-2 hidden lg:block"></div>
-          
-          <div class="flex flex-wrap gap-2">
-            <select v-model="filters.state_id" @change="onStateChange" class="premium-select">
-              <option :value="''">Any State</option>
-              <option v-for="s in states" :key="s.id" :value="String(s.id)">{{ s.name }}</option>
-            </select>
-            <select v-model="filters.city_id" :disabled="!filters.state_id" class="premium-select disabled:opacity-40">
-              <option :value="''">Any City</option>
-              <option v-for="c in cities" :key="c.id" :value="String(c.id)">{{ c.name }}</option>
-            </select>
-            <select v-model="filters.category" class="premium-select">
-              <option value="">Categories</option>
-              <option v-for="c in filterOptions.categories" :key="c.slug" :value="c.name">{{ c.name }}</option>
-            </select>
-            <select v-model="filters.platform" class="premium-select">
-              <option value="">Platform</option>
-              <option v-for="(label, key) in filterOptions.platforms" :key="key" :value="key">{{ label }}</option>
-            </select>
-          </div>
-          
-          <div class="flex gap-2 ml-2">
-            <button type="button" class="cursor-link rounded-2xl bg-[#0f172a] px-8 py-4 text-white font-[800] hover:bg-[#fc4402] hover:scale-[1.02] active:scale-95 transition-all duration-300 shadow-xl shadow-slate-200" @click="refresh">Search</button>
-            <button type="button" class="cursor-link rounded-2xl bg-slate-100 px-6 py-4 text-[#475569] font-[700] hover:bg-slate-200 transition-all" @click="clearFilters">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            </button>
-          </div>
+        <!-- Search Input Section -->
+        <div class="relative flex-[1.2] group">
+          <span class="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#fc4402] transition-all duration-300">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </span>
+          <input 
+            v-model="search" 
+            type="text" 
+            placeholder="Search creators, niches, categories..." 
+            class="w-full pl-14 pr-6 py-3.5 rounded-2xl border-transparent focus:border-transparent focus:outline-none focus:ring-0 text-[15px] font-bold text-[#0f172a] placeholder-[#94a3b8] bg-transparent" 
+            @keyup.enter="refresh" 
+          />
+        </div>
+
+        <div class="hidden lg:block w-px h-10 bg-slate-100 mx-1"></div>
+
+        <!-- Dropdowns Section -->
+        <div class="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-2 px-2">
+            <div class="relative">
+                <select v-model="filters.state_id" @change="onStateChange" class="premium-select">
+                    <option :value="''">Any State</option>
+                    <option v-for="s in states" :key="s.id" :value="String(s.id)">{{ s.name }}</option>
+                </select>
+            </div>
+            <div class="relative">
+                <select v-model="filters.city_id" :disabled="!filters.state_id" class="premium-select disabled:bg-slate-50 disabled:cursor-not-allowed">
+                    <option :value="''">Any City</option>
+                    <option v-for="c in cities" :key="c.id" :value="String(c.id)">{{ c.name }}</option>
+                </select>
+            </div>
+            <div class="relative">
+                <select v-model="filters.category" class="premium-select">
+                    <option value="">Categories</option>
+                    <option v-for="c in filterOptions.categories" :key="c.slug" :value="c.name">{{ c.name }}</option>
+                </select>
+            </div>
+            <div class="relative">
+                <select v-model="filters.platform" class="premium-select">
+                    <option value="">Platform</option>
+                    <option v-for="(label, key) in filterOptions.platforms" :key="key" :value="key">{{ label }}</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Buttons Section -->
+        <div class="flex items-center gap-2 p-1">
+          <button 
+            type="button" 
+            class="flex-1 lg:flex-none cursor-link rounded-[1.25rem] bg-[#0f172a] px-8 py-3.5 text-white text-sm font-bold hover:bg-[#fc4402] hover:scale-[1.02] active:scale-95 transition-all duration-300 shadow-lg shadow-slate-200" 
+            @click="refresh"
+          >
+            Search
+          </button>
+          <button 
+            type="button" 
+            title="Clear Filters"
+            class="cursor-link rounded-[1.25rem] bg-slate-50 p-3.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all border border-slate-100" 
+            @click="clearFilters"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          </button>
         </div>
       </div>
     </div>
@@ -199,13 +226,17 @@
 @reference "../../css/app.css";
 
 .premium-select {
-  @apply rounded-2xl border-transparent px-6 py-4 focus:border-transparent focus:outline-none bg-slate-100 hover:bg-slate-200 text-sm font-[800] text-[#475569] transition-all cursor-pointer min-w-[140px];
+  @apply w-full rounded-2xl border border-slate-200 bg-white px-5 py-3.5 focus:border-[#fc4402] focus:outline-none focus:ring-4 focus:ring-[#fc4402]/5 text-[14px] font-bold text-[#1e293b] hover:border-slate-300 transition-all cursor-pointer;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 1.25rem center;
-  background-size: 1rem;
+  background-size: 0.9rem;
   padding-right: 3rem;
+}
+
+.premium-select:disabled {
+  @apply bg-slate-50 border-slate-100 text-slate-400 opacity-60 cursor-not-allowed;
 }
 
 .tag-pill {
