@@ -78,6 +78,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
+import { useHead } from '@unhead/vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import SuccessStoryCard from '../components/SuccessStoryCard.vue';
@@ -144,6 +145,34 @@ async function load(p = 1, append = false) {
     loadingMore.value = false;
   }
 }
+
+// Meta logic
+const metaTitle = computed(() => {
+  if (activeRole.value !== 'all') {
+    const role = roles.value.find(r => r.slug === activeRole.value);
+    return `${role?.name || 'Creator'} Success Stories | StarJD`;
+  }
+  return 'Creator & Brand Success Stories | Scaling with StarJD';
+});
+
+const metaDescription = computed(() => {
+  if (activeRole.value !== 'all') {
+    const role = roles.value.find(r => r.slug === activeRole.value);
+    return `Discover inspiring ${role?.name || 'creator'} success stories on StarJD. See how professionals are scaling their reach and building their brands with real results.`;
+  }
+  return `Discover how creators, brands, and professionals are scaling their reach and impact using StarJD. See real results and success case studies from our community.`;
+});
+
+useHead({
+  title: metaTitle,
+  meta: [
+    { name: 'description', content: metaDescription },
+    { property: 'og:title', content: metaTitle },
+    { property: 'og:description', content: metaDescription },
+    { property: 'og:image', content: (window.location.origin + '/logo.png') },
+    { property: 'og:type', content: 'website' }
+  ]
+});
 
 function setRole(slug) {
   router.push({

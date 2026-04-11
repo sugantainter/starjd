@@ -179,6 +179,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue';
+import { useHead } from '@unhead/vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import RichTextContent from '../components/RichTextContent.vue';
@@ -264,6 +265,41 @@ async function loadCampaign() {
   try {
     const res = await axios.get('/api/campaigns/slug/' + encodeURIComponent(slug));
     campaign.value = res.data;
+    
+    // Dynamic SEO
+    if (campaign.value) {
+      const title = (campaign.value.title || 'Campaign') + ' | StarJD Campaigns';
+      const description = campaign.value.description?.substring(0, 160).replace(/<[^>]*>/g, '') || 'Apply to this influencer marketing campaign on StarJD.';
+      const image = window.location.origin + '/logo.png';
+
+      useHead({
+        title,
+        meta: [
+          { name: 'description', content: description },
+          { property: 'og:title', content: title },
+          { property: 'og:description', content: description },
+          { property: 'og:image', content: image },
+          { property: 'og:type', content: 'website' }
+        ],
+        script: [
+          {
+            type: 'application/ld+json',
+            children: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Event",
+              "name": campaign.value.title,
+              "description": description,
+              "organizer": {
+                "@type": "Organization",
+                "name": campaign.value.brand?.name || "StarJD"
+              },
+              "url": window.location.href
+            })
+          }
+        ]
+      });
+    }
+
     await checkMeAndApplication();
   } catch (e) {
     if (e.response?.status === 404) campaign.value = null;
@@ -315,22 +351,8 @@ async function submitApply() {
   }
 }
 
-// SEO
-function setSeo() {
-  if (!campaign.value) return;
-  const title = (campaign.value.title || 'Campaign') + ' | StarJD Campaigns';
-  document.title = title;
-  let meta = document.querySelector('meta[name="description"]');
-  const desc = campaign.value.description ? campaign.value.description.slice(0, 160) : 'Apply to this influencer marketing campaign on StarJD.';
-  if (!meta) {
-    meta = document.createElement('meta');
-    meta.name = 'description';
-    document.head.appendChild(meta);
-  }
-  meta.setAttribute('content', desc);
-}
+// SEO results are handled in loadCampaign via useHead
 
 onMounted(loadCampaign);
 watch(() => route.params.slug, loadCampaign);
-watch(campaign, (c) => { if (c) setSeo(); }, { deep: true });
 </script>

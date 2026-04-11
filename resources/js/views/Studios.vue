@@ -136,6 +136,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, watch, computed, nextTick } from 'vue';
+import { useHead } from '@unhead/vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import L from 'leaflet';
@@ -264,6 +265,37 @@ async function load(p = 1) {
     loading.value = false;
   }
 }
+
+// Meta logic
+const metaTitle = computed(() => {
+  const parts = [];
+  if (filters.category) parts.push(filters.category);
+  else parts.push('Top');
+  
+  parts.push('Studios');
+  
+  if (filters.city) parts.push('in ' + filters.city);
+  else parts.push('Marketplace');
+
+  return `${parts.join(' ')} | StarJD`;
+});
+
+const metaDescription = computed(() => {
+  const cat = filters.category || 'production';
+  const loc = filters.city || 'India';
+  return `Book professional ${cat} studios in ${loc}. Find photography, film, podcast, and music production spaces with premium amenities on StarJD.`;
+});
+
+useHead({
+  title: metaTitle,
+  meta: [
+    { name: 'description', content: metaDescription },
+    { property: 'og:title', content: metaTitle },
+    { property: 'og:description', content: metaDescription },
+    { property: 'og:image', content: (window.location.origin + '/logo.png') },
+    { property: 'og:type', content: 'website' }
+  ]
+});
 
 function initMap() {
   if (!mapContainer.value || mapInstance.value) return;

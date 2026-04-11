@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
+import { useHead } from '@unhead/vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import RichTextContent from '../components/RichTextContent.vue';
@@ -116,6 +117,52 @@ async function fetchGig() {
       return;
     }
     gig.value = payload;
+    
+    // Dynamic SEO
+    const title = `${payload.title} | ${payload.category?.name || 'Professional Service'} | Marketplace | StarJD`;
+    const description = payload.description?.substring(0, 160).replace(/<[^>]*>/g, '') || `Hire ${payload.user?.name} for ${payload.title}. Explore professional creative services on the StarJD Marketplace.`;
+    const image = payload.gallery?.[0] || (window.location.origin + '/logo.png');
+
+    useHead({
+      title,
+      meta: [
+        { name: 'description', content: description },
+        { property: 'og:title', content: title },
+        { property: 'og:description', content: description },
+        { property: 'og:image', content: image },
+        { property: 'og:type', content: 'website' },
+        { name: 'twitter:card', content: 'summary_large_image' }
+      ],
+      script: [
+        {
+          type: 'application/ld+json',
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": payload.title,
+            "description": description,
+            "provider": {
+              "@type": "Person",
+              "name": payload.user?.name,
+              "image": payload.user?.avatar_url
+            },
+            "category": payload.category?.name,
+            "offers": {
+              "@type": "Offer",
+              "priceCurrency": "INR",
+              "price": payload.pricing_tiers?.[0]?.price || 0,
+              "url": window.location.href
+            },
+            "aggregateRating": payload.user?.professional_profile?.avg_rating ? {
+              "@type": "AggregateRating",
+              "ratingValue": payload.user.professional_profile.avg_rating,
+              "reviewCount": payload.user.professional_profile.total_reviews || 1
+            } : undefined
+          })
+        }
+      ]
+    });
+
     galleryIndex.value = 0;
     const tiers = Array.isArray(payload.pricing_tiers) ? payload.pricing_tiers : [];
     activeTab.value = tiers[0]?.name || '';

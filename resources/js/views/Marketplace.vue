@@ -176,11 +176,24 @@ useHead({
     { 
       name: 'description', 
       content: computed(() => {
-        if (currentCategory.value) return `Hire vetted professional ${currentCategory.value.name} experts on StarJD. Browse ${listings.value.length}+ verified listings for your next project.`;
+        if (currentCategory.value) return `Hire vetted professional ${currentCategory.value.name} experts on StarJD. Browse ${listings.value.length || ''} verified listings for photography, video editing, and more.`;
         return 'Hire vetted professionals for photography, video editing, digital marketing, and more in our creative marketplace. StarJD connects you with top-tier talent.';
       })
     },
-    { property: 'og:title', content: 'Professional Service Marketplace | StarJD' },
+    { 
+      property: 'og:title', 
+      content: computed(() => {
+        if (currentCategory.value) return `${currentCategory.value.name} Marketplace | StarJD`;
+        return 'Professional Service Marketplace | StarJD';
+      }) 
+    },
+    { 
+      property: 'og:description', 
+      content: computed(() => {
+        if (currentCategory.value) return `Hire vetted professional ${currentCategory.value.name} experts on StarJD. Browse verified listings for your next project.`;
+        return 'Hire vetted professionals for photography, editing, marketing, and more in our creative marketplace.';
+      })
+    },
     { property: 'og:type', content: 'website' }
   ]
 });

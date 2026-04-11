@@ -101,6 +101,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
+import { useHead } from '@unhead/vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import SuccessStoryCard from '../components/SuccessStoryCard.vue';
@@ -116,6 +117,50 @@ async function loadStory() {
   try {
     const { data } = await axios.get(`/api/success-stories/${route.params.slug}`);
     story.value = data;
+
+    // Dynamic SEO
+    const title = `${data.title} | ${data.role?.name || 'Success Story'} | StarJD`;
+    const description = data.content?.substring(0, 160).replace(/<[^>]*>/g, '') || `Read how ${data.author_name} achieved massive growth and success on StarJD.`;
+    const image = data.image || (window.location.origin + '/logo.png');
+
+    useHead({
+      title,
+      meta: [
+        { name: 'description', content: description },
+        { property: 'og:title', content: title },
+        { property: 'og:description', content: description },
+        { property: 'og:image', content: image },
+        { property: 'og:type', content: 'article' },
+        { name: 'twitter:card', content: 'summary_large_image' }
+      ],
+      script: [
+        {
+          type: 'application/ld+json',
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": data.title,
+            "description": description,
+            "image": image,
+            "author": {
+              "@type": "Person",
+              "name": data.author_name || "StarJD User"
+            },
+            "publisher": {
+              "@type": "Organization",
+              "name": "StarJD",
+              "logo": {
+                "@type": "ImageObject",
+                "url": window.location.origin + "/logo.png"
+              }
+            },
+            "datePublished": data.created_at,
+            "url": window.location.href
+          })
+        }
+      ]
+    });
+
     loadRelated(data.role?.slug);
   } catch (e) {
     console.error('Failed to load story', e);

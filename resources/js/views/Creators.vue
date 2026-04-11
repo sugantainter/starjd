@@ -148,6 +148,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue';
+import { useHead } from '@unhead/vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 
@@ -394,4 +395,45 @@ async function load(p = 1) {
     loading.value = false;
   }
 }
+
+// Meta logic
+const metaTitle = computed(() => {
+  const parts = [];
+  if (filters.category) parts.push(filters.category);
+  else parts.push('Top');
+  
+  parts.push('Creators');
+  
+  const locParts = [];
+  if (filters.city_id) {
+    const city = cities.value.find(c => String(c.id) === String(filters.city_id));
+    if (city) locParts.push(city.name);
+  }
+  if (filters.state_id) {
+    const state = states.value.find(s => String(s.id) === String(filters.state_id));
+    if (state) locParts.push(state.name);
+  }
+  
+  if (locParts.length) parts.push('in ' + locParts.join(', '));
+  else parts.push('in India');
+
+  return `${parts.join(' ')} | StarJD`;
+});
+
+const metaDescription = computed(() => {
+  const cat = filters.category || 'creative';
+  const loc = filters.city_id ? cities.value.find(c => String(c.id) === String(filters.city_id))?.name : 'India';
+  return `Find and collaborate with the best ${cat} creators and influencers in ${loc}. Browse vetted profiles, check social media analytics, and get high-performing content on StarJD.`;
+});
+
+useHead({
+  title: metaTitle,
+  meta: [
+    { name: 'description', content: metaDescription },
+    { property: 'og:title', content: metaTitle },
+    { property: 'og:description', content: metaDescription },
+    { property: 'og:image', content: (window.location.origin + '/logo.png') },
+    { property: 'og:type', content: 'website' }
+  ]
+});
 </script>
