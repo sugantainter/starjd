@@ -309,7 +309,7 @@
       </div>
     </div>
   </div>
-  <div v-else-if="!loading" class="mx-auto max-w-4xl px-4 pt-12 pb-20 md:pb-24 text-center text-[#64748b]">{{ error || 'Creator not found.' }}</div>
+  <div v-else-if="!loading" class="mx-auto max-w-4xl px-4 pt-12 pb-20 md:pb-24 text-center text-[#64748b]">Creator not found.</div>
   <div v-else class="mx-auto max-w-4xl px-4 pt-12 pb-20 md:pb-24 text-center text-[#64748b]">Loading…</div>
 </template>
 
@@ -540,12 +540,8 @@ onMounted(async () => {
     profile.value = res.data.data || res.data;
     
     if (selectedPackage.value) collabForm.amount = Number(selectedPackage.value.price);
-
-    if (selectedPackage.value) collabForm.amount = Number(selectedPackage.value.price);
   } catch (e) {
-    console.error('Error loading profile:', e);
     profile.value = null;
-    error.value = e.response?.data?.message || e.message || 'Failed to load profile';
   } finally {
     loading.value = false;
   }
