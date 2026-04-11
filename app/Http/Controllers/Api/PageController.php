@@ -17,8 +17,8 @@ class PageController extends Controller
      */
     public function show(Request $request, string $slug): JsonResponse
     {
-        $stateSlug = $request->query('state_slug');
-        $citySlug = $request->query('city_slug');
+        $stateSlug = $request->query('state_slug') ?? $request->query('state');
+        $citySlug = $request->query('city_slug') ?? $request->query('city');
         $stateId = null;
         $cityId = null;
 
@@ -60,19 +60,23 @@ class PageController extends Controller
 
     private function resolvePage(string $slug, ?int $stateId, ?int $cityId): ?Page
     {
+        $query = Page::published()->where(function($q) use ($slug) {
+            $q->where('slug', $slug)->orWhereRaw('LOWER(slug) = ?', [Str::lower($slug)]);
+        });
+
         if ($cityId) {
-            $page = Page::published()->where('slug', $slug)->where('city_id', $cityId)->first();
+            $page = (clone $query)->where('city_id', $cityId)->first();
             if ($page) {
                 return $page;
             }
         }
         if ($stateId) {
-            $page = Page::published()->where('slug', $slug)->where('state_id', $stateId)->whereNull('city_id')->first();
+            $page = (clone $query)->where('state_id', $stateId)->whereNull('city_id')->first();
             if ($page) {
                 return $page;
             }
         }
-        return Page::published()->global()->where('slug', $slug)->first();
+        return (clone $query)->global()->first();
     }
 
     public function index(): \Illuminate\Http\JsonResponse

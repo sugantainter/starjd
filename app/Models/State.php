@@ -40,7 +40,10 @@ class State extends Model
 
         $hit = static::query()
             ->where(function ($q) use ($raw, $norm) {
-                $q->where('slug', $raw)->orWhere('slug', $norm);
+                $q->where('slug', $raw)
+                  ->orWhere('slug', $norm)
+                  ->orWhereRaw('LOWER(slug) = ?', [Str::lower($raw)])
+                  ->orWhereRaw('LOWER(slug) = ?', [Str::lower($norm)]);
             })
             ->first();
 

@@ -348,6 +348,8 @@ const formPublicPathPreview = computed(() => {
   if (!slug) return '';
   if (scopeType.value === 'city' && form.city_id) {
     const c = cities.value.find((x) => String(x.id) === String(form.city_id));
+    const s = states.value.find((x) => String(x.id) === String(form.state_id));
+    if (c?.slug && s?.slug) return `/${slugifyTitle(s.slug)}/${slug}-in-${slugifyTitle(c.slug)}`;
     if (c?.slug) return `/${slug}-in-${slugifyTitle(c.slug)}`;
   }
   if (scopeType.value === 'state' && form.state_id) {
@@ -425,8 +427,8 @@ function selectCityForModal(city) {
 
 function pageUrl(page) {
   const base = window.location.origin;
-  if (page.city_id && page.city?.slug) {
-    return `${base}/${page.slug}-in-${slugifyTitle(page.city.slug)}`;
+  if (page.city_id && page.city?.slug && page.state?.slug) {
+    return `${base}/${slugifyTitle(page.state.slug)}/${page.slug}-in-${slugifyTitle(page.city.slug)}`;
   }
   if (page.state_id && page.state?.slug) {
     return `${base}/${page.slug}-in-${slugifyTitle(page.state.slug)}`;

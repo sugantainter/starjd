@@ -683,7 +683,7 @@ async function loadPage() {
 }
 
 onMounted(loadPage);
-watch(() => [route.meta?.pageSlug, route.params.slug, route.query.state_slug, route.query.city_slug], loadPage);
+watch(() => [route.meta?.pageSlug, route.params.slug, route.params.state_slug, route.query.state_slug, route.query.city_slug], loadPage);
 </script>
 
 <style scoped>
