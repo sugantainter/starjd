@@ -69,6 +69,10 @@
                 <label class="mb-0.5 block text-xs font-medium text-[#64748b]">Meta description</label>
                 <textarea v-model="form.meta_description" rows="2" class="w-full rounded border border-[#e2e8f0] px-2 py-1.5 text-sm text-[#1a1a1a]" placeholder="Recommended 150–160 characters" maxlength="160"></textarea>
               </div>
+              <div>
+                <label class="mb-0.5 block text-xs font-medium text-[#64748b]">Meta keywords</label>
+                <input v-model="form.meta_keywords" type="text" class="w-full rounded border border-[#e2e8f0] px-2 py-1.5 text-sm text-[#1a1a1a]" placeholder="Keywords separated by commas" maxlength="255" />
+              </div>
             </div>
           </div>
 
@@ -173,6 +177,7 @@ const form = reactive({
   author_name: '',
   meta_title: '',
   meta_description: '',
+  meta_keywords: '',
   body: '',
   image: '',
   category_label: '',
@@ -211,6 +216,7 @@ function openForm(item = null) {
     form.author_name = item.author_name || '';
     form.meta_title = item.meta_title || '';
     form.meta_description = item.meta_description || '';
+    form.meta_keywords = item.meta_keywords || '';
     form.body = item.body || '';
     form.image = item.image || '';
     form.category_label = item.category_label || '';
@@ -223,6 +229,7 @@ function openForm(item = null) {
     form.author_name = '';
     form.meta_title = '';
     form.meta_description = '';
+    form.meta_keywords = '';
     form.body = '';
     form.image = '';
     form.category_label = '';
@@ -277,6 +284,7 @@ async function save() {
       author_name: form.author_name || undefined,
       meta_title: form.meta_title || undefined,
       meta_description: form.meta_description || undefined,
+      meta_keywords: form.meta_keywords || undefined,
       body: form.body,
       image: form.image || undefined,
       category_label: form.category_label || undefined,

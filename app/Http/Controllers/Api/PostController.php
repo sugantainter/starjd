@@ -91,6 +91,7 @@ class PostController extends Controller
             'excerpt' => $post->excerpt ? html_entity_decode($post->excerpt) : '',
             'meta_title' => $post->meta_title ? html_entity_decode($post->meta_title) : '',
             'meta_description' => $post->meta_description ? html_entity_decode($post->meta_description) : '',
+            'meta_keywords' => $post->meta_keywords ? html_entity_decode($post->meta_keywords) : '',
             'body' => StoragePublicUrl::rewriteStorageUrlsInHtml($bodyRaw),
             'image' => $post->image ? (StoragePublicUrl::resolve($post->image) ?? $post->image) : null,
             'category' => $post->category_label,

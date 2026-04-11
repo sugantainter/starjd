@@ -16,6 +16,7 @@ class Post extends Model
         'excerpt',
         'meta_title',
         'meta_description',
+        'meta_keywords',
         'body',
         'image',
         'category_label',

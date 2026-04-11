@@ -273,17 +273,23 @@ const seoData = computed(() => {
     return {
         title: post.value.meta_title || post.value.title,
         description: post.value.meta_description || post.value.excerpt || '',
+        keywords: post.value.meta_keywords || '',
         image: post.value.image || '/logo.png',
         author: post.value.author || "StarJD Team",
         published_at: post.value.created_at || post.value.date,
-        updated_at: post.value.updated_at || post.value.date
+        updated_at: post.value.updated_at || post.value.date,
+        url: window.location.origin + route.path
     };
 });
 
 useHead({
   title: () => `${seoData.value.title} | StarJD`,
+  link: [
+    { rel: 'canonical', href: () => seoData.value.url }
+  ],
   meta: [
     { name: 'description', content: () => seoData.value.description },
+    { name: 'keywords', content: () => seoData.value.keywords },
     { property: 'og:title', content: () => seoData.value.title },
     { property: 'og:description', content: () => seoData.value.description },
     { property: 'og:image', content: () => seoData.value.image.startsWith('http') ? seoData.value.image : window.location.origin + seoData.value.image },
