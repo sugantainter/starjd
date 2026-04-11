@@ -80,11 +80,11 @@
         v-for="p in listWithSlug"
         :key="p.id"
         :to="'/creator-profile/' + p.slug"
-        class="group relative bg-white rounded-[1.5rem] border border-[#f1f5f9] hover:border-white shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] transition-all duration-300 overflow-hidden"
+        class="group relative bg-white rounded-[2rem] border border-[#f1f5f9] hover:border-[#fc4402]/20 shadow-[0_4px_25px_rgba(0,0,0,0.03)] hover:shadow-[0_30px_60px_rgba(0,0,0,0.08)] transition-all duration-500 overflow-hidden"
       >
-        <div class="flex flex-col xl:flex-row items-stretch">
+        <div class="flex flex-col xl:flex-row items-stretch bg-gradient-to-r from-white via-white to-slate-50/50">
           <!-- Left: Profile Info -->
-          <div class="p-6 xl:p-8 flex flex-col md:flex-row items-center gap-6 xl:border-r border-slate-100 xl:min-w-[400px]">
+          <div class="p-6 xl:p-8 flex flex-col md:flex-row items-center gap-6 xl:border-r border-slate-100 xl:min-w-[400px] bg-slate-50/30">
             <div class="relative shrink-0">
                <!-- Premium Avatar with Background -->
                <div class="w-28 h-28 rounded-[1.8rem] p-1 bg-gradient-to-br from-[#fc4402] via-[#ff8a5c] to-[#4f46e5]">
@@ -128,16 +128,21 @@
           </div>
 
           <!-- Middle: Recent Posts Gallery -->
-          <div class="flex-1 p-6 xl:p-8 flex flex-col justify-center border-b xl:border-b-0 xl:border-r border-slate-100 bg-[#fafbfc]/50">
+          <div class="flex-1 p-6 xl:p-8 flex flex-col justify-center border-b xl:border-b-0 xl:border-r border-slate-100 bg-gradient-to-br from-[#fafbfc] to-slate-50">
              <div class="flex items-center gap-3 overflow-x-auto pb-1 no-scrollbar">
                 <template v-if="p.recent_posts && p.recent_posts.length">
-                  <div v-for="(post, idx) in p.recent_posts" :key="post.id" class="relative group/post w-24 h-32 xl:w-28 xl:h-36 rounded-xl overflow-hidden shrink-0 shadow-md">
+                  <div v-for="post in p.recent_posts.slice(0, 6)" :key="post.id" class="relative group/post w-24 h-32 xl:w-32 xl:h-40 rounded-[1.25rem] overflow-hidden shrink-0 shadow-lg transition-transform hover:scale-[1.05] hover:z-10 bg-white">
                      <img :src="post.image_url" class="w-full h-full object-cover transition-transform duration-700 group-hover/post:scale-110" />
+                     <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover/post:opacity-100 transition-opacity"></div>
+                  </div>
+                  <!-- Fill with placeholders if less than 6 -->
+                  <div v-for="i in Math.max(0, 5 - (p.recent_posts?.length || 0))" :key="'fill-' + i" class="w-24 h-32 xl:w-32 xl:h-40 rounded-[1.25rem] border border-slate-100 bg-white/40 shrink-0 flex items-center justify-center border-dashed">
+                      <svg class="w-6 h-6 text-slate-100" fill="currentColor" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
                   </div>
                 </template>
                 <template v-else>
-                  <!-- Placeholder Gallery -->
-                  <div v-for="i in 3" :key="i" class="w-24 h-32 xl:w-28 xl:h-36 rounded-xl overflow-hidden shrink-0 bg-slate-100 border border-slate-100 flex items-center justify-center">
+                  <!-- Placeholder Gallery (Full row of 5) -->
+                  <div v-for="i in 5" :key="i" class="w-24 h-32 xl:w-32 xl:h-40 rounded-[1.25rem] overflow-hidden shrink-0 bg-white/60 border border-slate-100 flex items-center justify-center shadow-sm">
                       <svg class="w-6 h-6 text-slate-200" fill="currentColor" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
                   </div>
                 </template>

@@ -258,53 +258,67 @@ const filteredSidebarPosts = computed(() => {
     (p.excerpt && p.excerpt.toLowerCase().includes(term))
   ).slice(0, 5);
 });
+// SEO & Head Management
+const seoData = computed(() => {
+    if (!post.value) {
+        return {
+            title: 'StarJD — Blog',
+            description: 'Read the latest from StarJD.',
+            image: '/logo.png',
+            author: 'StarJD Team',
+            published_at: '',
+            updated_at: ''
+        };
+    }
+    return {
+        title: post.value.meta_title || post.value.title,
+        description: post.value.meta_description || post.value.excerpt || '',
+        image: post.value.image || '/logo.png',
+        author: post.value.author || "StarJD Team",
+        published_at: post.value.created_at || post.value.date,
+        updated_at: post.value.updated_at || post.value.date
+    };
+});
+
+useHead({
+  title: () => `${seoData.value.title} | StarJD`,
+  meta: [
+    { name: 'description', content: () => seoData.value.description },
+    { property: 'og:title', content: () => seoData.value.title },
+    { property: 'og:description', content: () => seoData.value.description },
+    { property: 'og:image', content: () => seoData.value.image.startsWith('http') ? seoData.value.image : window.location.origin + seoData.value.image },
+    { property: 'og:type', content: 'article' },
+    { name: 'twitter:card', content: 'summary_large_image' }
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      children: () => JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": seoData.value.title,
+        "image": seoData.value.image.startsWith('http') ? seoData.value.image : window.location.origin + seoData.value.image,
+        "author": {
+          "@type": "Person",
+          "name": seoData.value.author
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "StarJD",
+          "logo": {
+            "@type": "ImageObject",
+            "url": window.location.origin + "/logo.png"
+          }
+        },
+        "datePublished": seoData.value.published_at,
+        "dateModified": seoData.value.updated_at,
+        "description": seoData.value.description
+      })
+    }
+  ]
+});
 
 
-
-function updateDocumentMeta() {
-  if (!post.value) return;
-  const title = post.value.meta_title || post.value.title;
-  const description = post.value.meta_description || post.value.excerpt || '';
-  const image = post.value.image || (window.location.origin + '/logo.png');
-
-  useHead({
-    title: `${title} | StarJD`,
-    meta: [
-      { name: 'description', content: description },
-      { property: 'og:title', content: title },
-      { property: 'og:description', content: description },
-      { property: 'og:image', content: image },
-      { property: 'og:type', content: 'article' },
-      { name: 'twitter:card', content: 'summary_large_image' }
-    ],
-    script: [
-      {
-        type: 'application/ld+json',
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "BlogPosting",
-          "headline": title,
-          "image": image,
-          "author": {
-            "@type": "Person",
-            "name": post.value.author || "StarJD Team"
-          },
-          "publisher": {
-            "@type": "Organization",
-            "name": "StarJD",
-            "logo": {
-              "@type": "ImageObject",
-              "url": window.location.origin + "/logo.png"
-            }
-          },
-          "datePublished": post.value.created_at || post.value.date,
-          "dateModified": post.value.updated_at || post.value.date,
-          "description": description
-        })
-      }
-    ]
-  });
-}
 
 function share(platform) {
   const url = window.location.href;
@@ -338,7 +352,6 @@ function focusComments() {
   commentCount.value++;
 }
 
-watch(post, updateDocumentMeta, { immediate: true });
 
 async function loadPost() {
   const slug = route.params.slug;
