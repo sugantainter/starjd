@@ -52,13 +52,16 @@ class Page extends Model
         }
 
         if ($this->city_id && $this->city?->slug && $this->state?->slug) {
-            // New structure: state/slug-in-city
+            // New structure: state/slug-in-city (e.g. /madhya-pradesh/influencers-in-bhopal)
             return '/'.Str::slug($this->state->slug).'/'.$this->slug.'-in-'.Str::slug($this->city->slug);
         }
 
         if ($this->state_id && $this->state?->slug) {
-            // State structure: slug-in-state
-            return '/'.$this->slug.'-in-'.Str::slug($this->state->slug);
+            // New state structure: /state (for influencers) or /state/slug
+            if ($this->slug === 'influencers') {
+                return '/'.Str::slug($this->state->slug);
+            }
+            return '/'.Str::slug($this->state->slug).'/'.$this->slug;
         }
 
         if ($this->city_id || $this->state_id) {

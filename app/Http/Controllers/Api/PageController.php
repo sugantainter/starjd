@@ -30,17 +30,19 @@ class PageController extends Controller
             }
         }
 
-        if (! $cityId && $stateSlug) {
-            // Check if it's a city first (happens in flat URLs)
-            $city = \App\Models\City::findByUrlSlug($stateSlug);
+        if (! $cityId && ($stateSlug || $slug)) {
+            // Check state_slug first (from query or URL hierarchy)
+            $locSource = $stateSlug ?: $slug;
+            $city = \App\Models\City::findByUrlSlug($locSource);
             if ($city) {
                 $cityId = $city->id;
                 $stateId = $city->state_id;
+                if (! $stateSlug) $slug = 'influencers'; // If slug was the location, fallback to default
             } else {
-                // Otherwise check if it's a state
-                $state = \App\Models\State::findByUrlSlug($stateSlug);
+                $state = \App\Models\State::findByUrlSlug($locSource);
                 if ($state) {
                     $stateId = $state->id;
+                    if (! $stateSlug) $slug = 'influencers'; // If slug was the location, fallback to default
                 }
             }
         }
@@ -93,12 +95,8 @@ class PageController extends Controller
     {
         $pages = Page::published()->with(['state', 'city'])->inRandomOrder()->limit(18)->get();
         return response()->json($pages->map(function($p) {
-            $fullSlug = $p->slug;
-            if ($p->city_id && $p->city && $p->state) {
-                $fullSlug = Str::slug($p->state->slug).'/'.$p->slug.'-in-'.Str::slug($p->city->slug);
-            } elseif ($p->state_id && $p->state) {
-                $fullSlug = $p->slug.'-in-'.Str::slug($p->state->slug);
-            }
+            $path = $p->publicPath();
+            $fullSlug = $path ? ltrim($path, '/') : $p->slug;
 
             return [
                 'id' => $p->id,

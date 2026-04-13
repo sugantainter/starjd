@@ -531,6 +531,8 @@ const stats = [
   { value: '25k+', label: 'Success Bookings' },
 ];
 
+const headTitle = ref('StarJD');
+const headDescription = ref('');
 const headKeywords = ref('');
 const canonicalUrl = computed(() => {
   return window.location.origin + route.path;
