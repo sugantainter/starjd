@@ -233,4 +233,20 @@ class CreatorSocialAccountController extends Controller
         $request->user()->socialAccounts()->where('platform', $platform)->delete();
         return response()->json(['message' => 'Disconnected']);
     }
+
+    public function getConnectUrl(Request $request, string $platform): JsonResponse
+    {
+        if (! in_array($platform, self::platforms(), true)) {
+            return response()->json(['message' => 'Invalid platform'], 422);
+        }
+
+        $redirect = "/creator/social-accounts/{$platform}/redirect";
+        $url = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+            'webview.login', 
+            now()->addMinutes(10), 
+            ['user' => $request->user()->id, 'redirect' => $redirect]
+        );
+
+        return response()->json(['url' => $url]);
+    }
 }

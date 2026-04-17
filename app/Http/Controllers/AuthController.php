@@ -593,4 +593,21 @@ class AuthController extends Controller
             'has_paid_access' => \App\Models\AccessPayment::hasPaidAccess($user),
         ];
     }
+
+    public function webviewLogin(Request $request)
+    {
+        if (! $request->hasValidSignature()) {
+            abort(401, 'Invalid or expired URL signature.');
+        }
+
+        $userId = $request->query('user');
+        $redirect = $request->query('redirect', '/');
+
+        $user = \App\Models\User::findOrFail($userId);
+        \Illuminate\Support\Facades\Auth::guard('web')->login($user);
+        $request->session()->regenerate();
+        $request->session()->save();
+
+        return redirect($redirect);
+    }
 }

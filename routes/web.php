@@ -193,6 +193,7 @@ Route::prefix('api')->group(function () {
         Route::get('package-categories', [CreatorPackageController::class, 'categories']);
         Route::apiResource('packages', CreatorPackageController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get('social-accounts', [CreatorSocialAccountController::class, 'index']);
+        Route::get('social-accounts/{platform}/connect-url', [CreatorSocialAccountController::class, 'getConnectUrl']);
         Route::post('social-accounts/sync', [CreatorSocialAccountController::class, 'sync']);
         Route::post('social-accounts/{platform}/refresh', [CreatorSocialAccountController::class, 'refresh']);
         Route::delete('social-accounts/{platform}', [CreatorSocialAccountController::class, 'disconnect']);
@@ -328,6 +329,9 @@ Route::get('/auth/google/redirect', [SocialAuthController::class, 'googleRedirec
 Route::get('/auth/google/callback', [SocialAuthController::class, 'googleCallback'])->name('auth.google.callback');
 Route::get('/auth/facebook/redirect', [SocialAuthController::class, 'facebookRedirect'])->name('auth.facebook.redirect');
 Route::get('/auth/facebook/callback', [SocialAuthController::class, 'facebookCallback'])->name('auth.facebook.callback');
+
+// Webview login for Flutter App OAuth Flow
+Route::get('/webview-login', [\App\Http\Controllers\AuthController::class, 'webviewLogin'])->name('webview.login')->middleware('signed');
 
 // Creator Account Connections (OAuth)
 Route::middleware(['auth:web', 'verified', 'creator'])->group(function () {
