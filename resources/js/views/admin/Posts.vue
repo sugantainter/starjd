@@ -50,7 +50,7 @@
           </div>
           <div>
             <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Excerpt</label>
-            <input v-model="form.excerpt" type="text" class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-[#1a1a1a]" placeholder="Short summary for listings" maxlength="500" />
+            <input v-model="form.excerpt" type="text" class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-[#1a1a1a]" placeholder="Short summary for listings" maxlength="255" />
           </div>
           <div>
             <label class="mb-1 block text-sm font-medium text-[#1a1a1a]">Author name</label>
