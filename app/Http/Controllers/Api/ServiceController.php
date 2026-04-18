@@ -51,6 +51,7 @@ class ServiceController extends Controller
             'body' => $body,
             'meta_title' => $service->meta_title,
             'meta_description' => $service->meta_description,
+            'meta_keywords' => $service->meta_keywords,
         ]);
     }
 }

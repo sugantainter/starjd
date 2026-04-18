@@ -78,6 +78,15 @@
                   class="w-full rounded border border-[#e2e8f0] px-2 py-1.5 text-sm text-[#1a1a1a]"
                 />
               </div>
+              <div>
+                <label class="mb-0.5 block text-xs font-medium text-[#64748b]">Meta keywords</label>
+                <input
+                  v-model="page.meta_keywords"
+                  type="text"
+                  maxlength="255"
+                  class="w-full rounded border border-[#e2e8f0] px-2 py-1.5 text-sm text-[#1a1a1a]"
+                />
+              </div>
             </div>
           </div>
 
@@ -153,6 +162,7 @@ async function save(slug) {
       content: page.content || '',
       meta_title: page.meta_title || '',
       meta_description: page.meta_description || '',
+      meta_keywords: page.meta_keywords || '',
       status: page.status,
     });
     savedSlug.value = slug;

@@ -36,6 +36,7 @@ class ServiceController extends Controller
             'body' => 'nullable|string',
             'meta_title' => 'nullable|string|max:70',
             'meta_description' => 'nullable|string|max:160',
+            'meta_keywords' => 'nullable|string|max:255',
             'sort_order' => 'nullable|integer',
             'is_active' => 'nullable|boolean',
         ]);
@@ -71,6 +72,7 @@ class ServiceController extends Controller
             'body' => 'nullable|string',
             'meta_title' => 'nullable|string|max:70',
             'meta_description' => 'nullable|string|max:160',
+            'meta_keywords' => 'nullable|string|max:255',
             'sort_order' => 'nullable|integer',
             'is_active' => 'nullable|boolean',
         ]);

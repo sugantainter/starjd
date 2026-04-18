@@ -37,6 +37,7 @@ class LegalPageController extends Controller
                 'content' => StoragePublicUrl::rewriteStorageUrlsInHtml($rawContent),
                 'meta_title' => $page?->meta_title,
                 'meta_description' => $page?->meta_description,
+                'meta_keywords' => $page?->meta_keywords,
                 'status' => $page?->status ?? 'draft',
                 'template' => $page?->template ?? 'default',
                 'sort_order' => $page?->sort_order ?? 0,
@@ -56,6 +57,7 @@ class LegalPageController extends Controller
             'content' => 'nullable|string',
             'meta_title' => 'nullable|string|max:70',
             'meta_description' => 'nullable|string|max:160',
+            'meta_keywords' => 'nullable|string|max:255',
             'status' => ['required', Rule::in(['draft', 'published'])],
         ]);
 
@@ -75,6 +77,7 @@ class LegalPageController extends Controller
             'content' => $data['content'] ?? null,
             'meta_title' => $data['meta_title'] ?? null,
             'meta_description' => $data['meta_description'] ?? null,
+            'meta_keywords' => $data['meta_keywords'] ?? null,
             'status' => $data['status'],
             'template' => 'default',
             'sort_order' => $page->exists ? $page->sort_order : 0,

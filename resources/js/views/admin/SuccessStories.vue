@@ -161,6 +161,10 @@
                 <label class="mb-0.5 block text-xs font-medium text-[#64748b]">Meta description</label>
                 <textarea v-model="form.meta_description" rows="2" class="w-full rounded border border-[#e2e8f0] px-2 py-1.5 text-sm text-[#1a1a1a]" maxlength="160"></textarea>
               </div>
+              <div>
+                <label class="mb-0.5 block text-xs font-medium text-[#64748b]">Meta keywords</label>
+                <input v-model="form.meta_keywords" type="text" class="w-full rounded border border-[#e2e8f0] px-2 py-1.5 text-sm text-[#1a1a1a]" placeholder="Keywords separated by commas" maxlength="255" />
+              </div>
             </div>
           </div>
 
@@ -205,6 +209,7 @@ const form = reactive({
   status: 'draft',
   meta_title: '',
   meta_description: '',
+  meta_keywords: '',
 });
 
 async function loadRoles() {
@@ -236,11 +241,12 @@ function openForm(item = null) {
     form.status = item.status || 'draft';
     form.meta_title = item.meta_title || '';
     form.meta_description = item.meta_description || '';
+    form.meta_keywords = item.meta_keywords || '';
   } else {
     Object.assign(form, {
       title: '', slug: '', content: '', image: '', role_id: '',
       author_name: '', author_designation: '', is_featured: false, status: 'draft',
-      meta_title: '', meta_description: '',
+      meta_title: '', meta_description: '', meta_keywords: '',
     });
   }
   showModal.value = true;
