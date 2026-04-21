@@ -26,6 +26,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'avatar',
         'state_id',
         'city_id',
+        'last_profile_reminder_at',
+        'last_payment_reminder_at',
+        'last_social_reminder_at',
     ];
 
     public function state(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -53,13 +56,13 @@ class User extends Authenticatable implements MustVerifyEmail
      *
      * @return array<string, string>
      */
-    protected function casts(): array
-    {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'last_profile_reminder_at' => 'datetime',
+            'last_payment_reminder_at' => 'datetime',
+            'last_social_reminder_at' => 'datetime',
         ];
-    }
 
     public function creatorProfile(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
