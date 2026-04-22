@@ -185,6 +185,33 @@
                 </div>
             </div>
 
+            <!-- Blog links (same style as Our Pages section) -->
+            <div class="pt-10">
+                <h4 class="text-sm font-bold text-white">From Blog</h4>
+                <div
+                    class="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-xs sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
+                >
+                    <router-link
+                        to="/blog"
+                        class="font-semibold text-[#fc4402] transition hover:text-[#ff7a4c]"
+                    >
+                        All Articles
+                    </router-link>
+                    <router-link
+                        v-for="post in randomBlogLinks"
+                        :key="post.id"
+                        :to="'/blog/' + post.slug"
+                        class="transition hover:text-[#fc4402] line-clamp-1"
+                        :title="post.title"
+                    >
+                        {{ post.title }}
+                    </router-link>
+                </div>
+                <p v-if="!randomBlogLinks.length" class="mt-2 text-xs text-[#64748b]">
+                    No blog posts yet.
+                </p>
+            </div>
+
             <!-- Footer link sections -->
             <div class="grid gap-8 pt-10 sm:grid-cols-2 lg:grid-cols-4">
                 <!-- Company -->
@@ -493,6 +520,7 @@ const defaultFooterServices = [
 ];
 
 const footerServices = ref([]);
+const randomBlogLinks = ref([]);
 const dynamicPages = ref([]);
 const newsletterEmail = ref("");
 
@@ -518,17 +546,26 @@ const legalPagesOnly = computed(() => {
 
 onMounted(async () => {
     try {
-        const [servicesRes, pagesRes] =
+        const [servicesRes, pagesRes, postsRes] =
             await Promise.all([
                 axios.get("/api/services"),
                 axios.get("/api/pages"),
+                axios.get("/api/posts", { params: { per_page: 33 } }),
             ]);
         footerServices.value = Array.isArray(servicesRes.data)
             ? servicesRes.data
             : (servicesRes.data?.data ?? []);
         dynamicPages.value = Array.isArray(pagesRes.data) ? pagesRes.data : [];
+        const allPosts = Array.isArray(postsRes.data?.posts)
+            ? postsRes.data.posts
+            : [];
+        randomBlogLinks.value = allPosts
+            .filter((post) => post?.slug && post?.title)
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 20);
     } catch {
         footerServices.value = [];
+        randomBlogLinks.value = [];
         dynamicPages.value = [];
     }
 });
