@@ -185,59 +185,8 @@
                 </div>
             </div>
 
-            <!-- Category & link sections (influencer.in style: each section = category group with page links) -->
-            <div class="grid gap-8 pt-10 sm:grid-cols-2 lg:grid-cols-5">
-                <!-- Blog & Articles (category pages: /blog, /blog?category={slug}) -->
-                <div>
-                    <h4 class="text-sm font-bold text-white">
-                        Blog & Articles
-                    </h4>
-                    <p class="mt-1 text-xs text-[#64748b]">
-                        Browse by category
-                    </p>
-                    <ul class="mt-4 space-y-2.5 text-sm">
-                        <li>
-                            <router-link
-                                to="/blog"
-                                class="transition hover:text-[#fc4402]"
-                                >All Articles</router-link
-                            >
-                        </li>
-                        <li v-for="post in randomBlogLinks" :key="post.id">
-                            <router-link
-                                :to="'/blog/' + post.slug"
-                                class="transition hover:text-[#fc4402] line-clamp-1"
-                                :title="post.title"
-                            >
-                                {{ post.title }}
-                            </router-link>
-                        </li>
-                        <li v-if="blogCategories.length" class="pt-2">
-                            <p
-                                class="text-[10px] font-bold uppercase tracking-wider text-[#64748b]"
-                            >
-                                Categories
-                            </p>
-                        </li>
-                        <li v-for="c in blogCategories" :key="c.slug">
-                            <router-link
-                                :to="'/blog/category/' + c.slug"
-                                class="transition hover:text-[#fc4402]"
-                                >{{ c.label }}</router-link
-                            >
-                        </li>
-                        <li
-                            v-if="
-                                !blogCategories.length &&
-                                !randomBlogLinks.length
-                            "
-                            class="text-[#64748b]"
-                        >
-                            —
-                        </li>
-                    </ul>
-                </div>
-
+            <!-- Footer link sections -->
+            <div class="grid gap-8 pt-10 sm:grid-cols-2 lg:grid-cols-4">
                 <!-- Company -->
                 <div>
                     <h4 class="text-sm font-bold text-white">Company</h4>
@@ -544,8 +493,6 @@ const defaultFooterServices = [
 ];
 
 const footerServices = ref([]);
-const blogCategories = ref([]);
-const randomBlogLinks = ref([]);
 const dynamicPages = ref([]);
 const newsletterEmail = ref("");
 
@@ -571,30 +518,17 @@ const legalPagesOnly = computed(() => {
 
 onMounted(async () => {
     try {
-        const [servicesRes, categoriesRes, pagesRes, postsRes] =
+        const [servicesRes, pagesRes] =
             await Promise.all([
                 axios.get("/api/services"),
-                axios.get("/api/posts/categories"),
                 axios.get("/api/pages"),
-                axios.get("/api/posts", { params: { per_page: 10 } }),
             ]);
         footerServices.value = Array.isArray(servicesRes.data)
             ? servicesRes.data
             : (servicesRes.data?.data ?? []);
-        blogCategories.value = categoriesRes.data?.categories ?? [];
         dynamicPages.value = Array.isArray(pagesRes.data) ? pagesRes.data : [];
-
-        const allPosts = postsRes.data?.posts || [];
-        if (allPosts.length > 0) {
-            // Pick 2-3 random posts
-            randomBlogLinks.value = [...allPosts]
-                .sort(() => 0.5 - Math.random())
-                .slice(0, 3);
-        }
     } catch {
         footerServices.value = [];
-        blogCategories.value = [];
-        randomBlogLinks.value = [];
         dynamicPages.value = [];
     }
 });
