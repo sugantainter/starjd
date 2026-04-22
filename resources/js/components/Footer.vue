@@ -185,36 +185,31 @@
                 </div>
             </div>
 
-            <!-- Blog strip -->
+            <!-- Blog links (same style as Our Pages section) -->
             <div class="pt-10">
-                <div class="mb-4 flex items-center justify-between gap-3">
-                    <h4 class="text-sm font-bold text-white">From Blog</h4>
+                <h4 class="text-sm font-bold text-white">From Blog</h4>
+                <div
+                    class="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-xs sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
+                >
                     <router-link
                         to="/blog"
-                        class="text-xs font-semibold text-[#fc4402] transition hover:text-[#ff7a4c]"
+                        class="font-semibold text-[#fc4402] transition hover:text-[#ff7a4c]"
                     >
-                        View all
+                        All Articles
                     </router-link>
-                </div>
-                <div class="flex gap-3 overflow-x-auto pb-2">
                     <router-link
                         v-for="post in randomBlogLinks"
                         :key="post.id"
                         :to="'/blog/' + post.slug"
+                        class="transition hover:text-[#fc4402] line-clamp-1"
                         :title="post.title"
-                        class="min-w-[220px] max-w-[260px] rounded-xl border border-[#334155] bg-[#0f172acc] px-4 py-3 text-sm text-white transition hover:border-[#fc4402] hover:text-[#fc4402]"
                     >
-                        <p class="line-clamp-2 leading-5">
-                            {{ post.title }}
-                        </p>
+                        {{ post.title }}
                     </router-link>
-                    <p
-                        v-if="!randomBlogLinks.length"
-                        class="text-sm text-[#64748b]"
-                    >
-                        No blog posts yet.
-                    </p>
                 </div>
+                <p v-if="!randomBlogLinks.length" class="mt-2 text-xs text-[#64748b]">
+                    No blog posts yet.
+                </p>
             </div>
 
             <!-- Footer link sections -->
@@ -555,7 +550,7 @@ onMounted(async () => {
             await Promise.all([
                 axios.get("/api/services"),
                 axios.get("/api/pages"),
-                axios.get("/api/posts", { params: { per_page: 12 } }),
+                axios.get("/api/posts", { params: { per_page: 33 } }),
             ]);
         footerServices.value = Array.isArray(servicesRes.data)
             ? servicesRes.data
@@ -567,7 +562,7 @@ onMounted(async () => {
         randomBlogLinks.value = allPosts
             .filter((post) => post?.slug && post?.title)
             .sort(() => 0.5 - Math.random())
-            .slice(0, 6);
+            .slice(0, 20);
     } catch {
         footerServices.value = [];
         randomBlogLinks.value = [];
