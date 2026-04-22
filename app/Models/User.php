@@ -51,11 +51,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    protected function casts(): array
+    {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
@@ -63,6 +60,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'last_payment_reminder_at' => 'datetime',
             'last_social_reminder_at' => 'datetime',
         ];
+    }
 
     public function creatorProfile(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
