@@ -185,6 +185,38 @@
                 </div>
             </div>
 
+            <!-- Blog strip -->
+            <div class="pt-10">
+                <div class="mb-4 flex items-center justify-between gap-3">
+                    <h4 class="text-sm font-bold text-white">From Blog</h4>
+                    <router-link
+                        to="/blog"
+                        class="text-xs font-semibold text-[#fc4402] transition hover:text-[#ff7a4c]"
+                    >
+                        View all
+                    </router-link>
+                </div>
+                <div class="flex gap-3 overflow-x-auto pb-2">
+                    <router-link
+                        v-for="post in randomBlogLinks"
+                        :key="post.id"
+                        :to="'/blog/' + post.slug"
+                        :title="post.title"
+                        class="min-w-[220px] max-w-[260px] rounded-xl border border-[#334155] bg-[#0f172acc] px-4 py-3 text-sm text-white transition hover:border-[#fc4402] hover:text-[#fc4402]"
+                    >
+                        <p class="line-clamp-2 leading-5">
+                            {{ post.title }}
+                        </p>
+                    </router-link>
+                    <p
+                        v-if="!randomBlogLinks.length"
+                        class="text-sm text-[#64748b]"
+                    >
+                        No blog posts yet.
+                    </p>
+                </div>
+            </div>
+
             <!-- Footer link sections -->
             <div class="grid gap-8 pt-10 sm:grid-cols-2 lg:grid-cols-4">
                 <!-- Company -->
@@ -493,6 +525,7 @@ const defaultFooterServices = [
 ];
 
 const footerServices = ref([]);
+const randomBlogLinks = ref([]);
 const dynamicPages = ref([]);
 const newsletterEmail = ref("");
 
@@ -518,17 +551,26 @@ const legalPagesOnly = computed(() => {
 
 onMounted(async () => {
     try {
-        const [servicesRes, pagesRes] =
+        const [servicesRes, pagesRes, postsRes] =
             await Promise.all([
                 axios.get("/api/services"),
                 axios.get("/api/pages"),
+                axios.get("/api/posts", { params: { per_page: 12 } }),
             ]);
         footerServices.value = Array.isArray(servicesRes.data)
             ? servicesRes.data
             : (servicesRes.data?.data ?? []);
         dynamicPages.value = Array.isArray(pagesRes.data) ? pagesRes.data : [];
+        const allPosts = Array.isArray(postsRes.data?.posts)
+            ? postsRes.data.posts
+            : [];
+        randomBlogLinks.value = allPosts
+            .filter((post) => post?.slug && post?.title)
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 6);
     } catch {
         footerServices.value = [];
+        randomBlogLinks.value = [];
         dynamicPages.value = [];
     }
 });
