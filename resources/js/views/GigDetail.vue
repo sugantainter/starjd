@@ -118,51 +118,7 @@ async function fetchGig() {
     }
     gig.value = payload;
     
-    // Dynamic SEO
-    const title = `${payload.title} | ${payload.category?.name || 'Professional Service'} | Marketplace | StarJD`;
-    const description = payload.description?.substring(0, 160).replace(/<[^>]*>/g, '') || `Hire ${payload.user?.name} for ${payload.title}. Explore professional creative services on the StarJD Marketplace.`;
-    const image = payload.gallery?.[0] || (window.location.origin + '/logo.png');
-
-    useHead({
-      title,
-      meta: [
-        { name: 'description', content: description },
-        { property: 'og:title', content: title },
-        { property: 'og:description', content: description },
-        { property: 'og:image', content: image },
-        { property: 'og:type', content: 'website' },
-        { name: 'twitter:card', content: 'summary_large_image' }
-      ],
-      script: [
-        {
-          type: 'application/ld+json',
-          children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Service",
-            "name": payload.title,
-            "description": description,
-            "provider": {
-              "@type": "Person",
-              "name": payload.user?.name,
-              "image": payload.user?.avatar_url
-            },
-            "category": payload.category?.name,
-            "offers": {
-              "@type": "Offer",
-              "priceCurrency": "INR",
-              "price": payload.pricing_tiers?.[0]?.price || 0,
-              "url": window.location.href
-            },
-            "aggregateRating": payload.user?.professional_profile?.avg_rating ? {
-              "@type": "AggregateRating",
-              "ratingValue": payload.user.professional_profile.avg_rating,
-              "reviewCount": payload.user.professional_profile.total_reviews || 1
-            } : undefined
-          })
-        }
-      ]
-    });
-
+    // Dynamic SEO will be handled by the reactive useHead call below
     galleryIndex.value = 0;
     const tiers = Array.isArray(payload.pricing_tiers) ? payload.pricing_tiers : [];
     activeTab.value = tiers[0]?.name || '';
@@ -173,6 +129,69 @@ async function fetchGig() {
     loading.value = false;
   }
 }
+
+// Reactive SEO
+const seoTitle = computed(() => {
+  if (gig.value) {
+    return `${gig.value.title} | ${gig.value.category?.name || 'Professional Service'} | Marketplace | StarJD`;
+  }
+  return 'Loading Service... | StarJD';
+});
+
+const seoDescription = computed(() => {
+  if (gig.value) {
+    return gig.value.description?.substring(0, 160).replace(/<[^>]*>/g, '') || `Hire ${gig.value.user?.name} for ${gig.value.title}. Explore professional creative services on the StarJD Marketplace.`;
+  }
+  return 'Explore professional creative services on the StarJD Marketplace.';
+});
+
+const seoImage = computed(() => {
+  return gig.value?.gallery?.[0] || (window.location.origin + '/logo.png');
+});
+
+useHead({
+  title: seoTitle,
+  meta: [
+    { name: 'description', content: seoDescription },
+    { property: 'og:title', content: seoTitle },
+    { property: 'og:description', content: seoDescription },
+    { property: 'og:image', content: seoImage },
+    { property: 'og:type', content: 'website' },
+    { name: 'twitter:card', content: 'summary_large_image' }
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      children: computed(() => {
+        if (!gig.value) return '';
+        return JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "name": gig.value.title,
+          "description": seoDescription.value,
+          "provider": {
+            "@type": "Person",
+            "name": gig.value.user?.name,
+            "image": gig.value.user?.avatar_url
+          },
+          "category": gig.value.category?.name,
+          "offers": {
+            "@type": "Offer",
+            "priceCurrency": "INR",
+            "price": gig.value.pricing_tiers?.[0]?.price || 0,
+            "url": typeof window !== 'undefined' ? window.location.href : ''
+          },
+          "aggregateRating": gig.value.user?.professional_profile?.avg_rating ? {
+            "@type": "AggregateRating",
+            "ratingValue": gig.value.user.professional_profile.avg_rating,
+            "reviewCount": gig.value.user.professional_profile.total_reviews || 1
+          } : undefined
+        });
+      })
+    }
+  ]
+});
+
 
 onMounted(() => {
   fetchGig();

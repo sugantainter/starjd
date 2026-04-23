@@ -204,6 +204,7 @@ router.beforeEach((to) => {
   const title = meta.title || parentMeta.title || 'StarJD — Connect. Create. Collaborate.';
   const description = meta.description || parentMeta.description || 'Connect with creators. Build your brand. StarJD helps brands find vetted creators and creators get discovered.';
 
+/*
   useHead({
     title,
     meta: [
@@ -217,6 +218,7 @@ router.beforeEach((to) => {
       { rel: 'canonical', href: window.location.origin + to.path }
     ]
   });
+*/
 });
 
 export default router;
