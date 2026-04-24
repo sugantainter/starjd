@@ -94,8 +94,72 @@ class HomeController extends Controller
             if ($service) return $this->mapSeo($service);
         }
 
-        // 7. CMS Pages / Location Hubs (The Andaman case)
+        // 7. Studios Location Search
+        if (Str::startsWith($path, 'studios/location/')) {
+            $parts = explode('/', trim(Str::after($path, 'studios/location/'), '/'));
+            $stateSlug = $parts[0] ?? null;
+            $citySlug = $parts[1] ?? null;
+            return $this->resolveLocationSearchSeo('Studios', $stateSlug, $citySlug);
+        }
+
+        // 8. Creators Search (Flexible Hierarchy)
+        if (Str::startsWith($path, 'creators/')) {
+            $segments = explode('/', trim(Str::after($path, 'creators/'), '/'));
+            return $this->resolveHierarchySearchSeo('Creators', $segments);
+        }
+
+        // 9. Marketplace Search (Flexible Hierarchy)
+        if (Str::startsWith($path, 'marketplace/')) {
+            $segments = explode('/', trim(Str::after($path, 'marketplace/'), '/'));
+            return $this->resolveHierarchySearchSeo('Services', $segments);
+        }
+
+        // 10. CMS Pages / Location Hubs (The Catch-all)
         return $this->resolveCmsPageSeo($path);
+    }
+
+    private function resolveLocationSearchSeo(string $type, ?string $stateSlug, ?string $citySlug): array
+    {
+        $city = $citySlug ? City::findByUrlSlug($citySlug) : null;
+        $state = $stateSlug ? State::findByUrlSlug($stateSlug) : null;
+        $locName = ($city ?? $state)?->name ?: Str::headline($citySlug ?: $stateSlug ?: 'India');
+
+        return [
+            'title' => "Top {$type} in {$locName} | StarJD",
+            'description' => "Find and book the best {$type} in {$locName}. Vetted professionals, transparent pricing, and high-quality results on India's premium creative marketplace.",
+            'found' => true,
+        ];
+    }
+
+    private function resolveHierarchySearchSeo(string $type, array $segments): array
+    {
+        $state = null;
+        $city = null;
+        $category = null;
+
+        foreach ($segments as $s) {
+            if (!$state) {
+                $state = State::findByUrlSlug($s);
+                if ($state) continue;
+            }
+            if ($state && !$city) {
+                $city = City::findByUrlSlug($s);
+                if ($city) continue;
+            }
+            // Fallback for search or category keywords in URL
+            if (!$category && !in_array($s, ['search'])) {
+                $category = Str::headline($s);
+            }
+        }
+
+        $locName = ($city ?? $state)?->name ?: 'India';
+        $catName = $category ? "{$category} " : "";
+
+        return [
+            'title' => "Best {$catName}{$type} in {$locName} | StarJD",
+            'description' => "Browse vetted {$catName}{$type} in {$locName}. Connect with top-rated talent and get professional content for your brand campaigns.",
+            'found' => true,
+        ];
     }
 
     private function resolveCmsPageSeo(string $path): array
@@ -196,6 +260,7 @@ class HomeController extends Controller
             'title' => $title,
             'description' => $description,
             'keywords' => $keywords,
+            'content' => isset($model->content) ? \App\Support\StoragePublicUrl::rewriteStorageUrlsInHtml(html_entity_decode($model->content)) : null,
             'found' => true,
         ];
     }

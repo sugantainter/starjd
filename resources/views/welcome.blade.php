@@ -32,6 +32,12 @@
                     <p class="mt-6 max-w-3xl text-center text-lg md:text-xl text-[#64748b] leading-relaxed">
                         {{ $seo['description'] ?? '' }}
                     </p>
+                    
+                    @if(isset($seo['content']) && $seo['content'])
+                        <div class="prose prose-lg mt-16 w-full max-w-4xl border-t border-gray-100 pt-16 text-left text-[#1a1a1a]">
+                            {!! $seo['content'] !!}
+                        </div>
+                    @endif
                 @else
                     <h1 class="mt-8 text-center text-4xl font-black text-[#1a1a1a] sm:text-5xl tracking-tight">
                         Connect. Create. Collaborate.
