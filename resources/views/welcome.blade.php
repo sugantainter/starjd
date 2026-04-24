@@ -38,6 +38,32 @@
                             {!! $seo['content'] !!}
                         </div>
                     @endif
+
+                    @if(!empty($seo['creator_cards']))
+                        <div class="mt-14 w-full max-w-5xl border-t border-gray-100 pt-10">
+                            <h2 class="text-center text-2xl font-bold text-[#1a1a1a]">
+                                Active creators in {{ $seo['location_name'] ?? 'this location' }}
+                            </h2>
+                            <p class="mt-3 text-center text-sm text-[#64748b]">
+                                {{ number_format($seo['creator_count'] ?? count($seo['creator_cards'])) }} verified profiles currently available for collaboration.
+                            </p>
+                            <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+                                @foreach($seo['creator_cards'] as $creator)
+                                    <a
+                                        href="{{ url('/creator-profile/' . $creator['slug']) }}"
+                                        class="rounded-2xl border border-gray-100 bg-white p-5 text-left shadow-sm transition hover:border-[#e63946]/40 hover:shadow-md"
+                                    >
+                                        <h3 class="text-base font-bold text-[#1a1a1a]">{{ $creator['name'] }}</h3>
+                                        <p class="mt-1 text-xs font-semibold uppercase tracking-wide text-[#e63946]">{{ $creator['category'] }}</p>
+                                        <p class="mt-3 line-clamp-2 text-sm text-[#64748b]">{{ $creator['tagline'] }}</p>
+                                        @if(!empty($creator['min_rate']))
+                                            <p class="mt-3 text-sm font-semibold text-[#1a1a1a]">Starting at Rs. {{ number_format((float)$creator['min_rate'], 0) }}</p>
+                                        @endif
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 @else
                     <h1 class="mt-8 text-center text-4xl font-black text-[#1a1a1a] sm:text-5xl tracking-tight">
                         Connect. Create. Collaborate.
@@ -83,19 +109,15 @@
                         </div>
                     </div>
                 @endif
-
-                <p class="mt-20 text-sm font-medium text-[#e63946] animate-pulse">Initializing your premium workspace...</p>
-
-                <div class="mt-8 w-full max-w-4xl space-y-4 pb-20">
-                    <div class="h-14 animate-pulse rounded-2xl bg-white shadow-sm ring-1 ring-[#e2e8f0]"></div>
-                    <div class="h-44 animate-pulse rounded-3xl bg-white shadow-sm ring-1 ring-[#e2e8f0]"></div>
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-                        <div class="h-32 animate-pulse rounded-2xl bg-white shadow-sm ring-1 ring-[#e2e8f0]"></div>
-                        <div class="h-32 animate-pulse rounded-2xl bg-white shadow-sm ring-1 ring-[#e2e8f0]"></div>
-                        <div class="h-32 animate-pulse rounded-2xl bg-white shadow-sm ring-1 ring-[#e2e8f0]"></div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 @endsection
+
+@if(!empty($seo['schema']) && is_array($seo['schema']))
+    @push('scripts')
+        @foreach($seo['schema'] as $schemaBlock)
+            <script type="application/ld+json">{!! json_encode($schemaBlock, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+        @endforeach
+    @endpush
+@endif

@@ -224,7 +224,8 @@ class HomeController extends Controller
 
         if ($page) {
             $locName = ($city ?? $state)?->name;
-            return $this->mapSeo($page, $locName);
+            $seo = $this->mapSeo($page, $locName);
+            return $this->enrichSeoWithLocationData($seo, $state, $city);
         }
 
         return [];
@@ -263,5 +264,105 @@ class HomeController extends Controller
             'content' => isset($model->content) ? \App\Support\StoragePublicUrl::rewriteStorageUrlsInHtml(html_entity_decode($model->content)) : null,
             'found' => true,
         ];
+    }
+
+    /**
+     * Add server-rendered location proof points for local SEO pages.
+     */
+    private function enrichSeoWithLocationData(array $seo, ?State $state, ?City $city): array
+    {
+        if (!$state && !$city) {
+            return $seo;
+        }
+
+        $creatorQuery = CreatorProfile::query()
+            ->with(['user:id,name,city_id,state_id'])
+            ->where('is_public', true)
+            ->whereHas('user', function ($q) use ($state, $city) {
+                if ($city) {
+                    $q->where('city_id', $city->id);
+                } elseif ($state) {
+                    $q->where('state_id', $state->id);
+                }
+            });
+
+        $creators = $creatorQuery
+            ->orderByDesc('featured_until')
+            ->latest('updated_at')
+            ->limit(12)
+            ->get(['id', 'user_id', 'slug', 'tagline', 'category', 'min_rate', 'featured_until']);
+
+        $locationPath = $city
+            ? '/'.$state->slug.'/'.$city->slug
+            : '/'.$state->slug;
+
+        $locationName = $city?->name ?? $state?->name ?? 'India';
+        $baseUrl = rtrim(config('app.url', url('/')), '/');
+        $canonical = $seo['canonical'] ?? url()->current();
+
+        $seo['canonical'] = $canonical;
+        $seo['location_name'] = $locationName;
+        $seo['creator_count'] = $creatorQuery->count();
+        $seo['creator_cards'] = $creators->map(function (CreatorProfile $profile) use ($locationName) {
+            return [
+                'name' => $profile->user?->name ?? 'Creator',
+                'slug' => $profile->slug,
+                'tagline' => $profile->tagline ?: "Available for brand collaborations in {$locationName}.",
+                'category' => $profile->category ?: 'Content Creator',
+                'min_rate' => $profile->min_rate,
+            ];
+        })->values()->all();
+
+        $itemList = [];
+        foreach ($seo['creator_cards'] as $index => $creator) {
+            $itemList[] = [
+                '@type' => 'ListItem',
+                'position' => $index + 1,
+                'url' => $baseUrl.'/creator-profile/'.$creator['slug'],
+                'name' => $creator['name'],
+            ];
+        }
+
+        $seo['schema'] = [
+            [
+                '@context' => 'https://schema.org',
+                '@type' => 'BreadcrumbList',
+                'itemListElement' => array_values(array_filter([
+                    [
+                        '@type' => 'ListItem',
+                        'position' => 1,
+                        'name' => 'Home',
+                        'item' => $baseUrl,
+                    ],
+                    $state ? [
+                        '@type' => 'ListItem',
+                        'position' => 2,
+                        'name' => $state->name,
+                        'item' => $baseUrl.'/'.$state->slug,
+                    ] : null,
+                    $city ? [
+                        '@type' => 'ListItem',
+                        'position' => 3,
+                        'name' => $city->name,
+                        'item' => $baseUrl.$locationPath,
+                    ] : null,
+                    [
+                        '@type' => 'ListItem',
+                        'position' => $city ? 4 : ($state ? 3 : 2),
+                        'name' => $seo['title'] ?? "Influencers in {$locationName}",
+                        'item' => $canonical,
+                    ],
+                ])),
+            ],
+            [
+                '@context' => 'https://schema.org',
+                '@type' => 'ItemList',
+                'name' => "Featured creators in {$locationName}",
+                'numberOfItems' => count($itemList),
+                'itemListElement' => $itemList,
+            ],
+        ];
+
+        return $seo;
     }
 }
