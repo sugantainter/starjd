@@ -53,14 +53,35 @@ class PageController extends Controller
         }
         $contentRaw = $page->content ? html_entity_decode($page->content) : '';
 
+        $locationName = ($city ?? $state)?->name;
+        $title = $page->title ? html_entity_decode($page->title) : '';
+        $metaTitle = $page->meta_title ? html_entity_decode($page->meta_title) : '';
+        $metaDescription = $page->meta_description ? html_entity_decode($page->meta_description) : '';
+        $metaKeywords = $page->meta_keywords ? html_entity_decode($page->meta_keywords) : '';
+
+        if ($locationName) {
+            $placeholders = ['{location}', '[location]', '{city}', '[city]', '{state}', '[state]'];
+            
+            if (Str::contains($title, $placeholders)) $title = str_replace($placeholders, $locationName, $title);
+            elseif ($title && !Str::contains($title, $locationName)) $title .= ' in ' . $locationName;
+
+            if (Str::contains($metaTitle, $placeholders)) $metaTitle = str_replace($placeholders, $locationName, $metaTitle);
+            elseif ($metaTitle && !Str::contains($metaTitle, $locationName)) $metaTitle .= ' in ' . $locationName;
+
+            if (Str::contains($metaDescription, $placeholders)) $metaDescription = str_replace($placeholders, $locationName, $metaDescription);
+            elseif ($metaDescription && !Str::contains($metaDescription, $locationName)) $metaDescription .= " Discover and connect with the best creators and influencers in {$locationName} on StarJD.";
+
+            if (Str::contains($metaKeywords, $placeholders)) $metaKeywords = str_replace($placeholders, $locationName, $metaKeywords);
+        }
+
         return response()->json([
             'id' => $page->id,
-            'title' => $page->title ? html_entity_decode($page->title) : '',
+            'title' => $title,
             'slug' => $page->slug,
             'content' => StoragePublicUrl::rewriteStorageUrlsInHtml($contentRaw),
-            'meta_title' => $page->meta_title ? html_entity_decode($page->meta_title) : '',
-            'meta_description' => $page->meta_description ? html_entity_decode($page->meta_description) : '',
-            'meta_keywords' => $page->meta_keywords ? html_entity_decode($page->meta_keywords) : '',
+            'meta_title' => $metaTitle,
+            'meta_description' => $metaDescription,
+            'meta_keywords' => $metaKeywords,
             'template' => $page->template,
             'state_id' => $page->state_id,
             'city_id' => $page->city_id,

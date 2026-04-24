@@ -608,6 +608,12 @@ async function fetchRelatedData() {
     const crRes = await axios.get('/api/creators', { params: { per_page: 4, location: loc } });
     creators.value = toArr(crRes).slice(0, 4);
     
+    // Fallback: If no creators in specific city, fetch trending/global creators
+    if (creators.value.length === 0) {
+      const globalCrRes = await axios.get('/api/creators', { params: { per_page: 4, featured: true } });
+      creators.value = toArr(globalCrRes).slice(0, 4);
+    }
+    
     // Fetch studios (filtered by city string)
     const stRes = await axios.get('/api/studios', { params: { per_page: 4, city: loc } });
     studios.value = toArr(stRes).slice(0, 4);

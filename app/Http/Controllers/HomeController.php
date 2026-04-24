@@ -159,18 +159,43 @@ class HomeController extends Controller
         }
 
         if ($page) {
-            return $this->mapSeo($page);
+            $locName = ($city ?? $state)?->name;
+            return $this->mapSeo($page, $locName);
         }
 
         return [];
     }
 
-    private function mapSeo($model): array
+    private function mapSeo($model, ?string $locationName = null): array
     {
+        $title = $model->meta_title ?: $model->title ?: $model->name ?: '';
+        $description = $model->meta_description ?: '';
+        $keywords = $model->meta_keywords ?: '';
+
+        if ($locationName) {
+            $placeholders = ['{location}', '[location]', '{city}', '[city]', '{state}', '[state]'];
+            
+            if (Str::contains($title, $placeholders)) {
+                $title = str_replace($placeholders, $locationName, $title);
+            } elseif (!Str::contains($title, $locationName)) {
+                $title .= ' in ' . $locationName;
+            }
+
+            if (Str::contains($description, $placeholders)) {
+                $description = str_replace($placeholders, $locationName, $description);
+            } elseif (!Str::contains($description, $locationName)) {
+                $description .= " Discover and connect with the best creators and influencers in {$locationName} on StarJD.";
+            }
+
+            if (Str::contains($keywords, $placeholders)) {
+                $keywords = str_replace($placeholders, $locationName, $keywords);
+            }
+        }
+
         return [
-            'title' => $model->meta_title ?: $model->title ?: $model->name ?: '',
-            'description' => $model->meta_description ?: '',
-            'keywords' => $model->meta_keywords ?: '',
+            'title' => $title,
+            'description' => $description,
+            'keywords' => $keywords,
             'found' => true,
         ];
     }
