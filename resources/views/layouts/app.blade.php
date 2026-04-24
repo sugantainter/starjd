@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="@yield('description', 'StarJD connects brands with vetted creators. Find creators, book packages, and get content that performs.')">
+    <meta name="keywords" content="@yield('keywords', '')">
+    <link rel="canonical" href="@yield('canonical', url()->current())">
     <title>@yield('title', config('app.name', 'StarJD'))</title>
     {{-- Favicons & PWA (generated from logo via php scripts/generate-favicons.php) --}}
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
