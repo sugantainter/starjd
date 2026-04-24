@@ -181,12 +181,15 @@ class HomeController extends Controller
         // Resolve location models
         $stateId = null;
         $cityId = null;
+        $state = null;
+        $city = null;
 
         if ($citySlug) {
             $city = City::findByUrlSlug($citySlug);
             if ($city) {
                 $cityId = $city->id;
                 $stateId = $city->state_id;
+                $state = State::find($stateId);
             }
         }
 
