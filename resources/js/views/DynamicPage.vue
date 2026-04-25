@@ -195,13 +195,13 @@
                         </button>
                         <button
                           v-for="c in filteredCreatorCategories"
-                          :key="c"
+                          :key="typeof c === 'object' ? c.id : c"
                           type="button"
                           class="block w-full px-4 py-2 text-left text-sm text-[#1a1a1a] hover:bg-[#f8fafc]"
                           @mousedown.prevent
-                          @click="selectSidebarCategory(c)"
+                          @click="selectSidebarCategory(typeof c === 'object' ? c.name : c)"
                         >
-                          {{ c }}
+                          {{ typeof c === 'object' ? c.name : c }}
                         </button>
                         <div v-if="!filteredCreatorCategories.length" class="px-4 py-2 text-sm text-[#64748b]">No category found</div>
                       </div>
@@ -342,7 +342,7 @@
                   class="h-full w-full object-cover transition duration-500 group-hover:scale-110"
                 />
                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition duration-300 group-hover:opacity-100"></div>
-                <div v-if="p.category" class="absolute bottom-3 left-3 rounded-lg bg-white/90 px-2.5 py-1 text-xs font-bold text-[#1a1a1a] shadow-sm">{{ p.category }}</div>
+                <div v-if="p.category" class="absolute bottom-3 left-3 rounded-lg bg-white/90 px-2.5 py-1 text-xs font-bold text-[#1a1a1a] shadow-sm">{{ typeof p.category === 'object' ? p.category.name : p.category }}</div>
               </div>
               <div class="p-4">
                 <h3 class="font-bold text-[#1a1a1a] group-hover:text-[#e63946]">{{ p.user?.name }}</h3>
@@ -565,7 +565,10 @@ const stateName = computed(() => cmsPage.value?.state?.name || '');
 const filteredCreatorCategories = computed(() => {
   const q = categoryQuery.value.trim().toLowerCase();
   if (!q) return creatorCategories.value;
-  return creatorCategories.value.filter((c) => String(c).toLowerCase().includes(q));
+  return creatorCategories.value.filter((c) => {
+    const name = typeof c === 'object' ? c.name : String(c);
+    return name.toLowerCase().includes(q);
+  });
 });
 
 function selectSidebarCategory(category) {

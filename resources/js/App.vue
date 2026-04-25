@@ -1400,7 +1400,7 @@
                                     v-if="creator.category"
                                     class="absolute bottom-3 left-3 inline-flex items-center rounded bg-black/70 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-sm"
                                 >
-                                    {{ creator.category }}
+                                    {{ typeof creator.category === 'object' ? creator.category.name : creator.category }}
                                 </span>
                             </div>
                             <div class="p-4 md:p-5">

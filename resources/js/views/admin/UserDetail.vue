@@ -201,7 +201,7 @@
                   <div class="grid grid-cols-2 gap-6">
                     <div>
                       <h4 class="text-xs font-bold uppercase tracking-widest text-[#94a3b8] mb-1">Category</h4>
-                      <p class="text-sm font-bold text-[#1a1a1a]">{{ user.creator_profile.category || '--' }}</p>
+                      <p class="text-sm font-bold text-[#1a1a1a]">{{ typeof user.creator_profile.category === 'object' ? user.creator_profile.category.name : (user.creator_profile.category || '--') }}</p>
                     </div>
                     <div>
                       <h4 class="text-xs font-bold uppercase tracking-widest text-[#94a3b8] mb-1">Gender</h4>
@@ -251,7 +251,7 @@
                   <h4 class="pr-12 text-lg font-black text-[#1a1a1a]">{{ pkg.name }}</h4>
                   <p class="mt-3 text-sm leading-relaxed text-[#64748b] line-clamp-3">{{ pkg.description }}</p>
                   <div class="mt-6 flex items-center justify-between border-t border-[#f1f5f9] pt-4">
-                    <span class="text-xs font-bold uppercase tracking-widest text-[#94a3b8]">{{ pkg.category }}</span>
+                    <span class="text-xs font-bold uppercase tracking-widest text-[#94a3b8]">{{ typeof pkg.category === 'object' ? pkg.category.name : pkg.category }}</span>
                     <span class="text-xs font-medium text-[#1a1a1a]">Includes {{ pkg.deliverables?.length || 0 }} items</span>
                   </div>
                 </div>

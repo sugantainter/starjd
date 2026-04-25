@@ -13,7 +13,7 @@
             {{ profile.city_name }}{{ profile.city_name && profile.state_name ? ', ' : '' }}{{ profile.state_name }}
           </p>
           <p v-else-if="profile.location" class="mt-1 text-sm text-[#64748b]">{{ profile.location }}</p>
-          <p v-if="profile.category" class="mt-1 text-sm text-[#64748b]">{{ profile.category }}</p>
+          <p v-if="profile.category" class="mt-1 text-sm text-[#64748b]">{{ typeof profile.category === 'object' ? profile.category.name : profile.category }}</p>
           <RichTextContent v-if="profile.bio" class="mt-4 text-[#1a1a1a]" :content="profile.bio" />
           <div v-if="connectedSocialAccounts.length" class="mt-5">
             <p class="mb-3 text-sm font-medium text-[#64748b]">Connect & reach</p>
@@ -72,7 +72,7 @@
           <div class="flex-1">
             <div class="flex items-center justify-between mb-2">
               <span v-if="pkg.package_category || pkg.category" class="rounded-full bg-[#fc4402]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#fc4402]">
-                {{ pkg.package_category?.name || pkg.category }}
+                {{ pkg.package_category?.name || (typeof pkg.category === 'object' ? pkg.category.name : pkg.category) }}
               </span>
               <span v-if="pkg.is_negotiable" class="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-600 border border-blue-100">
                 Negotiable

@@ -183,7 +183,7 @@
              <div class="flex flex-col gap-3">
                 <div class="flex flex-wrap gap-1.5">
                    <div v-if="p.category" class="tag-pill bg-amber-50 text-amber-600 !px-3 !py-1 text-[10px]">
-                      {{ p.category }}
+                      {{ typeof p.category === 'object' ? p.category.name : p.category }}
                    </div>
                 </div>
                 

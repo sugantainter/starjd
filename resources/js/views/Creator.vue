@@ -159,7 +159,7 @@
                     <div class="h-64 relative overflow-hidden">
                         <img :src="c.avatar_url || 'https://i.pravatar.cc/400?u=' + c.id" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                         <div class="absolute bottom-4 left-4">
-                            <span class="bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full border border-white/20 px-2 py-1 uppercase tracking-wider">{{ c.category }}</span>
+                            <span class="bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full border border-white/20 px-2 py-1 uppercase tracking-wider">{{ typeof c.category === 'object' ? c.category.name : c.category }}</span>
                         </div>
                     </div>
                     <div class="p-6">

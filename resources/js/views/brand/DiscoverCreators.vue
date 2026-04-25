@@ -34,7 +34,7 @@
             class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
           />
           <span v-if="p.is_featured" class="absolute left-2 top-2 rounded-full bg-[#f59e0b] px-2 py-0.5 text-xs font-medium text-white">Featured</span>
-          <span v-if="p.category" class="absolute bottom-2 left-2 rounded bg-gray-800/80 px-2 py-0.5 text-xs font-medium text-white">{{ p.category }}</span>
+          <span v-if="p.category" class="absolute bottom-2 left-2 rounded bg-gray-800/80 px-2 py-0.5 text-xs font-medium text-white">{{ typeof p.category === 'object' ? p.category.name : p.category }}</span>
         </div>
         <div class="flex flex-1 flex-col p-4">
           <h3 class="font-semibold text-[#1a1a1a]">{{ p.user?.name }}</h3>
