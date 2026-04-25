@@ -79,44 +79,52 @@ const bannerPositionStyle = computed(() => {
   return 'center center';
 });
 
+// Reactive SEO Title & Description
+const seoTitle = computed(() => {
+  if (!service.value) return 'Service | StarJD';
+  return `${service.value.meta_title || service.value.name} | StarJD`;
+});
 
+const seoDescription = computed(() => {
+  if (!service.value) return 'Professional influencer marketing services on StarJD.';
+  return service.value.meta_description || service.value.short_description || 'Explore our professional creative services.';
+});
 
-function updateDocumentMeta() {
-  if (!service.value) return;
-  const title = service.value.meta_title || service.value.name;
-  const description = service.value.meta_description || service.value.short_description || '';
-  const image = service.value.banner_image || (window.location.origin + '/logo.png');
+const seoImage = computed(() => {
+  return service.value?.banner_image || (window.location.origin + '/logo.png');
+});
 
-  useHead({
-    title: `${title} | StarJD`,
-    meta: [
-      { name: 'description', content: description },
-      { property: 'og:title', content: title },
-      { property: 'og:description', content: description },
-      { property: 'og:image', content: image },
-      { property: 'og:type', content: 'website' }
-    ],
-    script: [
-      {
-        type: 'application/ld+json',
-        children: JSON.stringify({
+// useHead must be called in setup synchronously
+useHead({
+  title: seoTitle,
+  meta: [
+    { name: 'description', content: seoDescription },
+    { property: 'og:title', content: seoTitle },
+    { property: 'og:description', content: seoDescription },
+    { property: 'og:image', content: seoImage },
+    { property: 'og:type', content: 'website' }
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      children: computed(() => {
+        if (!service.value) return '';
+        return JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Service",
           "name": service.value.name,
-          "description": service.value.short_description || description,
+          "description": service.value.short_description || seoDescription.value,
           "provider": {
             "@type": "Organization",
             "name": "StarJD"
           },
-          "image": image,
-          "url": window.location.href
-        })
-      }
-    ]
-  });
-}
-
-watch(service, updateDocumentMeta, { immediate: true });
+          "image": seoImage.value,
+          "url": typeof window !== 'undefined' ? window.location.href : ''
+        });
+      })
+    }
+  ]
+});
 
 async function loadService() {
   loading.value = true;
@@ -131,18 +139,9 @@ async function loadService() {
   }
 }
 
-watch(
-  () => route.params.slug,
-  () => {
-    loadService();
-  },
-);
+watch(() => route.params.slug, loadService);
 
 onMounted(() => {
   loadService();
 });
 </script>
-
-<style scoped>
-
-</style>

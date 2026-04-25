@@ -1,5 +1,8 @@
 <template>
-  <div v-if="loading" class="mx-auto max-w-6xl px-4 py-12 text-center text-[#64748b]">Loading…</div>
+  <div v-if="loading" class="mx-auto max-w-6xl px-4 py-12 text-center text-[#64748b]">
+    <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#e63946] border-r-transparent align-[-0.125em]" role="status"></div>
+    <p class="mt-4">Loading studio details...</p>
+  </div>
   <div v-else-if="studio" class="mx-auto max-w-6xl px-4 py-8">
     <!-- Gallery -->
     <div class="relative overflow-hidden rounded-2xl bg-[#f1f5f9]">
@@ -22,15 +25,25 @@
     </div>
 
     <div class="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
-      <div class="lg:col-span-2">
-        <h1 class="text-3xl font-bold text-[#1a1a1a]">{{ studio.name }}</h1>
-        <p v-if="studio.city" class="mt-2 text-[#64748b]">{{ studio.city }}{{ studio.state ? ', ' + studio.state : '' }}</p>
-        <div v-if="studio.rating_avg != null" class="mt-2 flex items-center gap-2 text-amber-600">
-          <span>★ {{ studio.rating_avg }}</span>
-          <span class="text-sm text-[#64748b]">({{ studio.reviews_count }} reviews)</span>
-        </div>
-        <div v-if="studio.category" class="mt-2">
-          <span class="rounded-full bg-[#e2e8f0] px-3 py-1 text-sm text-[#64748b]">{{ studio.category.name }}</span>
+      <!-- Main Content -->
+      <div v-if="studio" class="lg:col-span-2">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 class="text-3xl font-bold text-[#1a1a1a]">{{ studio.name || 'Studio' }}</h1>
+            <p v-if="studio.city" class="mt-1 flex items-center gap-1 text-[#64748b]">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              {{ studio.city }}{{ studio.state ? ', ' + studio.state : '' }}
+            </p>
+            <div v-if="studio.category" class="mt-2">
+              <span class="rounded-full bg-[#e2e8f0] px-3 py-1 text-sm text-[#64748b]">
+                {{ typeof studio.category === 'object' ? studio.category.name : studio.category }}
+              </span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-2xl font-bold text-amber-500">★ {{ studio.rating_avg || 'New' }}</span>
+            <span class="text-sm text-[#64748b]">({{ studio.reviews_count || 0 }} reviews)</span>
+          </div>
         </div>
 
         <div v-if="studio.description" class="mt-6">
@@ -79,7 +92,6 @@
 
       <div class="lg:col-span-1">
         <div class="sticky top-24">
-          <div class="mb-3 flex flex-wrap items-end gap-2"></div>
           <BookingWidget
             :studio="studio"
             :breakdown="priceBreakdown"
@@ -94,7 +106,12 @@
       </div>
     </div>
   </div>
-  <div v-else class="mx-auto max-w-6xl px-4 py-12 text-center text-[#64748b]">Studio not found.</div>
+  <div v-else class="mx-auto max-w-6xl px-4 py-24 text-center">
+    <div class="mb-4 text-center text-5xl opacity-20">🔍</div>
+    <h2 class="text-2xl font-bold text-[#1a1a1a]">Studio not found</h2>
+    <p class="mt-2 text-[#64748b]">{{ errorMessage || 'The studio you are looking for does not exist or has been moved.' }}</p>
+    <router-link to="/studios" class="mt-6 inline-block rounded-xl bg-[#e63946] px-6 py-3 font-medium text-white hover:bg-[#c1121f]">Browse All Studios</router-link>
+  </div>
   <form ref="payuForm" method="post" :action="payuUrl" class="hidden">
     <input v-for="(val, key) in payuParams" :key="key" :name="key" :value="val" type="hidden" />
   </form>
@@ -121,6 +138,7 @@ const bookingStart = ref('09:00');
 const bookingEnd = ref('10:00');
 const priceBreakdown = ref(null);
 const bookingInProgress = ref(false);
+const errorMessage = ref('');
 
 const similarStudios = computed(() => studio.value?.similar_studios ?? []);
 
@@ -130,58 +148,44 @@ const currentImage = computed(() => {
   return g[currentIndex.value]?.image || g[0]?.image;
 });
 
-async function fetchStudio() {
-  loading.value = true;
-  try {
-    const res = await axios.get('/api/studios/' + route.params.slug);
-    studio.value = res.data;
-
-    // Dynamic SEO for Studio
-    if (studio.value) {
-      const name = studio.value.name;
-      const city = studio.value.city || 'India';
-      const category = studio.value.category?.name || 'Content Studio';
-      const title = `${name} | ${category} in ${city} | StarJD`;
-      const description = studio.value.description?.substring(0, 160) || `Book ${name}, a professional ${category} in ${city}. Features including ${studio.value.amenities?.map(a => a.name).slice(0, 3).join(', ')}.`;
-      const mainImg = studio.value.main_image || (window.location.origin + '/logo.png');
-
-      useHead({
-        title,
-        meta: [
-          { name: 'description', content: description },
-          { property: 'og:title', content: title },
-          { property: 'og:description', content: description },
-          { property: 'og:image', content: mainImg },
-          { property: 'og:type', content: 'place' },
-          { name: 'twitter:card', content: 'summary_large_image' }
-        ],
-        script: [
-          {
-            type: 'application/ld+json',
-            children: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "LocalBusiness",
-              "name": name,
-              "image": mainImg,
-              "description": description,
-              "address": {
-                "@type": "PostalAddress",
-                "addressLocality": studio.value.city,
-                "addressRegion": studio.value.state
-              },
-              "url": window.location.href,
-              "aggregateRating": studio.value.rating_avg ? {
-                "@type": "AggregateRating",
-                "ratingValue": studio.value.rating_avg,
-                "reviewCount": studio.value.reviews_count
-              } : undefined
-            })
-          }
-        ]
-      });
+// useHead must be called in setup synchronously
+useHead({
+  title: computed(() => {
+    if (!studio.value) return 'Studio | StarJD';
+    const name = studio.value.name || 'Studio';
+    const city = studio.value.city || 'India';
+    return `${name} | StarJD`;
+  }),
+  meta: [
+    {
+      name: 'description',
+      content: computed(() => {
+        if (!studio.value) return 'Book professional studios on StarJD.';
+        return studio.value.description?.replace(/<[^>]*>/g, '').substring(0, 160) || 'Book this professional studio on StarJD.';
+      })
     }
-  } catch {
+  ]
+});
+
+async function fetchStudio() {
+  const slug = route.params.slug;
+  if (!slug) return;
+  
+  loading.value = true;
+  errorMessage.value = '';
+  try {
+    const res = await axios.get('/api/studios/' + slug);
+    const data = res.data?.data ?? res.data;
+    if (data && typeof data === 'object' && data.id) {
+      studio.value = data;
+    } else {
+      studio.value = null;
+      errorMessage.value = 'Studio data is empty or invalid.';
+    }
+  } catch (err) {
+    console.error('Failed to fetch studio:', err);
     studio.value = null;
+    errorMessage.value = err.response?.data?.message || err.message || 'Could not connect to the server.';
   } finally {
     loading.value = false;
   }

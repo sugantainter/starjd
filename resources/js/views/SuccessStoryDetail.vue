@@ -72,7 +72,7 @@
       </div>
     </article>
     
-    <!-- Related Stories (Optional) -->
+    <!-- Related Stories -->
     <section class="bg-[#fafaf9] py-24 border-t border-[#e5e7eb]">
        <div class="mx-auto max-w-6xl px-4">
           <div class="flex items-end justify-between mb-12">
@@ -100,7 +100,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { useHead } from '@unhead/vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
@@ -112,55 +112,68 @@ const loading = ref(true);
 const loadingRelated = ref(false);
 const relatedStories = ref([]);
 
+// Reactive SEO Title & Description
+const seoTitle = computed(() => {
+  if (!story.value) return 'Success Story | StarJD';
+  return `${story.value.title} | ${story.value.role?.name || 'Success Story'} | StarJD`;
+});
+
+const seoDescription = computed(() => {
+  if (!story.value) return 'Read success stories on StarJD.';
+  return story.value.content?.replace(/<[^>]*>/g, '').substring(0, 160) || `Read how ${story.value.author_name} achieved massive growth and success on StarJD.`;
+});
+
+const seoImage = computed(() => {
+  return story.value?.image || (window.location.origin + '/logo.png');
+});
+
+// useHead must be called in setup synchronously
+useHead({
+  title: seoTitle,
+  meta: [
+    { name: 'description', content: seoDescription },
+    { property: 'og:title', content: seoTitle },
+    { property: 'og:description', content: seoDescription },
+    { property: 'og:image', content: seoImage },
+    { property: 'og:type', content: 'article' },
+    { name: 'twitter:card', content: 'summary_large_image' }
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      children: computed(() => {
+        if (!story.value) return '';
+        return JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": story.value.title,
+          "description": seoDescription.value,
+          "image": seoImage.value,
+          "author": {
+            "@type": "Person",
+            "name": story.value.author_name || "StarJD User"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "StarJD",
+            "logo": {
+              "@type": "ImageObject",
+              "url": window.location.origin + "/logo.png"
+            }
+          },
+          "datePublished": story.value.created_at,
+          "url": typeof window !== 'undefined' ? window.location.href : ''
+        });
+      })
+    }
+  ]
+});
+
 async function loadStory() {
   loading.value = true;
   try {
     const { data } = await axios.get(`/api/success-stories/${route.params.slug}`);
     story.value = data;
-
-    // Dynamic SEO
-    const title = `${data.title} | ${data.role?.name || 'Success Story'} | StarJD`;
-    const description = data.content?.substring(0, 160).replace(/<[^>]*>/g, '') || `Read how ${data.author_name} achieved massive growth and success on StarJD.`;
-    const image = data.image || (window.location.origin + '/logo.png');
-
-    useHead({
-      title,
-      meta: [
-        { name: 'description', content: description },
-        { property: 'og:title', content: title },
-        { property: 'og:description', content: description },
-        { property: 'og:image', content: image },
-        { property: 'og:type', content: 'article' },
-        { name: 'twitter:card', content: 'summary_large_image' }
-      ],
-      script: [
-        {
-          type: 'application/ld+json',
-          children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Article",
-            "headline": data.title,
-            "description": description,
-            "image": image,
-            "author": {
-              "@type": "Person",
-              "name": data.author_name || "StarJD User"
-            },
-            "publisher": {
-              "@type": "Organization",
-              "name": "StarJD",
-              "logo": {
-                "@type": "ImageObject",
-                "url": window.location.origin + "/logo.png"
-              }
-            },
-            "datePublished": data.created_at,
-            "url": window.location.href
-          })
-        }
-      ]
-    });
-
     loadRelated(data.role?.slug);
   } catch (e) {
     console.error('Failed to load story', e);
@@ -193,7 +206,6 @@ function formatDate(d) {
 }
 
 onMounted(loadStory);
-
 watch(() => route.params.slug, loadStory);
 </script>
 

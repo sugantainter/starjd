@@ -50,6 +50,7 @@
                 frameborder="0"
                 scrolling="no"
                 allowtransparency="true"
+                allow="autoplay"
               ></iframe>
             </div>
             <div v-else class="rounded-xl bg-[#f8fafc] p-4 text-sm text-[#475569]">
@@ -151,7 +152,7 @@
             </router-link>
           </div>
 
-          <!-- Chat section: show after apply or as "Contact brand" -->
+          <!-- Chat section -->
           <div class="mt-8 pt-6 border-t border-[#e2e8f0]">
             <h3 class="text-base font-semibold text-[#1a1a1a]">Chat with brand</h3>
             <p class="mt-1 text-sm text-[#64748b]">After applying, you can message the brand here to discuss the campaign.</p>
@@ -178,7 +179,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue';
+import { ref, reactive, onMounted, watch, computed } from 'vue';
 import { useHead } from '@unhead/vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
@@ -258,6 +259,51 @@ function instagramEmbedUrl(url) {
   }
 }
 
+// Reactive SEO
+const seoTitle = computed(() => {
+  if (!campaign.value) return 'Campaign | StarJD';
+  return (campaign.value.title || 'Campaign') + ' | StarJD Campaigns';
+});
+
+const seoDescription = computed(() => {
+  if (!campaign.value) return 'Apply to influencer marketing campaigns on StarJD.';
+  return campaign.value.description?.substring(0, 160).replace(/<[^>]*>/g, '') || 'Apply to this influencer marketing campaign on StarJD.';
+});
+
+const seoImage = computed(() => {
+  return window.location.origin + '/logo.png';
+});
+
+useHead({
+  title: seoTitle,
+  meta: [
+    { name: 'description', content: seoDescription },
+    { property: 'og:title', content: seoTitle },
+    { property: 'og:description', content: seoDescription },
+    { property: 'og:image', content: seoImage },
+    { property: 'og:type', content: 'website' }
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      children: computed(() => {
+        if (!campaign.value) return '';
+        return JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Event",
+          "name": campaign.value.title,
+          "description": seoDescription.value,
+          "organizer": {
+            "@type": "Organization",
+            "name": campaign.value.brand?.name || "StarJD"
+          },
+          "url": typeof window !== 'undefined' ? window.location.href : ''
+        });
+      })
+    }
+  ]
+});
+
 async function loadCampaign() {
   const slug = route.params.slug;
   if (!slug) return;
@@ -265,41 +311,6 @@ async function loadCampaign() {
   try {
     const res = await axios.get('/api/campaigns/slug/' + encodeURIComponent(slug));
     campaign.value = res.data;
-    
-    // Dynamic SEO
-    if (campaign.value) {
-      const title = (campaign.value.title || 'Campaign') + ' | StarJD Campaigns';
-      const description = campaign.value.description?.substring(0, 160).replace(/<[^>]*>/g, '') || 'Apply to this influencer marketing campaign on StarJD.';
-      const image = window.location.origin + '/logo.png';
-
-      useHead({
-        title,
-        meta: [
-          { name: 'description', content: description },
-          { property: 'og:title', content: title },
-          { property: 'og:description', content: description },
-          { property: 'og:image', content: image },
-          { property: 'og:type', content: 'website' }
-        ],
-        script: [
-          {
-            type: 'application/ld+json',
-            children: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Event",
-              "name": campaign.value.title,
-              "description": description,
-              "organizer": {
-                "@type": "Organization",
-                "name": campaign.value.brand?.name || "StarJD"
-              },
-              "url": window.location.href
-            })
-          }
-        ]
-      });
-    }
-
     await checkMeAndApplication();
   } catch (e) {
     if (e.response?.status === 404) campaign.value = null;
@@ -350,8 +361,6 @@ async function submitApply() {
     applying.value = false;
   }
 }
-
-// SEO results are handled in loadCampaign via useHead
 
 onMounted(loadCampaign);
 watch(() => route.params.slug, loadCampaign);
