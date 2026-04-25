@@ -518,6 +518,9 @@ const blogs = ref([]);
 const services = ref([]);
 const creatorCategories = ref([]);
 const siblingPages = ref([]);
+const isDynamic = ref(false);
+const dynamicLocName = ref('');
+const dynamicSlug = ref('');
 
 const sidebarSearch = ref('');
 const sidebarCategory = ref('');
@@ -534,6 +537,7 @@ const stats = [
 const headTitle = ref('StarJD');
 const headDescription = ref('');
 const headKeywords = ref('');
+const robotsMeta = ref('index, follow');
 const canonicalUrl = computed(() => {
   return window.location.origin + route.path;
 });
@@ -546,6 +550,7 @@ useHead({
   meta: [
     { name: 'description', content: headDescription },
     { name: 'keywords', content: headKeywords },
+    { name: 'robots', content: robotsMeta },
     { property: 'og:title', content: headTitle },
     { property: 'og:description', content: headDescription },
     { property: 'og:url', content: () => window.location.origin + route.fullPath },
@@ -556,10 +561,10 @@ useHead({
 const locationName = computed(() => {
   if (cmsPage.value?.city) return cmsPage.value.city.name;
   if (cmsPage.value?.state) return cmsPage.value.state.name;
-  return '';
+  return dynamicLocName.value || '';
 });
 
-const cityName = computed(() => cmsPage.value?.city?.name || '');
+const cityName = computed(() => cmsPage.value?.city?.name || (dynamicLocName.value && !dynamicLocName.value.includes(',') ? dynamicLocName.value : ''));
 const stateName = computed(() => cmsPage.value?.state?.name || '');
 
 const filteredCreatorCategories = computed(() => {
@@ -691,20 +696,50 @@ async function loadPage() {
     
     if (r.data && typeof r.data === 'object' && r.data.id) {
        cmsPage.value = r.data;
+       isDynamic.value = false;
        
        // Update SEO Reactive Object
        headTitle.value = cmsPage.value.meta_title || cmsPage.value.title || 'StarJD';
        headDescription.value = cmsPage.value.meta_description || '';
        headKeywords.value = cmsPage.value.meta_keywords || '';
+       robotsMeta.value = 'index, follow';
        
        fetchRelatedData();
     } else {
-       cmsPage.value = null;
+       handleNotFound(slug, locationSlug, stateSlugFromUrl);
     }
   } catch (e) {
-    cmsPage.value = null;
+    handleNotFound(slug, locationSlug, stateSlugFromUrl);
   } finally {
     loading.value = false;
+  }
+}
+
+function handleNotFound(slug, locationSlug, stateSlug) {
+  const loc = locationSlug || stateSlug;
+  if (loc) {
+    isDynamic.value = true;
+    dynamicLocName.value = loc.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    dynamicSlug.value = slug;
+    
+    const type = slug.charAt(0).toUpperCase() + slug.slice(1);
+    const typeName = type.toLowerCase() === 'page' ? 'Influencers' : type;
+    
+    cmsPage.value = {
+      title: `Best ${typeName} in ${dynamicLocName.value}`,
+      content: `<h3>Discover Top ${typeName} in ${dynamicLocName.value}</h3><p>StarJD connects you with verified professional talent and creative spaces in <strong>${dynamicLocName.value}</strong>. Browse our community to find the perfect partners for your next campaign.</p>`,
+      slug: slug
+    };
+    
+    headTitle.value = `Best ${typeName} in ${dynamicLocName.value} | StarJD`;
+    headDescription.value = `Connect with the best ${typeName.toLowerCase()} in ${dynamicLocName.value}. Verified profiles and professional creative opportunities on StarJD.`;
+    robotsMeta.value = 'index, follow';
+    
+    fetchRelatedData();
+  } else {
+    cmsPage.value = null;
+    isDynamic.value = false;
+    robotsMeta.value = 'noindex, follow';
   }
 }
 

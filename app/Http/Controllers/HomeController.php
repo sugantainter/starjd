@@ -231,6 +231,25 @@ class HomeController extends Controller
             return $this->enrichSeoWithLocationData($seo, $state, $city);
         }
 
+        // DYNAMIC FALLBACK: If we have a location but no curated CMS page, generate one on the fly.
+        // This prevents Soft 404s by providing contextually relevant metadata and content.
+        if ($city || $state) {
+            $locName = ($city ?? $state)?->name;
+            $type = Str::headline($slug);
+            if (Str::lower($type) === 'page') $type = 'Influencers'; // Default
+
+            $seo = [
+                'title' => "Best {$type} in {$locName} | StarJD",
+                'description' => "Discover and connect with top-rated {$type} in {$locName}. Verified profiles, professional studios, and brand collaboration opportunities on StarJD.",
+                'keywords' => "{$type} in {$locName}, {$locName} influencers, creators in {$locName}",
+                'content' => "<h3>Looking for {$type} in {$locName}?</h3><p>StarJD is your gateway to the most talented creators and professional creative spaces in <strong>{$locName}</strong>. Browse our verified listings to find the perfect match for your next campaign.</p>",
+                'found' => true,
+                'is_dynamic' => true,
+            ];
+
+            return $this->enrichSeoWithLocationData($seo, $state, $city);
+        }
+
         return [];
     }
 
