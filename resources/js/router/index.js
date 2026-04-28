@@ -32,8 +32,8 @@ const routes = [
   { path: '/marketplace', component: AppLayout, children: [ { path: '', name: 'marketplace', component: () => import('../views/Marketplace.vue'), meta: { title: 'Service Marketplace | Hire Creative Experts | StarJD', description: 'Hire vetted professionals for photography, editing, marketing, and more in our creative marketplace.' } } ] },
   { path: '/marketplace/:paths+', component: AppLayout, children: [ { path: '', name: 'marketplace-flexible', component: () => import('../views/Marketplace.vue') } ] },
   { path: '/gigs/:slug', component: AppLayout, children: [ { path: '', name: 'gig-detail', component: () => import('../views/GigDetail.vue') } ] },
-  // Legacy /page/{slug} → canonical /{slug} (same DynamicPage as catch-all; avoids duplicate URLs)
   { path: '/page/:slug', redirect: (to) => ({ path: `/${to.params.slug}` }) },
+  // { path: '/v/:slug', component: AppLayout, children: [ { path: '', name: 'seo-content-page', component: () => import('../views/SeoContentPage.vue') } ] },
   { path: '/creators', component: AppLayout, children: [ { path: '', name: 'creators', component: () => import('../views/Creators.vue'), meta: { title: 'Discover Top Creators & Influencers | StarJD', description: 'Browse and hire thousands of vetted creators across Instagram, YouTube, TikTok and more.' } } ] },
   { path: '/creators/:paths+', component: AppLayout, children: [ { path: '', name: 'creators-flexible', component: () => import('../views/Creators.vue') } ] },
   { path: '/creators/search/:search', component: AppLayout, children: [ { path: '', name: 'creators-search', component: () => import('../views/Creators.vue') } ] },
@@ -128,6 +128,7 @@ const routes = [
       { path: 'states', name: 'admin-states', component: () => import('../views/admin/States.vue') },
       { path: 'cities', name: 'admin-cities', component: () => import('../views/admin/Cities.vue') },
       { path: 'pages', name: 'admin-pages', component: () => import('../views/admin/Pages.vue') },
+      { path: 'seo-pages', name: 'admin-seo-pages', component: () => import('../views/admin/SeoPageManager.vue') },
       { path: 'success-stories', name: 'admin-success-stories', component: () => import('../views/admin/SuccessStories.vue') },
       { path: 'hero', name: 'admin-hero', component: () => import('../views/admin/Hero.vue') },
       { path: 'banners', name: 'admin-banners', component: () => import('../views/admin/Banners.vue') },
@@ -171,8 +172,16 @@ const routes = [
       { path: '', name: 'dynamic-city-page', component: () => import('../views/DynamicPage.vue') }
     ]
   },
+  { path: '/v/:slug', redirect: to => ({ path: `/${to.params.slug}` }) },
   {
     path: '/:slug',
+    component: AppLayout,
+    children: [
+      { path: '', name: 'seo-content-page', component: () => import('../views/SeoContentPage.vue') }
+    ]
+  },
+  {
+    path: '/:slug-old', // Keeping as fallback or renaming
     component: AppLayout,
     children: [
       { path: '', name: 'dynamic-root-page', component: () => import('../views/DynamicPage.vue') }

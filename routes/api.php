@@ -19,6 +19,8 @@ use App\Http\Controllers\CampaignApplicationController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\CampaignPublicController;
 use App\Http\Controllers\Admin\FaqController;
+use App\Http\Controllers\Admin\LocationCmsController;
+use App\Http\Controllers\LocationPublicController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -27,7 +29,7 @@ use Illuminate\Support\Facades\Route;
 | API Routes (Stateless - No CSRF required)
 |--------------------------------------------------------------------------
 | Automatically prefixed with /api. No session/CSRF middleware.
-*/
+| */
 
 // App config
 Route::get('/app/config', [AppConfigController::class, 'config']);
@@ -93,6 +95,7 @@ Route::get('cities', function () {
 });
 Route::get('pages', [PageController::class, 'index']);
 Route::get('pages/{slug}', [PageController::class, 'show']);
+Route::get('seo-content/{slug}', [LocationPublicController::class, 'show']);
 
 // ── Auth ───────────────────────────────────────────────────────────────────
 Route::post('login',                        [AuthController::class, 'login']);
@@ -204,6 +207,85 @@ Route::middleware('web')->group(function () {
             Route::post('ai/suggest-pricing', [\App\Http\Controllers\Professional\AISuggestionController::class, 'suggestPricing']);
             Route::post('ai/suggest-faqs', [\App\Http\Controllers\Professional\AISuggestionController::class, 'suggestFAQs']);
             Route::get('orders', [\App\Http\Controllers\Professional\ProfessionalController::class, 'orders']);
+        });
+
+        Route::middleware(['auth:web', 'verified', 'admin'])->prefix('admin')->group(function () {
+            Route::get('payout-requests', [\App\Http\Controllers\Admin\PayoutRequestController::class, 'index']);
+            Route::post('payout-requests/{payoutRequest}/process', [\App\Http\Controllers\Admin\PayoutRequestController::class, 'process']);
+            Route::get('user', fn () => response()->json(request()->user()));
+            Route::get('dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index']);
+            Route::get('roles', fn () => response()->json(\App\Models\Role::whereNotIn('slug', ['admin', 'customer'])->orderBy('name')->get(['id', 'name', 'slug'])));
+            Route::apiResource('categories', \App\Http\Controllers\Admin\CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::apiResource('sub-categories', \App\Http\Controllers\Admin\SubCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::apiResource('testimonials', \App\Http\Controllers\Admin\TestimonialController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::apiResource('faqs', \App\Http\Controllers\Admin\FaqController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::apiResource('steps', \App\Http\Controllers\Admin\StepController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::get('contacts', [\App\Http\Controllers\Admin\ContactMessageController::class, 'index']);
+            Route::delete('contacts/{id}', [\App\Http\Controllers\Admin\ContactMessageController::class, 'destroy'])->name('admin.contacts.destroy');
+            Route::post('posts/upload', [\App\Http\Controllers\Admin\PostController::class, 'uploadImage']);
+            Route::get('storage-url', [\App\Http\Controllers\Admin\StorageUrlController::class, 'show']);
+            Route::apiResource('posts', \App\Http\Controllers\Admin\PostController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::apiResource('videos', \App\Http\Controllers\Admin\VideoController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::get('hero', [\App\Http\Controllers\Admin\HeroController::class, 'show']);
+            Route::put('hero', [\App\Http\Controllers\Admin\HeroController::class, 'update']);
+            Route::post('hero/upload', [\App\Http\Controllers\Admin\HeroController::class, 'upload']);
+            Route::apiResource('partners', \App\Http\Controllers\Admin\PartnerController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::post('partners/upload', [\App\Http\Controllers\Admin\PartnerController::class, 'upload']);
+            Route::apiResource('services', \App\Http\Controllers\Admin\ServiceController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::get('countries', [\App\Http\Controllers\Admin\CountryController::class, 'index']);
+            Route::apiResource('states', \App\Http\Controllers\Admin\StateController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::apiResource('cities', \App\Http\Controllers\Admin\CityController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::apiResource('pages', \App\Http\Controllers\Admin\PageController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::get('legal-pages', [\App\Http\Controllers\Admin\LegalPageController::class, 'index']);
+            Route::put('legal-pages/{slug}', [\App\Http\Controllers\Admin\LegalPageController::class, 'update']);
+            Route::get('studio-owners', [\App\Http\Controllers\Admin\StudioController::class, 'studioOwners']);
+            Route::get('studios', [\App\Http\Controllers\Admin\StudioController::class, 'index']);
+            Route::post('studios', [\App\Http\Controllers\Admin\StudioController::class, 'store']);
+            Route::get('studios/{studio}', [\App\Http\Controllers\Admin\StudioController::class, 'show']);
+            Route::put('studios/{studio}', [\App\Http\Controllers\Admin\StudioController::class, 'update']);
+            Route::apiResource('studio-categories', \App\Http\Controllers\Admin\StudioCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::apiResource('amenities', \App\Http\Controllers\Admin\AmenityController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::apiResource('coupons', \App\Http\Controllers\Admin\CouponController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::apiResource('banners', \App\Http\Controllers\Admin\BannerController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::post('banners/upload', [\App\Http\Controllers\Admin\BannerController::class, 'upload']);
+            Route::post('success-stories/upload', [\App\Http\Controllers\Admin\SuccessStoryController::class, 'uploadImage']);
+            Route::apiResource('success-stories', \App\Http\Controllers\Admin\SuccessStoryController::class);
+            
+            // Support Tickets
+            Route::get('support/tickets', [\App\Http\Controllers\Admin\SupportAdminController::class, 'index']);
+            Route::get('support/tickets/{ticket}', [\App\Http\Controllers\Admin\SupportAdminController::class, 'show']);
+            Route::post('support/tickets/{ticket}/reply', [\App\Http\Controllers\Admin\SupportAdminController::class, 'reply']);
+            Route::patch('support/tickets/{ticket}/status', [\App\Http\Controllers\Admin\SupportAdminController::class, 'updateStatus']);
+            Route::post('support/tickets/{ticket}/settle', [\App\Http\Controllers\Admin\SupportAdminController::class, 'settle']);
+
+            // AI Usage
+            Route::get('ai/usage', [\App\Http\Controllers\Admin\AIUsageController::class, 'index']);
+            Route::get('ai/usage/users', [\App\Http\Controllers\Admin\AIUsageController::class, 'userStats']);
+            Route::get('ai/usage/logs', [\App\Http\Controllers\Admin\AIUsageController::class, 'recentLogs']);
+
+            // Marketing
+            Route::get('marketing/stats', [\App\Http\Controllers\Admin\MarketingController::class, 'stats']);
+            Route::get('marketing/filters', [\App\Http\Controllers\Admin\MarketingController::class, 'getFilters']);
+            Route::apiResource('marketing', \App\Http\Controllers\Admin\MarketingController::class)->only(['index', 'store', 'show']);
+            Route::post('marketing/{marketing}/send', [\App\Http\Controllers\Admin\MarketingController::class, 'send']);
+
+            // Users
+            Route::get('users', [\App\Http\Controllers\Admin\UserController::class, 'index']);
+            Route::get('users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'show']);
+            Route::patch('users/{user}/status', [\App\Http\Controllers\Admin\UserController::class, 'updateStatus']);
+
+            // Sitemap
+            Route::get('sitemap', [\App\Http\Controllers\Admin\SitemapController::class, 'status']);
+            Route::post('sitemap/generate', [\App\Http\Controllers\Admin\SitemapController::class, 'generate']);
+
+            // Location CMS
+            Route::get('seo-pages', [LocationCmsController::class, 'index']);
+            Route::get('seo-pages/{id}', [LocationCmsController::class, 'show']);
+            Route::put('seo-pages/{id}', [LocationCmsController::class, 'update']);
+            Route::delete('seo-pages/{id}', [LocationCmsController::class, 'destroy']);
+            Route::post('seo-pages/generate-ai', [LocationCmsController::class, 'generateAiContent']);
+            Route::post('seo-pages/bulk-import', [LocationCmsController::class, 'bulkImport']);
+            Route::post('seo-pages/bulk-action', [LocationCmsController::class, 'bulkAction']);
         });
     });
 });
