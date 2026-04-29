@@ -739,7 +739,8 @@ function handleNotFound(slug, locationSlug, stateSlug) {
   } else {
     cmsPage.value = null;
     isDynamic.value = false;
-    robotsMeta.value = 'noindex, follow';
+    // Keep pages indexable for location-like dynamic routes that may resolve late.
+    robotsMeta.value = 'index, follow';
   }
 }
 

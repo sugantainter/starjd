@@ -12,14 +12,6 @@ Allow: /pricing
 
 # Disallow admin and dashboard areas
 Disallow: /admin/
-Disallow: /creator/
-Disallow: /brand/
-Disallow: /agency/
-Disallow: /studio-owner/
-Disallow: /professional/
-Disallow: /login
-Disallow: /register
-Disallow: /forgot-password
 Disallow: /reset-password
 Disallow: /api/
 
