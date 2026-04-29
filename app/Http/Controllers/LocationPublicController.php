@@ -8,16 +8,15 @@ use App\Models\CreatorProfile;
 use App\Models\Studio;
 use App\Models\BrandProfile;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class LocationPublicController extends Controller
 {
     /**
      * Resolve a root-level slug. 
-     * Priority: 1. New SEO Pages (Location-based) 2. Legacy Static Pages
      */
     public function show($slug)
     {
-        // 1. Try New SEO Pages
         $seoPage = SeoPage::with('entity')->where('slug', $slug)->first();
 
         if ($seoPage) {
@@ -25,9 +24,50 @@ class LocationPublicController extends Controller
                 abort(404);
             }
 
-            // Extract city from entity to find relevant services
-            $city = $seoPage->entity->city ?? null;
+            $city = $seoPage->entity->city ?? ($seoPage->entity->location ?? null);
+            $type = $seoPage->type;
             
+            // Grouped Interlinking (Tabbed Data)
+            $tabbedLinks = [
+                'Popular Areas' => SeoPage::where('status', 'published')
+                    ->where(function($q) use ($city) {
+                        if ($city) $q->where('slug', 'like', "%" . Str::slug($city) . "%");
+                    })
+                    ->where('type', 'area')
+                    ->limit(16)->get(['title', 'slug']),
+                
+                'Top Services' => SeoPage::where('status', 'published')
+                    ->where(function($q) use ($city) {
+                        if ($city) $q->where('slug', 'like', "%" . Str::slug($city) . "%");
+                    })
+                    ->whereIn('type', ['service', 'influencer', 'hospital', 'school', 'market', 'metro'])
+                    ->limit(16)->get(['title', 'slug']),
+
+                'Popular Cities' => SeoPage::where('status', 'published')
+                    ->where('type', $type)
+                    ->where(function($q) use ($city) {
+                        if ($city) $q->where('slug', 'not like', "%" . Str::slug($city) . "%");
+                    })
+                    ->limit(16)->get(['title', 'slug']),
+                
+                'Platform Hub' => [
+                    ['title' => 'Vetted Influencers', 'slug' => 'creators'],
+                    ['title' => 'Professional Studios', 'slug' => 'studios'],
+                    ['title' => 'Brand Campaigns', 'slug' => 'campaign'],
+                    ['title' => 'Marketing Marketplace', 'slug' => 'marketplace'],
+                    ['title' => 'Success Stories', 'slug' => 'success-stories'],
+                    ['title' => 'Professional Profiles', 'slug' => 'professionals'],
+                    ['title' => 'Creative Gigs', 'slug' => 'gigs'],
+                    ['title' => 'Star Blog', 'slug' => 'blog'],
+                ]
+            ];
+
+            // Filter out empty groups (except Platform Hub which is static)
+            $tabbedLinks = array_filter($tabbedLinks, function($links, $key) {
+                if ($key === 'Platform Hub') return true;
+                return !empty($links) && (is_array($links) ? count($links) > 0 : $links->isNotEmpty());
+            }, ARRAY_FILTER_USE_BOTH);
+
             $relevantInfluencers = [];
             if ($city) {
                 $relevantInfluencers = CreatorProfile::where('location', 'like', "%$city%")
@@ -39,26 +79,45 @@ class LocationPublicController extends Controller
             return response()->json([
                 'type' => 'seo_page',
                 'page' => $seoPage,
+                'tabbed_links' => $tabbedLinks,
                 'relevant_influencers' => $relevantInfluencers,
+                'schema' => $this->generateSchema($seoPage, $city),
             ]);
         }
 
-        // 2. Try Legacy Static Pages (Fallback)
-        // Re-using PageController logic but in a simplified way for the unified endpoint
+        // Fallback to static pages
         $page = Page::where('slug', $slug)->published()->first();
         if ($page) {
             return response()->json([
                 'type' => 'static_page',
-                'page' => [
-                    'id' => $page->id,
-                    'title' => $page->title,
-                    'content' => $page->content,
-                    'meta_title' => $page->meta_title,
-                    'meta_description' => $page->meta_description,
-                ]
+                'page' => $page
             ]);
         }
 
         abort(404);
+    }
+
+    private function generateSchema($page, $city)
+    {
+        $schemas = [];
+        $schemas[] = [
+            "@context" => "https://schema.org",
+            "@type" => "BreadcrumbList",
+            "itemListElement" => [
+                ["@type" => "ListItem", "position" => 1, "name" => "Home", "item" => url('/')],
+                ["@type" => "ListItem", "position" => 2, "name" => $page->title, "item" => url($page->slug)]
+            ]
+        ];
+        if (!empty($page->faqs)) {
+            $faqItems = [];
+            foreach ($page->faqs as $faq) {
+                if (!empty($faq['q']) && !empty($faq['a'])) {
+                    $faqItems[] = ["@type" => "Question", "name" => $faq['q'], "acceptedAnswer" => ["@type" => "Answer", "text" => strip_tags($faq['a'])]];
+                }
+            }
+            if ($faqItems) $schemas[] = ["@context" => "https://schema.org", "@type" => "FAQPage", "mainEntity" => $faqItems];
+        }
+        $schemas[] = ["@context" => "https://schema.org", "@type" => "Service", "name" => $page->title, "provider" => ["@type" => "Organization", "name" => "StarJD", "url" => url('/')], "areaServed" => ["@type" => "City", "name" => $city ?: "India"]];
+        return $schemas;
     }
 }

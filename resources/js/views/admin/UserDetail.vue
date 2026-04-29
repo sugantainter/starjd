@@ -139,7 +139,7 @@
             <div class="mt-6 border-t border-[#f1f5f9] pt-4">
               <div class="flex items-center justify-between">
                 <span class="text-xs font-bold uppercase text-[#64748b]">Total Influence</span>
-                <span class="text-lg font-black text-[#1a1a1a]">{{ formatNumber(user.analytics.social_reach) }}</span>
+                <span class="text-lg font-black text-[#1a1a1a]">{{ formatNumber(user.analytics?.social_reach) }}</span>
               </div>
             </div>
           </div>
@@ -153,23 +153,23 @@
           <div class="rounded-2xl border border-[#e2e8f0] bg-white p-5 shadow-sm">
             <p class="text-xs font-bold uppercase tracking-wider text-[#64748b]">Wallet Balance</p>
             <div class="mt-2 flex items-baseline gap-1">
-              <span class="text-2xl font-black text-[#1a1a1a]">₹{{ formatCurrency(user.analytics.total_earnings) }}</span>
+              <span class="text-2xl font-black text-[#1a1a1a]">₹{{ formatCurrency(user.analytics?.total_earnings) }}</span>
             </div>
             <p class="mt-2 text-xs text-emerald-600 font-medium">Available for withdrawal</p>
           </div>
           <div class="rounded-2xl border border-[#e2e8f0] bg-white p-5 shadow-sm">
             <p class="text-xs font-bold uppercase tracking-wider text-[#64748b]">Total Collaborations</p>
             <div class="mt-2 flex items-baseline gap-1">
-              <span class="text-2xl font-black text-[#1a1a1a]">{{ user.analytics.total_collaborations }}</span>
+              <span class="text-2xl font-black text-[#1a1a1a]">{{ user.analytics?.total_collaborations }}</span>
             </div>
-            <p class="mt-2 text-xs text-blue-600 font-medium">+{{ user.analytics.total_collaborations }} this lifetime</p>
+            <p class="mt-2 text-xs text-blue-600 font-medium">+{{ user.analytics?.total_collaborations }} this lifetime</p>
           </div>
           <div class="rounded-2xl border border-[#e2e8f0] bg-white p-5 shadow-sm">
             <p class="text-xs font-bold uppercase tracking-wider text-[#64748b]">Content Posts</p>
             <div class="mt-2 flex items-baseline gap-1">
-              <span class="text-2xl font-black text-[#1a1a1a]">{{ user.analytics.total_posts }}</span>
+              <span class="text-2xl font-black text-[#1a1a1a]">{{ user.analytics?.total_posts }}</span>
             </div>
-            <p class="mt-2 text-xs text-purple-600 font-medium">{{ user.analytics.total_packages }} Active Packages</p>
+            <p class="mt-2 text-xs text-purple-600 font-medium">{{ user.analytics?.total_packages }} Active Packages</p>
           </div>
         </div>
 
@@ -201,7 +201,7 @@
                   <div class="grid grid-cols-2 gap-6">
                     <div>
                       <h4 class="text-xs font-bold uppercase tracking-widest text-[#94a3b8] mb-1">Category</h4>
-                      <p class="text-sm font-bold text-[#1a1a1a]">{{ typeof user.creator_profile.category === 'object' ? user.creator_profile.category.name : (user.creator_profile.category || '--') }}</p>
+                      <p class="text-sm font-bold text-[#1a1a1a]">{{ user.creator_profile.category && typeof user.creator_profile.category === 'object' ? user.creator_profile.category.name : (user.creator_profile.category || '--') }}</p>
                     </div>
                     <div>
                       <h4 class="text-xs font-bold uppercase tracking-widest text-[#94a3b8] mb-1">Gender</h4>
@@ -251,7 +251,7 @@
                   <h4 class="pr-12 text-lg font-black text-[#1a1a1a]">{{ pkg.name }}</h4>
                   <p class="mt-3 text-sm leading-relaxed text-[#64748b] line-clamp-3">{{ pkg.description }}</p>
                   <div class="mt-6 flex items-center justify-between border-t border-[#f1f5f9] pt-4">
-                    <span class="text-xs font-bold uppercase tracking-widest text-[#94a3b8]">{{ typeof pkg.category === 'object' ? pkg.category.name : pkg.category }}</span>
+                    <span class="text-xs font-bold uppercase tracking-widest text-[#94a3b8]">{{ pkg.category && typeof pkg.category === 'object' ? pkg.category.name : (pkg.category || '--') }}</span>
                     <span class="text-xs font-medium text-[#1a1a1a]">Includes {{ pkg.deliverables?.length || 0 }} items</span>
                   </div>
                 </div>

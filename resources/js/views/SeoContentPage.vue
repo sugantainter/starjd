@@ -112,6 +112,69 @@
                 </div>
               </div>
             </section>
+
+            <!-- Platform Ecosystem Section (Visual Services Listing) -->
+            <section class="border-t pt-16">
+              <div class="mb-10 text-center lg:text-left">
+                <h2 class="text-3xl font-black text-[#1a1a1a]">The StarJD Ecosystem</h2>
+                <p class="mt-3 text-lg text-[#64748b]">Everything you need to grow your digital presence and creative brand.</p>
+              </div>
+              <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                <router-link 
+                  v-for="s in [
+                    { name: 'Influencer Hub', icon: '🚀', slug: 'creators' },
+                    { name: 'Brand Center', icon: '🏢', slug: 'campaign' },
+                    { name: 'Creative Studios', icon: '📸', slug: 'studios' },
+                    { name: 'Marketplace', icon: '🛒', slug: 'marketplace' },
+                    { name: 'Success Stories', icon: '🏆', slug: 'success-stories' },
+                    { name: 'Pro Profiles', icon: '👤', slug: 'professionals' },
+                    { name: 'Creative Gigs', icon: '🎸', slug: 'gigs' },
+                    { name: 'Knowledge Hub', icon: '📖', slug: 'blog' }
+                  ]" 
+                  :key="s.slug" 
+                  :to="'/' + s.slug"
+                  class="group rounded-2xl border border-[#e2e8f0] bg-white p-6 text-center transition hover:border-[#e63946] hover:bg-[#e63946]/5 hover:shadow-xl"
+                >
+                  <div class="mb-4 text-3xl transition duration-300 group-hover:scale-125 group-hover:rotate-12">{{ s.icon }}</div>
+                  <h3 class="text-sm font-bold text-[#1a1a1a] group-hover:text-[#e63946]">{{ s.name }}</h3>
+                </router-link>
+              </div>
+            </section>
+
+            <!-- Tabbed Interlinking Section (Sulekha Style) -->
+            <section v-if="Object.keys(tabbedLinks).length" class="border-t pt-16">
+              <div class="mb-8">
+                <h2 class="text-2xl font-black text-[#1a1a1a]">Explore More Locations & Services</h2>
+                <p class="mt-2 text-sm text-[#64748b]">Quickly find popular areas and related services near you.</p>
+              </div>
+
+              <!-- Tab Navigation -->
+              <div class="mb-8 flex flex-wrap gap-2 border-b border-[#e2e8f0]">
+                <button 
+                  v-for="(links, tabName) in tabbedLinks" 
+                  :key="tabName"
+                  @click="activeTab = tabName"
+                  class="relative pb-4 px-4 text-sm font-bold transition-all duration-300"
+                  :class="activeTab === tabName ? 'text-[#e63946]' : 'text-[#64748b] hover:text-[#1a1a1a]'"
+                >
+                  {{ tabName }}
+                  <div v-if="activeTab === tabName" class="absolute bottom-0 left-0 h-0.5 w-full bg-[#e63946] animate-in slide-in-from-left-2"></div>
+                </button>
+              </div>
+
+              <!-- Tab Content (Grid of Links) -->
+              <div v-if="activeTab && tabbedLinks[activeTab]" class="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 md:grid-cols-4">
+                <router-link 
+                  v-for="link in tabbedLinks[activeTab]" 
+                  :key="link.slug" 
+                  :to="'/' + link.slug"
+                  class="group flex items-center gap-2 text-xs font-medium text-[#475569] hover:text-[#e63946] transition-colors"
+                >
+                  <span class="h-1 w-1 rounded-full bg-[#e2e8f0] group-hover:bg-[#e63946]"></span>
+                  {{ link.title }}
+                </router-link>
+              </div>
+            </section>
           </div>
 
           <!-- Sidebar -->
@@ -164,20 +227,30 @@ const route = useRoute();
 const page = ref(null);
 const loading = ref(true);
 const relevantInfluencers = ref([]);
+const tabbedLinks = ref({});
+const activeTab = ref('');
+const schemaData = ref([]);
 const openFaq = ref(0);
 
-// Use computed properties for SEO to avoid useHead context issues in async functions
 const seoTitle = computed(() => page.value?.meta_title || page.value?.title || 'StarJD — Connect. Create. Collaborate.');
 const seoDesc = computed(() => page.value?.meta_description || page.value?.intro_text || 'Premium local services and professional talent on StarJD.');
+const seoKeywords = computed(() => page.value?.meta_keywords || '');
 
 useHead({
   title: seoTitle,
   meta: [
     { name: 'description', content: seoDesc },
+    { name: 'keywords', content: seoKeywords },
     { property: 'og:title', content: seoTitle },
     { property: 'og:description', content: seoDesc },
     { property: 'og:url', content: () => window.location.origin + route.fullPath },
-  ]
+  ],
+  script: computed(() => {
+    return schemaData.value.map(s => ({
+      type: 'application/ld+json',
+      children: JSON.stringify(s)
+    }));
+  })
 });
 
 async function load() {
@@ -189,6 +262,13 @@ async function load() {
     const r = await axios.get(`/api/seo-content/${slug}`);
     page.value = r.data.page;
     relevantInfluencers.value = r.data.relevant_influencers || [];
+    tabbedLinks.value = r.data.tabbed_links || {};
+    schemaData.value = r.data.schema || [];
+    
+    // Set first tab as active by default
+    const tabs = Object.keys(tabbedLinks.value);
+    if (tabs.length) activeTab.value = tabs[0];
+    
   } catch (e) {
     console.error('Content Load Error:', e);
     page.value = null;
