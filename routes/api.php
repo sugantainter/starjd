@@ -176,6 +176,7 @@ Route::middleware('web')->group(function () {
             Route::get('campaigns/{campaign}', [\App\Http\Controllers\Brand\BrandCampaignController::class, 'show']);
             Route::post('campaigns', [\App\Http\Controllers\Brand\BrandCampaignController::class, 'store']);
             Route::put('campaigns/{campaign}', [\App\Http\Controllers\Brand\BrandCampaignController::class, 'update']);
+            Route::delete('campaigns/{campaign}', [\App\Http\Controllers\Brand\BrandCampaignController::class, 'destroy']);
             Route::patch('campaign-applications/{campaign_application}', [\App\Http\Controllers\Brand\BrandCampaignApplicationController::class, 'update']);
         });
 

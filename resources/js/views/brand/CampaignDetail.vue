@@ -71,46 +71,22 @@
         </div>
         <p v-if="campaign.deliverables" class="mt-3 text-sm text-[#64748b]"><span class="font-medium text-[#1a1a1a]">Deliverables:</span> {{ campaign.deliverables }}</p>
 
-        <!-- Simple edit section for description & embed URL -->
-        <div class="mt-6 border-t border-[#e2e8f0] pt-4">
-          <h2 class="text-sm font-semibold text-[#1a1a1a]">Edit campaign details</h2>
-          <p class="mt-1 text-xs text-[#94a3b8]">Update the description and embedded post/video link for this campaign.</p>
-          <form class="mt-3 space-y-3 max-w-xl" @submit.prevent="saveEdits">
-            <div>
-              <label class="mb-1 block text-xs font-medium text-[#475569]">Campaign description</label>
-              <textarea
-                v-model="editDescription"
-                rows="3"
-                class="w-full rounded-xl border border-[#e2e8f0] px-3 py-2 text-sm text-[#1a1a1a] focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]"
-              />
-            </div>
-            <div>
-              <label class="mb-1 block text-xs font-medium text-[#475569]">Embed post/video link</label>
-              <input
-                v-model="editEmbedUrl"
-                type="url"
-                class="w-full rounded-xl border border-[#e2e8f0] px-3 py-2 text-sm text-[#1a1a1a] focus:border-[#e63946] focus:outline-none focus:ring-1 focus:ring-[#e63946]"
-                placeholder="Paste Instagram, YouTube or other public post link"
-              />
-            </div>
-            <p v-if="editError" class="text-xs text-red-600">{{ editError }}</p>
-            <div class="flex gap-2">
-              <button
-                type="submit"
-                :disabled="savingEdits"
-                class="rounded-xl bg-[#e63946] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[#c1121f] disabled:opacity-60"
-              >
-                {{ savingEdits ? 'Saving…' : 'Save changes' }}
-              </button>
-              <button
-                type="button"
-                class="rounded-xl border border-[#e2e8f0] px-4 py-2 text-xs font-medium text-[#64748b] hover:bg-[#f1f5f9]"
-                @click="resetEdits"
-              >
-                Reset
-              </button>
-            </div>
-          </form>
+        <div class="mt-6 border-t border-[#e2e8f0] pt-4 flex items-center gap-3">
+          <router-link
+            :to="`/brand/campaigns/${campaign.id}/edit`"
+            class="rounded-xl border border-[#e2e8f0] px-4 py-2 text-sm font-medium text-[#1a1a1a] hover:bg-[#f8fafc]"
+          >
+            Edit Campaign
+          </router-link>
+          <button
+            v-if="campaign.status === 'draft'"
+            type="button"
+            class="rounded-xl border border-red-200 text-red-600 px-4 py-2 text-sm font-medium hover:bg-red-50"
+            @click="deleteCampaign"
+            :disabled="deletingCampaign"
+          >
+            {{ deletingCampaign ? 'Deleting...' : 'Delete Draft' }}
+          </button>
         </div>
       </div>
 
@@ -275,22 +251,21 @@
 
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
+import { notify } from '../../lib/notify.js';
 
 const route = useRoute();
+const router = useRouter();
 const campaign = ref(null);
 const loading = ref(true);
+const deletingCampaign = ref(false);
 const applicationActionLoading = ref(null);
 const showCollabModal = ref(false);
 const selectedAppForCollab = ref(null);
 const collabForm = reactive({ amount: 0, brand_notes: '' });
 const collabError = ref('');
 const collabLoading = ref(false);
-const editDescription = ref('');
-const editEmbedUrl = ref('');
-const savingEdits = ref(false);
-const editError = ref('');
 
 function typeLabel(type) {
   const map = { instagram: 'Instagram', tiktok: 'TikTok', ugc: 'UGC', youtube: 'YouTube' };
@@ -398,8 +373,6 @@ async function loadCampaign() {
   try {
     const res = await axios.get('/api/brand/campaigns/' + id, { withCredentials: true });
     campaign.value = res.data;
-    editDescription.value = campaign.value.description || '';
-    editEmbedUrl.value = campaign.value.embed_url || '';
   } catch {
     campaign.value = null;
   } finally {
@@ -407,32 +380,18 @@ async function loadCampaign() {
   }
 }
 
-async function saveEdits() {
-  if (!campaign.value?.id) return;
-  savingEdits.value = true;
-  editError.value = '';
+async function deleteCampaign() {
+  if (!confirm('Are you sure you want to delete this draft campaign? This action cannot be undone.')) return;
+  deletingCampaign.value = true;
   try {
-    const res = await axios.patch(
-      '/api/brand/campaigns/' + campaign.value.id,
-      {
-        description: editDescription.value || null,
-        embed_url: editEmbedUrl.value || null,
-      },
-      { withCredentials: true }
-    );
-    campaign.value = res.data.campaign;
+    await axios.delete('/api/brand/campaigns/' + campaign.value.id, { withCredentials: true });
+    notify.success('Campaign deleted successfully.');
+    router.push('/brand/post-campaign');
   } catch (e) {
-    editError.value = e.response?.data?.message || 'Failed to save changes.';
+    notify.error(e.response?.data?.message || 'Failed to delete campaign.');
   } finally {
-    savingEdits.value = false;
+    deletingCampaign.value = false;
   }
-}
-
-function resetEdits() {
-  if (!campaign.value) return;
-  editDescription.value = campaign.value.description || '';
-  editEmbedUrl.value = campaign.value.embed_url || '';
-  editError.value = '';
 }
 
 async function approveApplication(app) {

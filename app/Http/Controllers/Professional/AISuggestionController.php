@@ -39,7 +39,12 @@ class AISuggestionController extends Controller
             case 'campaign_description':
                 $brand = $context['company_name'] ?? 'Our Brand';
                 $campaignType = $context['campaign_type'] ?? 'marketing';
-                $prompt = "Write a clean and direct campaign description for a '{$brand}' campaign on '{$campaignType}'. Describe the goals and what we need from creators. Limit to 100 words. Return only the description.";
+                if (!empty($context['current_description'])) {
+                    $current = $context['current_description'];
+                    $prompt = "Improve and professionalize the following campaign description for a '{$brand}' campaign on '{$campaignType}'. Make it clean, engaging, and direct. Limit to 150 words. Return only the improved description without any conversational intro. Current description: \"{$current}\"";
+                } else {
+                    $prompt = "Write a clean and direct campaign description for a '{$brand}' campaign on '{$campaignType}'. Describe the goals and what we need from creators. Limit to 150 words. Return only the description without any conversational intro.";
+                }
                 break;
             case 'studio_description':
                 $name = $context['name'] ?? 'Our Studio';

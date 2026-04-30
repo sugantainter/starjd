@@ -1,10 +1,20 @@
 <template>
   <div>
-    <div class="mb-6">
-      <h1 class="text-2xl font-bold text-[#1a1a1a]">Post Campaign</h1>
-      <p class="mt-1 text-[#64748b]">Create a new campaign and reach creators for your brand.</p>
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-[#1a1a1a]">Post Campaign</h1>
+        <p class="mt-1 text-[#64748b]">Create a new campaign and reach creators for your brand.</p>
+      </div>
+      <router-link
+        to="/brand/campaigns/create"
+        class="inline-flex items-center gap-2 rounded-xl bg-[#e63946] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-[#e63946]/30 transition hover:bg-[#c1121f] hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#e63946] focus:ring-offset-2"
+      >
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Post a Campaign
+      </router-link>
     </div>
-    <PostCampaignFlow @created="onCampaignCreated" />
 
     <!-- Your campaigns -->
     <div class="mt-10">
@@ -79,6 +89,14 @@
                   >
                     Publish
                   </button>
+                  <button
+                    v-if="c.status === 'draft'"
+                    type="button"
+                    class="inline-flex items-center text-[#ef4444] hover:underline"
+                    @click="deleteCampaign(c)"
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -103,7 +121,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import axios from 'axios';
-import PostCampaignFlow from '../../components/brand/PostCampaignFlow.vue';
 import { notify } from '../../lib/notify.js';
 
 const loading = ref(true);
@@ -155,6 +172,17 @@ async function openCampaign(c) {
     await loadCampaigns();
   } catch (e) {
     notify.error(e.response?.data?.message || 'Failed to publish campaign.');
+  }
+}
+
+async function deleteCampaign(c) {
+  if (!confirm('Are you sure you want to delete this draft campaign? This action cannot be undone.')) return;
+  try {
+    await axios.delete('/api/brand/campaigns/' + c.id, { withCredentials: true });
+    notify.success('Campaign deleted successfully.');
+    await loadCampaigns();
+  } catch (e) {
+    notify.error(e.response?.data?.message || 'Failed to delete campaign.');
   }
 }
 
@@ -220,7 +248,4 @@ watch(() => campaigns.value.length, async () => {
   setupObserver();
 });
 
-function onCampaignCreated() {
-  loadCampaigns();
-}
 </script>

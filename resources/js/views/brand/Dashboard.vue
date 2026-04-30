@@ -6,7 +6,15 @@
         <h1 class="text-2xl font-bold text-[#1a1a1a]">Dashboard</h1>
         <p class="mt-1 text-[#64748b]">Welcome back, {{ data?.user?.name }}.</p>
       </div>
-      <PostCampaignFlow @created="onCampaignCreated" />
+      <router-link
+        to="/brand/campaigns/create"
+        class="inline-flex items-center gap-2 rounded-xl bg-[#e63946] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-[#e63946]/30 transition hover:bg-[#c1121f] hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#e63946] focus:ring-offset-2"
+      >
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Post a Campaign
+      </router-link>
     </div>
 
     <!-- Stats cards -->
@@ -80,7 +88,15 @@
         </div>
         <p class="mt-4 text-[#64748b]">No campaigns yet.</p>
         <p class="mt-1 text-sm text-[#94a3b8]">Create a campaign to start receiving creator applications.</p>
-        <PostCampaignFlow class="mt-6 inline-block" @created="onCampaignCreated" />
+        <router-link
+          to="/brand/campaigns/create"
+          class="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#e63946] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-[#e63946]/30 transition hover:bg-[#c1121f] hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#e63946] focus:ring-offset-2"
+        >
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Post a Campaign
+        </router-link>
       </div>
       <div v-else class="mt-4 overflow-hidden rounded-xl border border-[#e2e8f0] bg-white shadow-sm">
         <div class="overflow-x-auto">
@@ -202,7 +218,6 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
-import PostCampaignFlow from '../../components/brand/PostCampaignFlow.vue';
 import { notify } from '../../lib/notify.js';
 
 const router = useRouter();
@@ -267,7 +282,4 @@ async function loadDashboard() {
 
 onMounted(loadDashboard);
 
-function onCampaignCreated() {
-  loadDashboard();
-}
 </script>

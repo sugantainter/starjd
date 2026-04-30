@@ -54,6 +54,7 @@ class BrandCampaignController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'title' => 'required|string|max:255',
             'campaign_type' => 'required|string|in:instagram,tiktok,ugc,youtube',
             'influencer_count' => 'required|integer|min:1|max:500',
             'description' => 'nullable|string',
@@ -76,17 +77,9 @@ class BrandCampaignController extends Controller
             'embed_url' => 'nullable|string|max:500',
         ]);
 
-        $typeLabel = match ($validated['campaign_type']) {
-            'instagram' => 'Instagram',
-            'tiktok' => 'TikTok',
-            'ugc' => 'User Generated Content',
-            'youtube' => 'YouTube',
-            default => 'Campaign',
-        };
-
         $campaign = $request->user()->campaignsAsBrand()->create([
             'campaign_type' => $validated['campaign_type'],
-            'title' => $typeLabel . ' Campaign',
+            'title' => $validated['title'],
             'slug' => null,
             'status' => 'draft',
             'description' => $validated['description'] ?? null,
@@ -106,7 +99,7 @@ class BrandCampaignController extends Controller
         ]);
 
         $campaign->update([
-            'slug' => Str::slug($typeLabel . '-campaign-' . $campaign->id),
+            'slug' => Str::slug($campaign->title . '-' . $campaign->id),
         ]);
 
         return response()->json([
@@ -175,21 +168,64 @@ class BrandCampaignController extends Controller
             'starts_at' => 'nullable|date',
             'ends_at' => 'nullable|date|after_or_equal:starts_at',
             'embed_url' => 'nullable|string|max:500',
+            'influencer_count' => 'sometimes|integer|min:1|max:500',
+            'campaign_type' => 'sometimes|string|in:instagram,tiktok,ugc,youtube',
+            'niches' => 'nullable|array',
+            'follower_ranges' => 'nullable|array',
+            'countries' => 'nullable|array',
+            'cities' => 'nullable|array',
+            'genders' => 'nullable|array',
+            'ages' => 'nullable|array',
+            'ethnicities' => 'nullable|array',
+            'languages' => 'nullable|array',
         ]);
-        // Update scalar columns
-        $updateData = collect($validated)->except('embed_url')->toArray();
+
+        $updateData = collect($validated)->only([
+            'status', 'title', 'description', 'budget', 'starts_at', 'ends_at', 'campaign_type'
+        ])->toArray();
+
+        if (array_key_exists('influencer_count', $validated)) {
+            $updateData['max_applications'] = $validated['influencer_count'];
+        }
+
         if (!empty($updateData)) {
             $campaign->update($updateData);
         }
 
-        // Update embed_url inside targeting JSON
-        if (array_key_exists('embed_url', $validated)) {
-            $targeting = $campaign->targeting ?? [];
-            $targeting['embed_url'] = $validated['embed_url'];
+        $targetingFields = ['embed_url', 'niches', 'follower_ranges', 'countries', 'cities', 'genders', 'ages', 'ethnicities', 'languages'];
+        $targeting = $campaign->targeting ?? [];
+        $targetingUpdated = false;
+
+        foreach ($targetingFields as $field) {
+            if (array_key_exists($field, $validated)) {
+                $targeting[$field] = $validated[$field];
+                $targetingUpdated = true;
+            }
+        }
+
+        if ($targetingUpdated) {
             $campaign->targeting = $targeting;
             $campaign->save();
         }
 
         return response()->json(['message' => 'Campaign updated.', 'campaign' => $campaign->fresh()]);
+    }
+
+    /**
+     * Delete a draft campaign.
+     */
+    public function destroy(Request $request, Campaign $campaign): JsonResponse
+    {
+        if ($campaign->brand_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        if ($campaign->status !== 'draft') {
+            return response()->json(['message' => 'Only draft campaigns can be deleted.'], 403);
+        }
+
+        $campaign->delete();
+
+        return response()->json(['message' => 'Campaign deleted successfully.']);
     }
 }
