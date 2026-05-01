@@ -312,7 +312,13 @@
         <div class="flex items-center justify-between mb-4">
           <div>
             <h3 class="text-2xl font-bold text-[#1a1a1a]">Apply Common Content</h3>
-            <p class="mt-2 text-sm text-[#64748b]">Apply this template to the <span class="font-bold text-[#e63946]">{{ selectedIds.length }}</span> selected pages.</p>
+            <p class="mt-2 text-sm text-[#64748b]">
+              Apply this template to the 
+              <span class="font-bold text-[#e63946]">
+                {{ selectAllMatching ? pagination.total : selectedIds.length }}
+              </span> 
+              selected pages.
+            </p>
           </div>
           <div class="flex items-center gap-2">
             <input 
@@ -702,6 +708,7 @@ async function generateAiForTemplate() {
   try {
     const r = await axios.post('/api/admin/seo-pages/generate-ai', {
       name: '{name}', city: '{city}', type: '{type}',
+      is_template: true,
       topic: aiFocusTopic.value
     });
     templateForm.intro_text = r.data.intro_text;

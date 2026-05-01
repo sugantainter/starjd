@@ -38,8 +38,12 @@ class LocationCmsController extends Controller
 
         $topicContext = $topic ? "Focus the content specifically on this topic: '{$topic}'." : "";
 
+        $locationInfo = $request->is_template 
+            ? "Generate a generic template using these exact placeholders: {name}, {city}, and {type}. The content should be high-quality but contain these placeholders so they can be replaced later."
+            : "Generate comprehensive landing page content for '{$name}' which is a '{$type}' in '{$city}'.";
+
         $prompt = "Act as an SEO expert for StarJD, a professional talent and services marketplace. 
-        Generate comprehensive landing page content for '{$name}' which is a '{$type}' in '{$city}'.
+        {$locationInfo}
         {$topicContext}
         
         Requirements:
