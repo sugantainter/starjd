@@ -114,10 +114,8 @@ class SitemapController extends Controller
     {
         try {
             $this->ensureSitemapDirectory();
-            $urls = $this->getAllUrls();
-            $chunks = array_chunk($urls, $this->limit);
-
-            // Clean up existing sitemaps (storage + legacy public copies)
+            
+            // Clean up existing sitemaps
             $existingFiles = array_merge(
                 File::glob($this->sitemapDirectory() . '/sitemap*.xml'),
                 File::glob(public_path('sitemap*.xml'))
@@ -126,26 +124,125 @@ class SitemapController extends Controller
                 File::delete($file);
             }
 
+            $urls = [];
+            $now = Carbon::now()->toAtomString();
             $sitemapFiles = [];
+            $totalUrlsCount = 0;
 
-            if (count($chunks) > 1) {
-                foreach ($chunks as $index => $chunk) {
-                    $filename = 'sitemap_' . ($index + 1) . '.xml';
+            // 1. Static routes
+            $statics = [
+                ['paths' => ['/'], 'priority' => '1.0', 'changefreq' => 'daily'],
+                ['paths' => ['/about-us', '/how-it-works', '/contact-us', '/brand', '/campaign', '/campaigns', '/creator', '/blog', '/success-stories', '/videos', '/services', '/marketplace', '/creators', '/studios'], 'priority' => '0.9', 'changefreq' => 'weekly'],
+                ['paths' => ['/privacy-policy', '/terms-and-conditions', '/cookie-policy', '/child-safety'], 'priority' => '0.4', 'changefreq' => 'monthly'],
+            ];
+
+            foreach ($statics as $group) {
+                foreach ($group['paths'] as $path) {
+                    $urls[] = ['loc' => url($path), 'lastmod' => $now, 'priority' => $group['priority'], 'changefreq' => $group['changefreq']];
+                }
+            }
+
+            // Function to handle writing chunks to files
+            $writeSitemap = function(&$urls, $force = false) use (&$sitemapFiles, &$totalUrlsCount) {
+                while (count($urls) >= $this->limit || ($force && count($urls) > 0)) {
+                    $chunk = array_splice($urls, 0, $this->limit);
+                    $filename = 'sitemap_' . (count($sitemapFiles) + 1) . '.xml';
                     $this->createSitemapFile($filename, $chunk);
                     $sitemapFiles[] = $filename;
+                    $totalUrlsCount += count($chunk);
                 }
+            };
+
+            // 2. CMS pages
+            Page::published()->select('id', 'slug', 'updated_at', 'city_id', 'state_id')->with(['state:id,slug', 'city:id,slug'])->chunk(500, function ($pages) use (&$urls, $now, &$writeSitemap) {
+                foreach ($pages as $page) {
+                    $path = $page->publicPath();
+                    if ($path) {
+                        $urls[] = ['loc' => url($path), 'lastmod' => $page->updated_at?->toAtomString() ?? $now, 'priority' => '0.7', 'changefreq' => 'weekly'];
+                    }
+                }
+                $writeSitemap($urls);
+            });
+
+            // 3. Blog Posts
+            Post::select('id', 'slug', 'updated_at')->chunk(500, function ($posts) use (&$urls, $now, &$writeSitemap) {
+                foreach ($posts as $post) {
+                    $urls[] = ['loc' => url('/blog/' . $post->slug), 'lastmod' => $post->updated_at?->toAtomString() ?? $now, 'priority' => '0.8', 'changefreq' => 'weekly'];
+                }
+                $writeSitemap($urls);
+            });
+
+            // 4. Creators
+            CreatorProfile::where('is_public', true)->select('id', 'slug', 'updated_at')->chunk(500, function ($creators) use (&$urls, $now, &$writeSitemap) {
+                foreach ($creators as $creator) {
+                    $urls[] = ['loc' => url('/creator-profile/' . $creator->slug), 'lastmod' => $creator->updated_at?->toAtomString() ?? $now, 'priority' => '0.9', 'changefreq' => 'weekly'];
+                }
+                $writeSitemap($urls);
+            });
+
+            // 5. Studios
+            Studio::select('id', 'slug', 'updated_at')->chunk(500, function ($studios) use (&$urls, $now, &$writeSitemap) {
+                foreach ($studios as $studio) {
+                    $urls[] = ['loc' => url('/studios/' . $studio->slug), 'lastmod' => $studio->updated_at?->toAtomString() ?? $now, 'priority' => '0.8', 'changefreq' => 'weekly'];
+                }
+                $writeSitemap($urls);
+            });
+
+            // 6. Campaigns
+            Campaign::open()->select('id', 'slug', 'updated_at')->chunk(500, function ($campaigns) use (&$urls, $now, &$writeSitemap) {
+                foreach ($campaigns as $campaign) {
+                    $urls[] = ['loc' => url('/campaigns/' . $campaign->slug), 'lastmod' => $campaign->updated_at?->toAtomString() ?? $now, 'priority' => '0.85', 'changefreq' => 'daily'];
+                }
+                $writeSitemap($urls);
+            });
+
+            // 7. Services
+            ServiceListing::where('is_active', true)->select('id', 'slug', 'updated_at')->chunk(500, function ($services) use (&$urls, $now, &$writeSitemap) {
+                foreach ($services as $service) {
+                    $urls[] = ['loc' => url('/services/' . $service->slug), 'lastmod' => $service->updated_at?->toAtomString() ?? $now, 'priority' => '0.7', 'changefreq' => 'weekly'];
+                }
+                $writeSitemap($urls);
+            });
+
+            // 8. Success stories
+            SuccessStory::select('id', 'slug', 'updated_at')->chunk(500, function ($stories) use (&$urls, $now, &$writeSitemap) {
+                foreach ($stories as $story) {
+                    $urls[] = ['loc' => url('/success-stories/' . $story->slug), 'lastmod' => $story->updated_at?->toAtomString() ?? $now, 'priority' => '0.6', 'changefreq' => 'monthly'];
+                }
+                $writeSitemap($urls);
+            });
+
+            // 9. Location CMS SEO Pages (The likely culprit)
+            SeoPage::where('status', 'published')->select('id', 'slug', 'updated_at')->chunk(1000, function ($pages) use (&$urls, $now, &$writeSitemap) {
+                foreach ($pages as $page) {
+                    $urls[] = ['loc' => url('/' . $page->slug), 'lastmod' => $page->updated_at?->toAtomString() ?? $now, 'priority' => '0.8', 'changefreq' => 'daily'];
+                }
+                $writeSitemap($urls);
+            });
+
+            // Final force write
+            $writeSitemap($urls, true);
+
+            // Handle sitemap index or single file
+            if (count($sitemapFiles) > 1) {
                 $this->createSitemapIndex('sitemap.xml', $sitemapFiles);
-            } else {
-                $this->createSitemapFile('sitemap.xml', $urls);
+            } elseif (count($sitemapFiles) === 1) {
+                // If only one sitemap_1.xml was created, rename it to sitemap.xml
+                $path1 = $this->sitemapDirectory() . DIRECTORY_SEPARATOR . 'sitemap_1.xml';
+                $pathMain = $this->sitemapDirectory() . DIRECTORY_SEPARATOR . 'sitemap.xml';
+                if (File::exists($path1)) {
+                    File::move($path1, $pathMain);
+                }
             }
 
             return response()->json([
                 'success' => true,
                 'message' => 'Sitemap generated successfully!',
-                'total_urls' => count($urls),
-                'files' => count($chunks) > 1 ? count($chunks) + 1 : 1,
+                'total_urls' => $totalUrlsCount,
+                'files' => count($sitemapFiles) > 1 ? count($sitemapFiles) + 1 : 1,
             ]);
         } catch (\Exception $e) {
+            Log::error("Sitemap Generation Error: " . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to generate sitemap: ' . $e->getMessage(),
@@ -153,157 +250,10 @@ class SitemapController extends Controller
         }
     }
 
-    /**
-     * @return list<array{loc: string, lastmod: string, priority: string, changefreq: string}>
-     */
     private function getAllUrls(): array
     {
-        $urls = [];
-        $now = Carbon::now()->toAtomString();
-
-        // 1. Static routes (no login/register — not for organic search)
-        $statics = [
-            ['paths' => ['/'], 'priority' => '1.0', 'changefreq' => 'daily'],
-            [
-                'paths' => [
-                    '/about-us',
-                    '/how-it-works',
-                    '/contact-us',
-                    '/brand',
-                    '/campaign',
-                    '/campaigns',
-                    '/creator',
-                    '/blog',
-                    '/success-stories',
-                    '/videos',
-                    '/services',
-                    '/marketplace',
-                    '/creators',
-                    '/studios',
-                ],
-                'priority' => '0.9',
-                'changefreq' => 'weekly'
-            ],
-            [
-                'paths' => [
-                    '/privacy-policy',
-                    '/terms-and-conditions',
-                    '/cookie-policy',
-                    '/child-safety',
-                ],
-                'priority' => '0.4',
-                'changefreq' => 'monthly'
-            ],
-        ];
-
-        foreach ($statics as $group) {
-            foreach ($group['paths'] as $path) {
-                $urls[] = [
-                    'loc' => url($path),
-                    'lastmod' => $now,
-                    'priority' => $group['priority'],
-                    'changefreq' => $group['changefreq'],
-                ];
-            }
-        }
-
-        // 2. CMS pages — single canonical path per page (/{slug} or /{slug}-in-{location}), not /page/{slug}
-        $staticPathKeys = collect($statics)->pluck('paths')->flatten()->map(fn($p) => ltrim($p, '/'))->filter()->values()->all();
-        Page::published()
-            ->with(['state:id,slug', 'city:id,slug'])
-            ->orderBy('id')
-            ->get()
-            ->each(function (Page $page) use (&$urls, $now, $staticPathKeys) {
-                $path = $page->publicPath();
-                if ($path === null) {
-                    return;
-                }
-                $key = ltrim($path, '/');
-                if ($key === '' || in_array($key, $staticPathKeys, true)) {
-                    return;
-                }
-                $urls[] = [
-                    'loc' => url($path),
-                    'lastmod' => $page->updated_at?->toAtomString() ?? $now,
-                    'priority' => '0.7',
-                    'changefreq' => 'weekly',
-                ];
-            });
-
-        // 3. Blog
-        Post::all()->each(function ($post) use (&$urls, $now) {
-            $urls[] = [
-                'loc' => url('/blog/' . $post->slug),
-                'lastmod' => $post->updated_at?->toAtomString() ?? $now,
-                'priority' => '0.8',
-                'changefreq' => 'weekly',
-            ];
-        });
-
-        // 4. Creators
-        CreatorProfile::where('is_public', true)->get()->each(function ($creator) use (&$urls, $now) {
-            $urls[] = [
-                'loc' => url('/creator-profile/' . $creator->slug),
-                'lastmod' => $creator->updated_at?->toAtomString() ?? $now,
-                'priority' => '0.9',
-                'changefreq' => 'weekly',
-            ];
-        });
-
-        // 5. Studios
-        Studio::all()->each(function ($studio) use (&$urls, $now) {
-            $urls[] = [
-                'loc' => url('/studios/' . $studio->slug),
-                'lastmod' => $studio->updated_at?->toAtomString() ?? $now,
-                'priority' => '0.8',
-                'changefreq' => 'weekly',
-            ];
-        });
-
-        // 6. Open campaigns
-        Campaign::open()->get()->each(function ($campaign) use (&$urls, $now) {
-            $urls[] = [
-                'loc' => url('/campaigns/' . $campaign->slug),
-                'lastmod' => $campaign->updated_at?->toAtomString() ?? $now,
-                'priority' => '0.85',
-                'changefreq' => 'daily',
-            ];
-        });
-
-        // 7. Services (canonical /services/{slug}; /gigs/{slug} is alternate UI only — not duplicated in sitemap)
-        ServiceListing::where('is_active', true)->get()->each(function ($service) use (&$urls, $now) {
-            $urls[] = [
-                'loc' => url('/services/' . $service->slug),
-                'lastmod' => $service->updated_at?->toAtomString() ?? $now,
-                'priority' => '0.7',
-                'changefreq' => 'weekly',
-            ];
-        });
-
-        // 8. Success stories
-        SuccessStory::all()->each(function ($story) use (&$urls, $now) {
-            $urls[] = [
-                'loc' => url('/success-stories/' . $story->slug),
-                'lastmod' => $story->updated_at?->toAtomString() ?? $now,
-                'priority' => '0.6',
-                'changefreq' => 'monthly',
-            ];
-        });
-
-        // 9. Location CMS SEO Pages
-        SeoPage::where('status', 'published')->get()->each(function ($page) use (&$urls, $now) {
-            $urls[] = [
-                'loc' => url('/' . $page->slug),
-                'lastmod' => $page->updated_at?->toAtomString() ?? $now,
-                'priority' => '0.8',
-                'changefreq' => 'daily',
-            ];
-        });
-
-        return collect($urls)
-            ->unique('loc')
-            ->values()
-            ->all();
+        return []; // No longer used but kept for backward compatibility if needed
+    }
     }
 
     private function formatLastmodForXml(string $atomOrDate): string
