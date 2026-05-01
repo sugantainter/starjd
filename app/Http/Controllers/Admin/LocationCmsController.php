@@ -48,9 +48,11 @@ class LocationCmsController extends Controller
         {$topicContext}
         
         Requirements:
-        1. Intro Text: A professional 80-word introduction.
+        1. Intro Text: A professional 80-word introduction using clean HTML (<p>).
         2. Guide Sections: Exactly 3 detailed sections. Each with a 'title' and 'content'.
-        3. FAQs: Exactly 3 frequently asked questions with answers.
+        3. Content Formatting: Use ONLY HTML tags: <h3> for section titles, <p> for text, <strong> for emphasis.
+        4. Lists & Tables: Use <ul>/<li> for lists. For comparative data or strategies, use HTML <table> with <thead>, <tbody>, <th>, and <td>.
+        5. FAQs: Exactly 3 frequently asked questions with answers.
         
         Return ONLY a JSON object with this structure:
         {
@@ -58,7 +60,7 @@ class LocationCmsController extends Controller
           \"guide_content\": [{\"title\": \"...\", \"content\": \"...\"}, ...],
           \"faqs\": [{\"q\": \"...\", \"a\": \"...\"}, ...]
         }
-        Do not include markdown tags or intro text. Just the JSON.";
+        Do not include markdown tags (like # or **) or any introductory text. Return valid JSON where 'content' is clean HTML string.";
 
         $content = $this->callAi($prompt, 'seo_generation');
 

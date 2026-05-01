@@ -287,10 +287,66 @@ watch(() => route.params.slug, load);
   margin-bottom: 1.25rem;
   font-weight: 900;
   letter-spacing: -0.025em;
+  color: #1a1a1a;
+}
+.prose :deep(h3) {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 800;
+  color: #1a1a1a;
 }
 .prose :deep(p) {
   margin-bottom: 1.5rem;
-  line-height: 1.75;
+  line-height: 1.8;
+  color: #475569;
+}
+.prose :deep(ul), .prose :deep(ol) {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+.prose :deep(li) {
+  margin-bottom: 0.5rem;
+}
+.prose :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 2rem 0;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  text-align: left;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  display: block;
+  overflow-x: auto;
+}
+.prose :deep(thead) {
+  background-color: #f8fafc;
+  border-bottom: 2px solid #e2e8f0;
+}
+.prose :deep(th) {
+  padding: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+}
+.prose :deep(td) {
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #475569;
+  vertical-align: top;
+}
+.prose :deep(tr:last-child td) {
+  border-bottom: none;
+}
+.prose :deep(tr:hover) {
+  background-color: #fcfcfc;
+}
+.prose :deep(strong) {
+  color: #1a1a1a;
+  font-weight: 700;
 }
 .animate-in {
   animation: fadeIn 0.3s ease-out;

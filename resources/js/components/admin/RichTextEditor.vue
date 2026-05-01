@@ -155,15 +155,29 @@
         <span class="text-sm">↵</span>
       </button>
       <span class="mx-0.5 h-4 w-px bg-[#e2e8f0]"></span>
-      <!-- Table -->
-      <button
-        type="button"
-        class="rounded p-1.5 text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#1a1a1a]"
-        @click="insertTable"
-        title="Insert table"
-      >
-        <span class="text-sm">Table</span>
-      </button>
+      <!-- Table Management -->
+      <div class="relative group">
+        <button
+          type="button"
+          class="flex items-center gap-1 rounded p-1.5 text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#1a1a1a]"
+          @click="insertTable"
+          title="Insert table"
+        >
+          <span class="text-sm">Table</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+        </button>
+        <div v-if="editor.isActive('table')" class="absolute left-0 top-full z-20 mt-1 hidden group-hover:flex flex-col min-w-[150px] rounded-lg border border-[#e2e8f0] bg-white p-1 shadow-lg">
+          <button @click="editor.chain().focus().addColumnBefore().run()" class="w-full px-3 py-1.5 text-left text-xs hover:bg-[#f1f5f9] rounded">Add Column Before</button>
+          <button @click="editor.chain().focus().addColumnAfter().run()" class="w-full px-3 py-1.5 text-left text-xs hover:bg-[#f1f5f9] rounded">Add Column After</button>
+          <button @click="editor.chain().focus().deleteColumn().run()" class="w-full px-3 py-1.5 text-left text-xs hover:bg-[#f1f5f9] text-red-600 rounded">Delete Column</button>
+          <hr class="my-1 border-[#e2e8f0]">
+          <button @click="editor.chain().focus().addRowBefore().run()" class="w-full px-3 py-1.5 text-left text-xs hover:bg-[#f1f5f9] rounded">Add Row Before</button>
+          <button @click="editor.chain().focus().addRowAfter().run()" class="w-full px-3 py-1.5 text-left text-xs hover:bg-[#f1f5f9] rounded">Add Row After</button>
+          <button @click="editor.chain().focus().deleteRow().run()" class="w-full px-3 py-1.5 text-left text-xs hover:bg-[#f1f5f9] text-red-600 rounded">Delete Row</button>
+          <hr class="my-1 border-[#e2e8f0]">
+          <button @click="editor.chain().focus().deleteTable().run()" class="w-full px-3 py-1.5 text-left text-xs hover:bg-[#f1f5f9] text-red-700 font-bold rounded">Delete Table</button>
+        </div>
+      </div>
       <span class="mx-0.5 h-4 w-px bg-[#e2e8f0]"></span>
       <!-- Media -->
       <button
