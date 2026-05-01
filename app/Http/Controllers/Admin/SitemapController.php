@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use DOMDocument;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SitemapController extends Controller
@@ -253,7 +254,6 @@ class SitemapController extends Controller
     private function getAllUrls(): array
     {
         return []; // No longer used but kept for backward compatibility if needed
-    }
     }
 
     private function formatLastmodForXml(string $atomOrDate): string

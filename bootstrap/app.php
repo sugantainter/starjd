@@ -37,15 +37,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
             $isApiStyle = $request->is('api/*') || $request->expectsJson();
 
-            \Illuminate\Support\Facades\Log::warning($isApiStyle ? 'Unauthenticated API request' : 'Unauthenticated web request', [
-                'url' => $request->fullUrl(),
-                'method' => $request->method(),
-                'headers' => $request->headers->all(),
-                'cookies' => $request->cookies->all(),
-                'has_session' => $request->hasSession(),
-                'session_id' => $request->hasSession() ? $request->session()->getId() : null,
-            ]);
-
             if ($isApiStyle) {
                 return response()->json([
                     'message' => 'Unauthenticated.',

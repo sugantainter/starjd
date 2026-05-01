@@ -149,25 +149,31 @@ class LocationCmsController extends Controller
     }
     public function index(Request $request)
     {
-        $query = SeoPage::with('entity');
+        // Keep listing queries lightweight to avoid OOM on large SEO datasets.
+        $query = SeoPage::query()
+            ->select([
+                'id',
+                'entity_type',
+                'entity_id',
+                'type',
+                'slug',
+                'title',
+                'meta_title',
+                'status',
+                'is_featured',
+                'sort_order',
+                'created_at',
+                'updated_at',
+            ])
+            ->with('entity');
         $query = $this->applyFilters($query, $request);
 
-        $perPage = $request->per_page ? (int) $request->per_page : 20;
-
-        $perPage = $request->per_page ? (int) $request->per_page : 20;
-        // if perPage is -1, return all
-        if ($perPage === -1) {
-            // we can simulate pagination format
-            $all = $query->latest()->get();
-            return response()->json([
-                'data' => $all,
-                'total' => $all->count(),
-                'per_page' => $all->count() > 0 ? $all->count() : 1,
-                'last_page' => 1,
-                'from' => 1,
-                'to' => $all->count()
-            ]);
+        $perPage = (int) $request->input('per_page', 20);
+        // Prevent unbounded "fetch all" requests that can exhaust memory.
+        if ($perPage < 1) {
+            $perPage = 20;
         }
+        $perPage = min($perPage, 100);
 
         return response()->json($query->latest()->paginate($perPage));
     }
