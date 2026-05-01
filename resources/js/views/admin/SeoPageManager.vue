@@ -246,8 +246,15 @@
               </span>
             </td>
             <td class="px-4 py-3">
-              <div class="font-medium text-[#1a1a1a]">{{ item.title }}</div>
-              <div class="text-xs text-[#94a3b8] font-mono">{{ item.slug }}</div>
+              <div class="group cursor-pointer" @click="editPage(item)">
+                <div class="font-medium text-[#1a1a1a] group-hover:text-[#e63946] transition-colors flex items-center gap-1.5">
+                  {{ item.title }}
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-[#e63946]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </div>
+                <div class="text-[10px] text-[#94a3b8] font-mono mt-0.5">{{ item.slug }}</div>
+              </div>
             </td>
             <td class="px-4 py-3">
               <div class="flex flex-col gap-1">
@@ -504,9 +511,16 @@
         <div class="mb-6 flex items-center justify-between border-b pb-4">
           <div>
             <h3 class="text-2xl font-bold text-[#1a1a1a]">Edit StarJD SEO Page</h3>
-            <div class="flex items-center gap-2 mt-1">
-              <span class="text-xs font-bold bg-[#f1f5f9] text-[#64748b] px-2 py-0.5 rounded">SLUG</span>
-              <input v-model="editForm.slug" type="text" class="text-sm text-[#e63946] font-mono bg-transparent border-none p-0 focus:ring-0 w-full" />
+            <p v-if="currentItem" class="text-xs font-medium text-[#64748b]">
+              Editing content for: <span class="text-[#e63946] font-bold">{{ currentItem.entity?.name }}</span> 
+              in <span class="text-[#e63946] font-bold">{{ currentItem.entity?.city }}</span>
+            </p>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="text-[10px] font-bold bg-[#f1f5f9] text-[#64748b] px-2 py-1 rounded border border-[#e2e8f0]">EDIT SLUG</span>
+              <div class="relative flex-1">
+                <input v-model="editForm.slug" type="text" class="text-sm text-[#e63946] font-mono bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-3 py-1.5 focus:border-[#e63946] focus:bg-white focus:outline-none w-full shadow-sm" />
+                <div class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-[#94a3b8] font-bold pointer-events-none">URL ENDING</div>
+              </div>
             </div>
           </div>
           <div class="flex items-center gap-3">
@@ -665,6 +679,7 @@ const selectAllMatching = ref(false);
 const aiFocusTopic = ref('');
 const jumpPage = ref(1);
 const taskStatus = reactive({ import: null, action: null });
+const currentItem = ref(null);
 let statusInterval = null;
 
 const filterType = ref('');
