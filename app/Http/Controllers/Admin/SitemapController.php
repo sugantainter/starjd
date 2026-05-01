@@ -9,6 +9,7 @@ use App\Models\Page;
 use App\Models\Post;
 use App\Models\ServiceListing;
 use App\Models\Studio;
+use App\Models\SeoPage;
 use App\Models\SuccessStory;
 use Carbon\Carbon;
 use DOMDocument;
@@ -286,6 +287,16 @@ class SitemapController extends Controller
                 'lastmod' => $story->updated_at?->toAtomString() ?? $now,
                 'priority' => '0.6',
                 'changefreq' => 'monthly',
+            ];
+        });
+
+        // 9. Location CMS SEO Pages
+        SeoPage::where('status', 'published')->get()->each(function ($page) use (&$urls, $now) {
+            $urls[] = [
+                'loc' => url('/' . $page->slug),
+                'lastmod' => $page->updated_at?->toAtomString() ?? $now,
+                'priority' => '0.8',
+                'changefreq' => 'daily',
             ];
         });
 

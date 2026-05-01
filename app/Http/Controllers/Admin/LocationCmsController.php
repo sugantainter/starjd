@@ -143,23 +143,26 @@ class LocationCmsController extends Controller
     public function index(Request $request)
     {
         $query = SeoPage::with('entity');
+        $query = $this->applyFilters($query, $request);
 
-        if ($request->type) {
-            $query->where('type', $request->type);
+        $perPage = $request->per_page ? (int) $request->per_page : 20;
+
+        $perPage = $request->per_page ? (int) $request->per_page : 20;
+        // if perPage is -1, return all
+        if ($perPage === -1) {
+            // we can simulate pagination format
+            $all = $query->latest()->get();
+            return response()->json([
+                'data' => $all,
+                'total' => $all->count(),
+                'per_page' => $all->count() > 0 ? $all->count() : 1,
+                'last_page' => 1,
+                'from' => 1,
+                'to' => $all->count()
+            ]);
         }
 
-        if ($request->status) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->search) {
-            $query->where(function ($q) use ($request) {
-                $q->where('title', 'like', "%{$request->search}%")
-                  ->orWhere('slug', 'like', "%{$request->search}%");
-            });
-        }
-
-        return response()->json($query->latest()->paginate(20));
+        return response()->json($query->latest()->paginate($perPage));
     }
 
     public function show($id)
@@ -185,6 +188,9 @@ class LocationCmsController extends Controller
      */
     public function bulkImport(Request $request)
     {
+        set_time_limit(0); // Allow long running import
+        ini_set('memory_limit', '512M');
+
         $request->validate([
             'type' => 'required|in:area,hospital,market,metro,school',
             'ids' => 'nullable|array',
@@ -261,24 +267,32 @@ class LocationCmsController extends Controller
     public function bulkAction(Request $request)
     {
         $request->validate([
-            'ids' => 'required|array',
+            'ids' => 'nullable|array',
+            'all_matching' => 'nullable|boolean',
+            'filters' => 'nullable|array',
             'action' => 'required|string',
             'value' => 'nullable',
             'template_data' => 'nullable|array' // For applying templates
         ]);
 
-        $ids = $request->ids;
+        $query = SeoPage::query();
+
+        if ($request->all_matching && $request->filters) {
+            $query = $this->applyFilters($query, new Request($request->filters));
+        } else {
+            $query->whereIn('id', $request->ids);
+        }
 
         switch ($request->action) {
             case 'status':
-                SeoPage::whereIn('id', $ids)->update(['status' => $request->value]);
+                $query->update(['status' => $request->value]);
                 break;
             case 'delete':
-                SeoPage::whereIn('id', $ids)->delete();
+                $query->delete();
                 break;
             case 'template':
                 $data = $request->template_data;
-                $pages = SeoPage::with('entity')->whereIn('id', $ids)->get();
+                $pages = $query->with('entity')->get();
                 
                 foreach ($pages as $page) {
                     $entity = $page->entity;
@@ -319,6 +333,16 @@ class LocationCmsController extends Controller
                         $update['faqs'] = $faqs;
                     }
 
+                    if (isset($data['meta_title'])) {
+                        $update['meta_title'] = $replace($data['meta_title']);
+                    }
+                    if (isset($data['meta_description'])) {
+                        $update['meta_description'] = $replace($data['meta_description']);
+                    }
+                    if (isset($data['meta_keywords'])) {
+                        $update['meta_keywords'] = $replace($data['meta_keywords']);
+                    }
+
                     $page->update($update);
                 }
                 break;
@@ -336,5 +360,41 @@ class LocationCmsController extends Controller
             'metro' => Metro::class,
             'school' => School::class,
         };
+    }
+
+    private function applyFilters($query, Request $request)
+    {
+        if ($request->type) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', "%{$request->search}%")
+                  ->orWhere('slug', 'like', "%{$request->search}%");
+            });
+        }
+
+        if ($request->slug) {
+            $query->where('slug', 'like', "%{$request->slug}%");
+        }
+
+        if ($request->state_id || $request->city_id) {
+            $models = [Area::class, Hospital::class, Market::class, Metro::class, School::class];
+            $query->whereHasMorph('entity', $models, function ($q) use ($request) {
+                if ($request->state_id) {
+                    $q->where('state_id', (int) $request->state_id);
+                }
+                if ($request->city_id) {
+                    $q->where('city_id', (int) $request->city_id);
+                }
+            });
+        }
+
+        return $query;
     }
 }

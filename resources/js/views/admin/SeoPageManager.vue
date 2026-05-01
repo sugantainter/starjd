@@ -8,6 +8,23 @@
       <template #actions>
         <button 
           type="button" 
+          class="rounded-lg bg-white border border-[#e2e8f0] px-4 py-2 text-sm font-medium text-[#64748b] hover:bg-[#f8fafc] flex items-center gap-2" 
+          @click="generateSitemap"
+          :disabled="generatingSitemap"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          {{ generatingSitemap ? 'Generating...' : 'Update Sitemap' }}
+        </button>
+        <div v-if="showImportProcessing" class="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-amber-700 border border-amber-200 animate-pulse">
+           <svg class="animate-spin h-4 w-4 text-amber-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+           <span class="text-xs font-bold uppercase tracking-tight">Importing in background...</span>
+           <button @click="showImportProcessing = false; load()" class="ml-1 text-amber-900 underline font-bold">Refresh List</button>
+        </div>
+        <button 
+          v-if="!showImportProcessing"
+          type="button" 
           class="rounded-lg bg-[#e63946] px-4 py-2 text-sm font-medium text-white hover:bg-[#c1121f] flex items-center gap-2" 
           @click="openImportModal"
         >
@@ -19,52 +36,115 @@
       </template>
     </AdminPageHeader>
 
-    <div class="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-[#e2e8f0] bg-white px-4 py-3 shadow-sm">
-      <span class="text-xs font-semibold uppercase tracking-wider text-[#94a3b8]">Filter by Type</span>
-      <button
-        v-for="t in types"
-        :key="t.value"
-        type="button"
-        class="rounded-full px-3 py-1.5 text-sm font-medium transition"
-        :class="filterType === t.value ? 'bg-[#e63946] text-white' : 'bg-[#f1f5f9] text-[#64748b] hover:bg-[#e2e8f0]'"
-        @click="filterType = t.value"
-      >
-        {{ t.label }}
-      </button>
-      
-      <div class="ml-auto flex items-center gap-2">
-        <input 
-          v-model="search" 
-          type="text" 
-          placeholder="Search pages..." 
-          class="rounded-lg border border-[#e2e8f0] bg-white px-3 py-1.5 text-sm focus:border-[#e63946] focus:outline-none"
-          @keyup.enter="load"
-        />
-        <button 
-          class="rounded-lg bg-[#f1f5f9] px-3 py-1.5 text-sm font-medium text-[#64748b] hover:bg-[#e2e8f0]"
-          @click="load"
+    <div class="mb-4 flex flex-col gap-3 rounded-xl border border-[#e2e8f0] bg-white px-4 py-3 shadow-sm">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-xs font-semibold uppercase tracking-wider text-[#94a3b8]">Filter by Type</span>
+        <button
+          v-for="t in types"
+          :key="t.value"
+          type="button"
+          class="rounded-full px-3 py-1.5 text-sm font-medium transition"
+          :class="filterType === t.value ? 'bg-[#e63946] text-white' : 'bg-[#f1f5f9] text-[#64748b] hover:bg-[#e2e8f0]'"
+          @click="filterType = t.value"
         >
-          Search
+          {{ t.label }}
         </button>
+        
+        <div class="ml-auto flex items-center gap-2">
+          <div class="relative">
+            <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[#94a3b8] uppercase">Slug</span>
+            <input 
+              v-model="filterSlug" 
+              type="text" 
+              placeholder="contains..." 
+              class="rounded-lg border border-[#e2e8f0] bg-white pl-10 pr-8 py-1.5 text-sm focus:border-[#e63946] focus:outline-none w-40"
+              @keyup.enter="load"
+            />
+            <button v-if="filterSlug" @click="filterSlug = ''; load()" class="absolute right-2 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#e63946]">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+          <input 
+            v-model="search" 
+            type="text" 
+            placeholder="Search title..." 
+            class="rounded-lg border border-[#e2e8f0] bg-white px-3 py-1.5 text-sm focus:border-[#e63946] focus:outline-none w-40"
+            @keyup.enter="load"
+          />
+          <button 
+            class="rounded-lg bg-[#f1f5f9] px-3 py-1.5 text-sm font-medium text-[#64748b] hover:bg-[#e2e8f0]"
+            @click="load"
+          >
+            Search
+          </button>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-4 pt-2 border-t border-slate-100">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-[#94a3b8]">State</span>
+          <select v-model="filterState" class="rounded-lg border border-[#e2e8f0] px-3 py-1.5 text-sm focus:border-[#e63946] focus:outline-none bg-[#f8fafc] min-w-[140px]">
+            <option value="">All States</option>
+            <option v-for="s in states" :key="s.id" :value="s.id">{{ s.name }}</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-[#94a3b8]">City</span>
+          <select v-model="filterCity" :disabled="!filterState" class="rounded-lg border border-[#e2e8f0] px-3 py-1.5 text-sm focus:border-[#e63946] focus:outline-none bg-[#f8fafc] min-w-[140px] disabled:opacity-50">
+            <option value="">All Cities</option>
+            <option v-for="c in listFilteredCities" :key="c.id" :value="c.id">{{ c.name }}</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-2 ml-auto">
+          <span class="text-xs font-semibold uppercase tracking-wider text-[#94a3b8]">Show</span>
+          <select v-model="perPage" class="rounded-lg border border-[#e2e8f0] px-3 py-1.5 text-sm focus:border-[#e63946] focus:outline-none bg-[#f8fafc]">
+            <option value="20">20 per page</option>
+            <option value="50">50 per page</option>
+            <option value="100">100 per page</option>
+            <option value="500">500 per page</option>
+            <option value="-1">All Items</option>
+          </select>
+        </div>
       </div>
     </div>
 
     <!-- Bulk Actions Bar -->
-    <div v-if="selectedIds.length" class="mb-4 flex items-center justify-between rounded-xl bg-[#1e293b] px-4 py-3 text-white shadow-lg animate-in slide-in-from-top-4">
-      <div class="flex items-center gap-4">
-        <span class="text-sm font-medium">{{ selectedIds.length }} items selected</span>
-        <div class="h-4 w-px bg-white/20"></div>
-        <div class="flex gap-2">
-          <button @click="showTemplateModal = true" class="rounded-lg bg-emerald-500 px-3 py-1 text-xs font-bold hover:bg-emerald-600 flex items-center gap-1.5">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a2 2 0 00-1.96 1.414l-.477 2.387a2 2 0 00.547 1.022l1.428 1.428a2 2 0 002.828 0l1.428-1.428a2 2 0 00.547-1.022l.477-2.387a2 2 0 00-1.414-1.96l-2.387-.477a2 2 0 00-1.022.547l-1.428 1.428a2 2 0 000 2.828l1.428 1.428" /></svg>
-            Apply Common Content
-          </button>
-          <button @click="bulkAction('status', 'published')" class="rounded-lg bg-white/10 px-3 py-1 text-xs font-medium hover:bg-white/20">Publish</button>
-          <button @click="bulkAction('status', 'draft')" class="rounded-lg bg-white/10 px-3 py-1 text-xs font-medium hover:bg-white/20">Draft</button>
-          <button @click="bulkAction('delete')" class="rounded-lg bg-red-500/20 px-3 py-1 text-xs font-medium text-red-400 hover:bg-red-500/30">Delete</button>
-        </div>
+    <div v-if="selectedIds.length" class="mb-4 overflow-hidden rounded-xl bg-[#1e293b] text-white shadow-lg animate-in slide-in-from-top-4">
+      <div v-if="selectedIds.length === items.length && pagination.total > items.length && !selectAllMatching" class="bg-white/10 px-4 py-2 text-center text-xs border-b border-white/5">
+        All {{ items.length }} items on this page are selected. 
+        <button @click="selectAllMatching = true" class="ml-1 font-bold text-emerald-400 hover:underline">Select all {{ pagination.total }} items matching this filter</button>
       </div>
-      <button @click="selectedIds = []" class="text-xs text-white/60 hover:text-white">Clear selection</button>
+      <div v-else-if="selectAllMatching" class="bg-emerald-500/20 px-4 py-2 text-center text-xs border-b border-emerald-500/20 font-medium text-emerald-400">
+        All {{ pagination.total }} matching items are selected.
+        <button @click="selectedIds = []; selectAllMatching = false" class="ml-2 text-white hover:underline">Clear selection</button>
+      </div>
+
+      <div class="flex items-center justify-between px-4 py-3">
+        <div class="flex items-center gap-4">
+          <span class="text-sm font-medium">
+            <template v-if="selectAllMatching">All {{ pagination.total }} matching items selected</template>
+            <template v-else>{{ selectedIds.length }} items selected</template>
+          </span>
+          <div class="h-4 w-px bg-white/20"></div>
+          <div class="flex gap-2">
+            <button @click="showTemplateModal = true" class="rounded-lg bg-emerald-500 px-3 py-1 text-xs font-bold hover:bg-emerald-600 flex items-center gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a2 2 0 00-1.96 1.414l-.477 2.387a2 2 0 00.547 1.022l1.428 1.428a2 2 0 002.828 0l1.428-1.428a2 2 0 00.547-1.022l.477-2.387a2 2 0 00-1.414-1.96l-2.387-.477a2 2 0 00-1.022.547l-1.428 1.428a2 2 0 000 2.828l1.428 1.428" /></svg>
+              Apply Common Content
+            </button>
+            <button @click="bulkAction('status', 'published')" class="rounded-lg bg-white/10 px-3 py-1 text-xs font-medium hover:bg-white/20">Publish</button>
+            <button @click="bulkAction('status', 'draft')" class="rounded-lg bg-white/10 px-3 py-1 text-xs font-medium hover:bg-white/20">Draft</button>
+            <button @click="bulkAction('delete')" class="rounded-lg bg-red-500/20 px-3 py-1 text-xs font-medium text-red-400 hover:bg-red-500/30">Delete</button>
+          </div>
+          
+          <div v-if="!selectAllMatching && items.length > 20" class="h-4 w-px bg-white/20 ml-2"></div>
+          <div v-if="!selectAllMatching && items.length > 20" class="flex gap-1 items-center">
+            <span class="text-[10px] uppercase text-white/40 font-bold mr-1">Select:</span>
+            <button @click="selectedIds = items.slice(0, 20).map(i => i.id)" class="px-2 py-0.5 rounded bg-white/5 text-[10px] hover:bg-white/10 transition">Top 20</button>
+            <button @click="selectedIds = items.slice(0, 50).map(i => i.id)" class="px-2 py-0.5 rounded bg-white/5 text-[10px] hover:bg-white/10 transition">Top 50</button>
+            <button @click="selectedIds = items.slice(0, 100).map(i => i.id)" class="px-2 py-0.5 rounded bg-white/5 text-[10px] hover:bg-white/10 transition">Top 100</button>
+          </div>
+        </div>
+        <button @click="selectedIds = []; selectAllMatching = false" class="text-xs text-white/60 hover:text-white">Clear selection</button>
+      </div>
     </div>
 
     <div v-if="loading" class="overflow-hidden rounded-xl border border-[#e2e8f0] bg-white">
@@ -254,6 +334,28 @@
         
         <div class="mt-8 grid gap-8 lg:grid-cols-2">
            <div class="space-y-6">
+              <div class="rounded-xl border border-[#e2e8f0] p-5 bg-white mb-6">
+                <h4 class="mb-4 font-bold text-[#1a1a1a] flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#e63946]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
+                  SEO Meta Templates
+                </h4>
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-xs font-bold text-[#64748b] mb-1">Meta Title Template</label>
+                    <input v-model="templateForm.meta_title" type="text" placeholder="e.g. Best {type} in {city} | StarJD" class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-sm focus:border-[#e63946] focus:outline-none" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-[#64748b] mb-1">Meta Description Template</label>
+                    <textarea v-model="templateForm.meta_description" rows="2" placeholder="e.g. Find the top rated {name} in {city}. Read reviews and book..." class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-sm focus:border-[#e63946] focus:outline-none"></textarea>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-[#64748b] mb-1">Meta Keywords Template</label>
+                    <input v-model="templateForm.meta_keywords" type="text" placeholder="e.g. {type} in {city}, best {name}, top {type}" class="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-sm focus:border-[#e63946] focus:outline-none" />
+                  </div>
+                  <p class="text-[10px] text-[#94a3b8]">Placeholders: <code class="text-[#e63946] font-bold">{name}</code>, <code class="text-[#e63946] font-bold">{city}</code>, <code class="text-[#e63946] font-bold">{type}</code></p>
+                </div>
+              </div>
+
               <div>
                 <label class="block text-sm font-bold text-[#1a1a1a] mb-2">Intro Template</label>
                 <RichTextEditor v-model="templateForm.intro_text" placeholder="e.g. Discover the best {type} in {name}..." />
@@ -355,6 +457,14 @@
                   <input v-model="editForm.meta_title" type="text" class="mt-1 w-full rounded-lg border border-[#e2e8f0] px-3 py-2 focus:border-[#e63946] focus:outline-none" />
                 </div>
                 <div>
+                  <label class="block text-sm font-medium text-[#64748b]">Meta Description</label>
+                  <textarea v-model="editForm.meta_description" rows="2" class="mt-1 w-full rounded-lg border border-[#e2e8f0] px-3 py-2 focus:border-[#e63946] focus:outline-none"></textarea>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-[#64748b]">Meta Keywords</label>
+                  <input v-model="editForm.meta_keywords" type="text" placeholder="keyword1, keyword2" class="mt-1 w-full rounded-lg border border-[#e2e8f0] px-3 py-2 focus:border-[#e63946] focus:outline-none" />
+                </div>
+                <div>
                   <label class="block text-sm font-medium text-[#64748b] mb-2">Introduction Paragraph</label>
                   <RichTextEditor 
                     v-model="editForm.intro_text" 
@@ -452,17 +562,22 @@ const loading = ref(true);
 const importing = ref(false);
 const saving = ref(false);
 const generatingAi = ref(false);
+const generatingSitemap = ref(false);
 const applyingTemplate = ref(false);
 const showImportModal = ref(false);
 const showEditModal = ref(false);
 const showDeleteModal = ref(false);
 const showTemplateModal = ref(false);
+const showImportProcessing = ref(false);
 const itemToDelete = ref(null);
-const currentItem = ref(null);
-
+const selectAllMatching = ref(false);
 const aiFocusTopic = ref('');
 
 const filterType = ref('');
+const filterState = ref('');
+const filterCity = ref('');
+const filterSlug = ref('');
+const perPage = ref('20');
 const search = ref('');
 const listPage = ref(1);
 const pagination = reactive({
@@ -486,11 +601,11 @@ const importForm = reactive({
 });
 
 const templateForm = reactive({
-  intro_text: '', guide_content: [], faqs: []
+  meta_title: '', meta_description: '', meta_keywords: '', intro_text: '', guide_content: [], faqs: []
 });
 
 const editForm = reactive({
-  id: null, title: '', slug: '', meta_title: '', intro_text: '', guide_content: [], faqs: [], status: 'published'
+  id: null, title: '', slug: '', meta_title: '', meta_description: '', meta_keywords: '', intro_text: '', guide_content: [], faqs: [], status: 'published'
 });
 
 const filteredCities = computed(() => {
@@ -498,11 +613,24 @@ const filteredCities = computed(() => {
   return cities.value.filter(c => c.state_id == importForm.state_id);
 });
 
+const listFilteredCities = computed(() => {
+  if (!filterState.value) return [];
+  return cities.value.filter(c => c.state_id == filterState.value);
+});
+
 async function load() {
   loading.value = true;
   try {
     const r = await axios.get('/api/admin/seo-pages', {
-      params: { page: listPage.value, type: filterType.value, search: search.value }
+      params: { 
+        page: listPage.value, 
+        type: filterType.value, 
+        search: search.value,
+        slug: filterSlug.value,
+        state_id: filterState.value,
+        city_id: filterCity.value,
+        per_page: perPage.value
+      }
     });
     items.value = r.data.data;
     pagination.total = r.data.total;
@@ -527,19 +655,27 @@ async function loadLocations() {
 }
 
 function openImportModal() {
-  loadLocations();
   showImportModal.value = true;
 }
 
 async function runImport() {
   if (!importForm.type) return;
   importing.value = true;
+  showImportModal.value = false;
+  
   try {
-    const r = await axios.post('/api/admin/seo-pages/bulk-import', importForm);
-    showImportModal.value = false;
+    const r = await axios.post('/api/admin/seo-pages/bulk-import', importForm, { timeout: 120000 });
     alert(r.data.message);
     load();
-  } catch (e) { alert(e.response?.data?.message || 'Import failed'); }
+  } catch (e) { 
+    // Handle timeouts or server overloads gracefully
+    if (e.code === 'ECONNABORTED' || e.response?.status === 504 || e.response?.status === 502) {
+      showImportProcessing.value = true;
+      // The server is likely still processing in background
+    } else {
+      alert(e.response?.data?.message || 'Import failed. Please check filters.'); 
+    }
+  }
   finally { importing.value = false; }
 }
 
@@ -581,10 +717,21 @@ async function applyTemplate() {
   applyingTemplate.value = true;
   try {
     await axios.post('/api/admin/seo-pages/bulk-action', {
-      ids: selectedIds.value, action: 'template', template_data: templateForm
+      ids: selectAllMatching.value ? [] : selectedIds.value, 
+      all_matching: selectAllMatching.value,
+      filters: selectAllMatching.value ? { 
+        type: filterType.value, 
+        search: search.value, 
+        slug: filterSlug.value, 
+        state_id: filterState.value, 
+        city_id: filterCity.value 
+      } : null,
+      action: 'template', 
+      template_data: templateForm
     });
     showTemplateModal.value = false;
     selectedIds.value = [];
+    selectAllMatching.value = false;
     alert('Template applied successfully!');
     load();
   } catch (e) { alert('Failed to apply template'); }
@@ -597,6 +744,8 @@ function editPage(item) {
   editForm.title = item.title || '';
   editForm.slug = item.slug || '';
   editForm.meta_title = item.meta_title || '';
+  editForm.meta_description = item.meta_description || '';
+  editForm.meta_keywords = item.meta_keywords || '';
   editForm.intro_text = item.intro_text || '';
   editForm.guide_content = Array.isArray(item.guide_content) ? [...item.guide_content] : [];
   editForm.faqs = Array.isArray(item.faqs) ? [...item.faqs] : [];
@@ -615,16 +764,34 @@ async function savePage() {
 }
 
 function toggleSelectAll() {
-  if (allSelected.value) { selectedIds.value = []; } 
-  else { selectedIds.value = items.value.map(i => i.id); }
+  if (allSelected.value) { 
+    selectedIds.value = []; 
+    selectAllMatching.value = false;
+  } 
+  else { 
+    selectedIds.value = items.value.map(i => i.id); 
+  }
 }
 
 async function bulkAction(action, value = null) {
-  if (!selectedIds.value.length) return;
+  if (!selectedIds.value.length && !selectAllMatching.value) return;
   if (action === 'delete' && !confirm('Are you sure?')) return;
   try {
-    await axios.post('/api/admin/seo-pages/bulk-action', { ids: selectedIds.value, action, value });
+    await axios.post('/api/admin/seo-pages/bulk-action', { 
+      ids: selectAllMatching.value ? [] : selectedIds.value, 
+      all_matching: selectAllMatching.value,
+      filters: selectAllMatching.value ? { 
+        type: filterType.value, 
+        search: search.value, 
+        slug: filterSlug.value, 
+        state_id: filterState.value, 
+        city_id: filterCity.value 
+      } : null,
+      action, 
+      value 
+    });
     selectedIds.value = [];
+    selectAllMatching.value = false;
     load();
   } catch (e) { alert('Action failed'); }
 }
@@ -643,8 +810,25 @@ async function doDelete() {
   } catch (e) { alert('Delete failed'); }
 }
 
-watch([filterType, listPage], load);
-onMounted(load);
+async function generateSitemap() {
+  generatingSitemap.value = true;
+  try {
+    const r = await axios.post('/api/admin/sitemap/generate');
+    alert(r.data.message);
+  } catch (e) { alert('Sitemap generation failed'); }
+  finally { generatingSitemap.value = false; }
+}
+
+watch([filterType, listPage, filterState, filterCity, perPage], () => {
+  if (filterState.value === '' && filterCity.value !== '') {
+    filterCity.value = '';
+  }
+  load();
+});
+
+onMounted(() => {
+  loadLocations().then(load);
+});
 </script>
 
 <style scoped>
