@@ -230,51 +230,63 @@ class LocationCmsController extends Controller
         $count = 0;
         $taskId = 'seo_import_' . Auth::id();
 
-        $query->chunk(100, function ($entities) use ($type, $slugPattern, $titlePattern, &$count, $total, $taskId) {
-            foreach ($entities as $entity) {
-                $city = $entity->city ?? 'Unknown City';
-                $name = $entity->name;
+        try {
+            $query->chunk(100, function ($entities) use ($type, $slugPattern, $titlePattern, &$count, $total, $taskId) {
+                foreach ($entities as $entity) {
+                    $city = $entity->city ?? 'Unknown City';
+                    $name = $entity->name;
 
-                $replacements = [
-                    '{name}' => $name,
-                    '{city}' => $city,
-                    '{type}' => ucfirst($type),
-                ];
+                    $replacements = [
+                        '{name}' => $name,
+                        '{city}' => $city,
+                        '{type}' => ucfirst($type),
+                    ];
 
-                $finalTitle = str_replace(array_keys($replacements), array_values($replacements), $titlePattern);
-                $slugBase = str_replace(array_keys($replacements), array_values($replacements), $slugPattern);
-                $cleanSlug = Str::slug($slugBase);
-                
-                if (SeoPage::where('slug', $cleanSlug)->exists()) {
-                    $cleanSlug = $cleanSlug . '-' . Str::random(4);
+                    $finalTitle = str_replace(array_keys($replacements), array_values($replacements), $titlePattern);
+                    $slugBase = str_replace(array_keys($replacements), array_values($replacements), $slugPattern);
+                    $cleanSlug = Str::slug($slugBase);
+                    
+                    if (SeoPage::where('slug', $cleanSlug)->exists()) {
+                        $cleanSlug = $cleanSlug . '-' . Str::random(4);
+                    }
+
+                    SeoPage::create([
+                        'entity_type' => get_class($entity),
+                        'entity_id' => $entity->id,
+                        'type' => $type,
+                        'slug' => $cleanSlug,
+                        'title' => $finalTitle,
+                        'meta_title' => "$finalTitle | StarJD",
+                        'meta_description' => "Discover the top $type in $city. View details, ratings, and more about $name on StarJD.",
+                        'status' => 'published',
+                    ]);
+                    $count++;
                 }
+                Cache::put($taskId, [
+                    'status' => 'processing',
+                    'current' => $count,
+                    'total' => $total,
+                    'message' => "Imported $count of $total items..."
+                ], 300);
+            });
 
-                SeoPage::create([
-                    'entity_type' => get_class($entity),
-                    'entity_id' => $entity->id,
-                    'type' => $type,
-                    'slug' => $cleanSlug,
-                    'title' => $finalTitle,
-                    'meta_title' => "$finalTitle | StarJD",
-                    'meta_description' => "Discover the top $type in $city. View details, ratings, and more about $name on StarJD.",
-                    'status' => 'published',
-                ]);
-                $count++;
-            }
             Cache::put($taskId, [
-                'status' => 'processing',
+                'status' => 'completed',
+                'current' => $total,
+                'total' => $total,
+                'message' => "Successfully imported $total items."
+            ], 300);
+
+        } catch (\Exception $e) {
+            Log::error("Bulk Import Error: " . $e->getMessage());
+            Cache::put($taskId, [
+                'status' => 'error',
                 'current' => $count,
                 'total' => $total,
-                'message' => "Imported $count of $total items..."
+                'message' => "Import failed: " . $e->getMessage()
             ], 300);
-        });
-
-        Cache::put($taskId, [
-            'status' => 'completed',
-            'current' => $total,
-            'total' => $total,
-            'message' => "Successfully imported $total items."
-        ], 300);
+            throw $e;
+        }
 
         return response()->json([
             'message' => "Successfully imported $count $type pages.",
@@ -323,74 +335,85 @@ class LocationCmsController extends Controller
                 $total = $query->count();
                 $processed = 0;
 
-                $query->with('entity')->chunk(50, function($pages) use ($data, &$processed, $total, $taskId) {
-                    foreach ($pages as $page) {
-                        $entity = $page->entity;
-                        if (!$entity) continue;
+                try {
+                    $query->with('entity')->chunk(50, function($pages) use ($data, &$processed, $total, $taskId) {
+                        foreach ($pages as $page) {
+                            $entity = $page->entity;
+                            if (!$entity) continue;
 
-                        $replacements = [
-                            '{name}' => $entity->name,
-                            '{city}' => $entity->city ?? '',
-                            '{type}' => ucfirst($page->type),
-                        ];
+                            $replacements = [
+                                '{name}' => $entity->name,
+                                '{city}' => $entity->city ?? '',
+                                '{type}' => ucfirst($page->type),
+                            ];
 
-                        // Helper function to replace in strings or arrays
-                        $replace = function ($target) use ($replacements) {
-                            if (is_string($target)) {
-                                return str_replace(array_keys($replacements), array_values($replacements), $target);
+                            // Helper function to replace in strings or arrays
+                            $replace = function ($target) use ($replacements) {
+                                if (is_string($target)) {
+                                    return str_replace(array_keys($replacements), array_values($replacements), $target);
+                                }
+                                return $target;
+                            };
+
+                            $update = [];
+                            if (isset($data['intro_text'])) {
+                                $update['intro_text'] = $replace($data['intro_text']);
                             }
-                            return $target;
-                        };
-
-                        $update = [];
-                        if (isset($data['intro_text'])) {
-                            $update['intro_text'] = $replace($data['intro_text']);
-                        }
-                        if (isset($data['guide_content'])) {
-                            $guide = $data['guide_content'];
-                            foreach ($guide as &$section) {
-                                $section['title'] = $replace($section['title']);
-                                $section['content'] = $replace($section['content']);
+                            if (isset($data['guide_content'])) {
+                                $guide = $data['guide_content'];
+                                foreach ($guide as &$section) {
+                                    $section['title'] = $replace($section['title']);
+                                    $section['content'] = $replace($section['content']);
+                                }
+                                $update['guide_content'] = $guide;
                             }
-                            $update['guide_content'] = $guide;
-                        }
-                        if (isset($data['faqs'])) {
-                            $faqs = $data['faqs'];
-                            foreach ($faqs as &$faq) {
-                                $faq['q'] = $replace($faq['q']);
-                                $faq['a'] = $replace($faq['a']);
+                            if (isset($data['faqs'])) {
+                                $faqs = $data['faqs'];
+                                foreach ($faqs as &$faq) {
+                                    $faq['q'] = $replace($faq['q']);
+                                    $faq['a'] = $replace($faq['a']);
+                                }
+                                $update['faqs'] = $faqs;
                             }
-                            $update['faqs'] = $faqs;
+
+                            if (isset($data['meta_title'])) {
+                                $update['meta_title'] = $replace($data['meta_title']);
+                            }
+                            if (isset($data['meta_description'])) {
+                                $update['meta_description'] = $replace($data['meta_description']);
+                            }
+                            if (isset($data['meta_keywords'])) {
+                                $update['meta_keywords'] = $replace($data['meta_keywords']);
+                            }
+
+                            $page->update($update);
+                            $processed++;
                         }
 
-                        if (isset($data['meta_title'])) {
-                            $update['meta_title'] = $replace($data['meta_title']);
-                        }
-                        if (isset($data['meta_description'])) {
-                            $update['meta_description'] = $replace($data['meta_description']);
-                        }
-                        if (isset($data['meta_keywords'])) {
-                            $update['meta_keywords'] = $replace($data['meta_keywords']);
-                        }
-
-                        $page->update($update);
-                        $processed++;
-                    }
+                        Cache::put($taskId, [
+                            'status' => 'processing',
+                            'current' => $processed,
+                            'total' => $total,
+                            'message' => "Applied template to $processed of $total pages..."
+                        ], 300);
+                    });
 
                     Cache::put($taskId, [
-                        'status' => 'processing',
+                        'status' => 'completed',
+                        'current' => $total,
+                        'total' => $total,
+                        'message' => "Template applied to $total pages successfully."
+                    ], 300);
+                } catch (\Exception $e) {
+                    Log::error("Bulk Template Error: " . $e->getMessage());
+                    Cache::put($taskId, [
+                        'status' => 'error',
                         'current' => $processed,
                         'total' => $total,
-                        'message' => "Applied template to $processed of $total pages..."
+                        'message' => "Template application failed: " . $e->getMessage()
                     ], 300);
-                });
-
-                Cache::put($taskId, [
-                    'status' => 'completed',
-                    'current' => $total,
-                    'total' => $total,
-                    'message' => "Template applied to $total pages successfully."
-                ], 300);
+                    throw $e;
+                }
                 break;
         }
 

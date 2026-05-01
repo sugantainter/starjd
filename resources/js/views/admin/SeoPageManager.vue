@@ -17,30 +17,81 @@
           </svg>
           {{ generatingSitemap ? 'Generating...' : 'Update Sitemap' }}
         </button>
-        <div v-if="showImportProcessing" class="flex items-center gap-3 rounded-xl bg-amber-50 px-4 py-2 text-amber-700 border border-amber-200 shadow-sm">
-           <div class="relative flex items-center justify-center">
-             <svg class="animate-spin h-5 w-5 text-amber-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        <div v-if="showImportProcessing" 
+          class="flex items-center gap-3 rounded-xl px-4 py-2 border shadow-sm transition-all duration-500"
+          :class="{
+            'bg-emerald-50 text-emerald-700 border-emerald-200': taskStatus.import?.status === 'completed' || taskStatus.action?.status === 'completed',
+            'bg-red-50 text-red-700 border-red-200': taskStatus.import?.status === 'error' || taskStatus.action?.status === 'error',
+            'bg-amber-50 text-amber-700 border-amber-200': !['completed', 'error'].includes(taskStatus.import?.status) && !['completed', 'error'].includes(taskStatus.action?.status)
+          }"
+        >
+            <div class="relative flex items-center justify-center">
+             <svg v-if="taskStatus.import?.status === 'completed' || taskStatus.action?.status === 'completed'" class="h-5 w-5 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+             </svg>
+             <svg v-else-if="taskStatus.import?.status === 'error' || taskStatus.action?.status === 'error'" class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+             </svg>
+             <svg v-else class="animate-spin h-5 w-5 text-amber-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
            </div>
            <div class="flex-1">
-             <div class="flex items-center justify-between">
-               <span class="text-[10px] font-black uppercase tracking-widest text-amber-800">Background Task Active</span>
-               <span class="text-[10px] font-bold text-amber-600" v-if="taskStatus.import?.total || taskStatus.action?.total">
+             <div class="flex items-center justify-between min-w-[140px]">
+               <span class="text-[10px] font-black uppercase tracking-widest" :class="{
+                 'text-emerald-800': taskStatus.import?.status === 'completed' || taskStatus.action?.status === 'completed',
+                 'text-red-800': taskStatus.import?.status === 'error' || taskStatus.action?.status === 'error',
+                 'text-amber-800': !['completed', 'error'].includes(taskStatus.import?.status) && !['completed', 'error'].includes(taskStatus.action?.status)
+               }">
+                 <template v-if="taskStatus.import?.status === 'completed' || taskStatus.action?.status === 'completed'">Task Completed</template>
+                 <template v-else-if="taskStatus.import?.status === 'error' || taskStatus.action?.status === 'error'">Task Failed</template>
+                 <template v-else>Background Task Active</template>
+               </span>
+               <span class="text-[10px] font-bold" :class="{
+                 'text-emerald-600': taskStatus.import?.status === 'completed' || taskStatus.action?.status === 'completed',
+                 'text-red-600': taskStatus.import?.status === 'error' || taskStatus.action?.status === 'error',
+                 'text-amber-600': !['completed', 'error'].includes(taskStatus.import?.status) && !['completed', 'error'].includes(taskStatus.action?.status)
+               }" v-if="taskStatus.import?.total || taskStatus.action?.total">
                  {{ ((taskStatus.import?.current || taskStatus.action?.current || 0) / (taskStatus.import?.total || taskStatus.action?.total || 1) * 100).toFixed(0) }}%
                </span>
              </div>
-             <p class="text-[11px] leading-tight text-amber-700 font-medium truncate max-w-[200px]">
+             <p class="text-[11px] leading-tight font-medium truncate max-w-[200px]" :class="{
+                 'text-emerald-700': taskStatus.import?.status === 'completed' || taskStatus.action?.status === 'completed',
+                 'text-red-700': taskStatus.import?.status === 'error' || taskStatus.action?.status === 'error',
+                 'text-amber-700': !['completed', 'error'].includes(taskStatus.import?.status) && !['completed', 'error'].includes(taskStatus.action?.status)
+               }">
                {{ taskStatus.import?.message || taskStatus.action?.message || 'Processing your request...' }}
              </p>
-             <div v-if="taskStatus.import?.total || taskStatus.action?.total" class="mt-1.5 h-1 w-full rounded-full bg-amber-200 overflow-hidden">
+             <div v-if="taskStatus.import?.total || taskStatus.action?.total" class="mt-1.5 h-1 w-full rounded-full overflow-hidden" :class="{
+                 'bg-emerald-200': taskStatus.import?.status === 'completed' || taskStatus.action?.status === 'completed',
+                 'bg-red-200': taskStatus.import?.status === 'error' || taskStatus.action?.status === 'error',
+                 'bg-amber-200': !['completed', 'error'].includes(taskStatus.import?.status) && !['completed', 'error'].includes(taskStatus.action?.status)
+               }">
                <div 
-                 class="h-full bg-amber-500 transition-all duration-700" 
+                 class="h-full transition-all duration-700" 
+                 :class="{
+                   'bg-emerald-500': taskStatus.import?.status === 'completed' || taskStatus.action?.status === 'completed',
+                   'bg-red-500': taskStatus.import?.status === 'error' || taskStatus.action?.status === 'error',
+                   'bg-amber-500': !['completed', 'error'].includes(taskStatus.import?.status) && !['completed', 'error'].includes(taskStatus.action?.status)
+                 }"
                  :style="{ width: ((taskStatus.import?.current || taskStatus.action?.current || 0) / (taskStatus.import?.total || taskStatus.action?.total || 1) * 100) + '%' }"
                ></div>
              </div>
            </div>
-           <button @click="load" class="ml-2 rounded-lg bg-amber-100 p-1.5 text-amber-700 hover:bg-amber-200 transition">
-             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-           </button>
+           <div class="flex items-center gap-1">
+             <button @click="load" class="rounded-lg p-1.5 transition" :class="{
+               'bg-emerald-100 text-emerald-700 hover:bg-emerald-200': taskStatus.import?.status === 'completed' || taskStatus.action?.status === 'completed',
+               'bg-red-100 text-red-700 hover:bg-red-200': taskStatus.import?.status === 'error' || taskStatus.action?.status === 'error',
+               'bg-amber-100 text-amber-700 hover:bg-amber-200': !['completed', 'error'].includes(taskStatus.import?.status) && !['completed', 'error'].includes(taskStatus.action?.status)
+             }">
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+             </button>
+             <button @click="showImportProcessing = false" class="rounded-lg p-1.5 transition" :class="{
+               'bg-emerald-100 text-emerald-700 hover:bg-emerald-200': taskStatus.import?.status === 'completed' || taskStatus.action?.status === 'completed',
+               'bg-red-100 text-red-700 hover:bg-red-200': taskStatus.import?.status === 'error' || taskStatus.action?.status === 'error',
+               'bg-amber-100 text-amber-700 hover:bg-amber-200': !['completed', 'error'].includes(taskStatus.import?.status) && !['completed', 'error'].includes(taskStatus.action?.status)
+             }">
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+             </button>
+           </div>
         </div>
         <button 
           v-if="!showImportProcessing"
@@ -705,18 +756,24 @@ async function runImport() {
   if (!importForm.type) return;
   importing.value = true;
   showImportModal.value = false;
+  showImportProcessing.value = true;
+  
+  // Reset task status for fresh start
+  taskStatus.import = { status: 'processing', current: 0, total: 100, message: 'Preparing import...' };
   
   try {
-    const r = await axios.post('/api/admin/seo-pages/bulk-import', importForm, { timeout: 120000 });
-    alert(r.data.message);
+    const r = await axios.post('/api/admin/seo-pages/bulk-import', importForm, { timeout: 300000 });
+    // If it finishes synchronously, update status
+    taskStatus.import = { status: 'completed', current: r.data.count, total: r.data.count, message: r.data.message };
     load();
   } catch (e) { 
     // Handle timeouts or server overloads gracefully
     if (e.code === 'ECONNABORTED' || e.response?.status === 504 || e.response?.status === 502) {
-      showImportProcessing.value = true;
-      // The server is likely still processing in background
+      // The server is likely still processing in background, keep banner visible
+      taskStatus.import = { status: 'processing', message: 'Import continuing in background...' };
     } else {
-      alert(e.response?.data?.message || 'Import failed. Please check filters.'); 
+      taskStatus.import = { status: 'error', message: e.response?.data?.message || 'Import failed.' };
+      setTimeout(() => { showImportProcessing.value = false; }, 5000);
     }
   }
   finally { importing.value = false; }
@@ -759,6 +816,10 @@ async function generateAiForTemplate() {
 async function applyTemplate() {
   if (!selectedIds.value.length) return;
   applyingTemplate.value = true;
+  showTemplateModal.value = false;
+  showImportProcessing.value = true;
+  taskStatus.action = { status: 'processing', current: 0, total: selectAllMatching.value ? pagination.total : selectedIds.value.length, message: 'Applying template...' };
+
   try {
     await axios.post('/api/admin/seo-pages/bulk-action', {
       ids: selectAllMatching.value ? [] : selectedIds.value, 
@@ -772,18 +833,18 @@ async function applyTemplate() {
       } : null,
       action: 'template', 
       template_data: templateForm
-    }, { timeout: 120000 });
-    showTemplateModal.value = false;
+    }, { timeout: 300000 });
+    
+    taskStatus.action = { status: 'completed', message: 'Template applied successfully!' };
     selectedIds.value = [];
     selectAllMatching.value = false;
-    alert('Template applied successfully!');
     load();
   } catch (e) { 
     if (e.code === 'ECONNABORTED' || e.response?.status === 504 || e.response?.status === 502) {
-      showImportProcessing.value = true;
-      showTemplateModal.value = false;
+      taskStatus.action = { status: 'processing', message: 'Processing template in background...' };
     } else {
-      alert(e.response?.data?.message || 'Failed to apply template'); 
+      taskStatus.action = { status: 'error', message: e.response?.data?.message || 'Failed to apply template' };
+      setTimeout(() => { showImportProcessing.value = false; }, 5000);
     }
   }
   finally { applyingTemplate.value = false; }
@@ -827,6 +888,12 @@ function toggleSelectAll() {
 async function bulkAction(action, value = null) {
   if (!selectedIds.value.length && !selectAllMatching.value) return;
   if (action === 'delete' && !confirm('Are you sure?')) return;
+  
+  if (action === 'status') {
+    showImportProcessing.value = true;
+    taskStatus.action = { status: 'processing', message: `Updating ${action}...` };
+  }
+
   try {
     await axios.post('/api/admin/seo-pages/bulk-action', { 
       ids: selectAllMatching.value ? [] : selectedIds.value, 
@@ -841,14 +908,22 @@ async function bulkAction(action, value = null) {
       action, 
       value 
     }, { timeout: 120000 });
+    
+    if (action === 'status') {
+      taskStatus.action = { status: 'completed', message: 'Bulk action completed!' };
+      setTimeout(() => { showImportProcessing.value = false; }, 3000);
+    }
+    
     selectedIds.value = [];
     selectAllMatching.value = false;
     load();
   } catch (e) { 
     if (e.code === 'ECONNABORTED' || e.response?.status === 504 || e.response?.status === 502) {
       showImportProcessing.value = true;
+      taskStatus.action = { status: 'processing', message: 'Action continuing in background...' };
     } else {
-      alert(e.response?.data?.message || 'Action failed'); 
+      taskStatus.action = { status: 'error', message: e.response?.data?.message || 'Action failed' };
+      setTimeout(() => { showImportProcessing.value = false; }, 5000);
     }
   }
 }
@@ -895,8 +970,10 @@ watch([filterType, listPage, filterState, filterCity, perPage], () => {
 async function checkStatus() {
   try {
     const r = await axios.get('/api/admin/seo-pages/task-status');
-    taskStatus.import = r.data.import;
-    taskStatus.action = r.data.action;
+    
+    // Only update if the server has actual data
+    if (r.data.import) taskStatus.import = r.data.import;
+    if (r.data.action) taskStatus.action = r.data.action;
     
     const isProcessing = (taskStatus.import && taskStatus.import.status === 'processing') || 
                          (taskStatus.action && taskStatus.action.status === 'processing');
@@ -904,11 +981,9 @@ async function checkStatus() {
     if (isProcessing) {
       showImportProcessing.value = true;
     } else if (showImportProcessing.value) {
+      // If it was completed, we keep it visible for a bit so they see the success message
       if (taskStatus.import?.status === 'completed' || taskStatus.action?.status === 'completed') {
-        setTimeout(() => {
-          showImportProcessing.value = false;
-          load();
-        }, 2000);
+        // Success message is showing, don't auto-hide immediately
       }
     }
   } catch (e) {}
