@@ -17,10 +17,30 @@
           </svg>
           {{ generatingSitemap ? 'Generating...' : 'Update Sitemap' }}
         </button>
-        <div v-if="showImportProcessing" class="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-amber-700 border border-amber-200 animate-pulse">
-           <svg class="animate-spin h-4 w-4 text-amber-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-           <span class="text-xs font-bold uppercase tracking-tight">Importing in background...</span>
-           <button @click="showImportProcessing = false; load()" class="ml-1 text-amber-900 underline font-bold">Refresh List</button>
+        <div v-if="showImportProcessing" class="flex items-center gap-3 rounded-xl bg-amber-50 px-4 py-2 text-amber-700 border border-amber-200 shadow-sm">
+           <div class="relative flex items-center justify-center">
+             <svg class="animate-spin h-5 w-5 text-amber-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+           </div>
+           <div class="flex-1">
+             <div class="flex items-center justify-between">
+               <span class="text-[10px] font-black uppercase tracking-widest text-amber-800">Background Task Active</span>
+               <span class="text-[10px] font-bold text-amber-600" v-if="taskStatus.import?.total || taskStatus.action?.total">
+                 {{ ((taskStatus.import?.current || taskStatus.action?.current || 0) / (taskStatus.import?.total || taskStatus.action?.total || 1) * 100).toFixed(0) }}%
+               </span>
+             </div>
+             <p class="text-[11px] leading-tight text-amber-700 font-medium truncate max-w-[200px]">
+               {{ taskStatus.import?.message || taskStatus.action?.message || 'Processing your request...' }}
+             </p>
+             <div v-if="taskStatus.import?.total || taskStatus.action?.total" class="mt-1.5 h-1 w-full rounded-full bg-amber-200 overflow-hidden">
+               <div 
+                 class="h-full bg-amber-500 transition-all duration-700" 
+                 :style="{ width: ((taskStatus.import?.current || taskStatus.action?.current || 0) / (taskStatus.import?.total || taskStatus.action?.total || 1) * 100) + '%' }"
+               ></div>
+             </div>
+           </div>
+           <button @click="load" class="ml-2 rounded-lg bg-amber-100 p-1.5 text-amber-700 hover:bg-amber-200 transition">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+           </button>
         </div>
         <button 
           v-if="!showImportProcessing"
@@ -214,16 +234,29 @@
       <!-- Pagination -->
       <div v-if="pagination.total > pagination.perPage" class="flex flex-col items-center justify-between gap-4 border-t border-[#e2e8f0] bg-[#f8fafc] px-4 py-4 sm:flex-row">
         <p class="text-xs text-[#64748b]">
-          Showing <span class="font-medium text-[#1a1a1a]">{{ pagination.from }}</span> to <span class="font-medium text-[#1a1a1a]">{{ pagination.to }}</span> of <span class="font-medium text-[#1a1a1a]">{{ pagination.total }}</span> pages
+          Showing <span class="font-medium text-[#1a1a1a]">{{ pagination.from }}</span> to <span class="font-medium text-[#1a1a1a]">{{ pagination.to }}</span> of <span class="font-medium text-[#1a1a1a]">{{ pagination.total }}</span> items
         </p>
-        <div class="flex items-center gap-1">
-          <button @click="listPage--" :disabled="listPage <= 1" class="rounded-lg border border-[#e2e8f0] bg-white p-1.5 text-[#64748b] disabled:opacity-50 hover:bg-[#f1f5f9]">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-          </button>
-          <span class="px-3 text-sm font-medium text-[#1a1a1a]">{{ listPage }} / {{ pagination.lastPage }}</span>
-          <button @click="listPage++" :disabled="listPage >= pagination.lastPage" class="rounded-lg border border-[#e2e8f0] bg-white p-1.5 text-[#64748b] disabled:opacity-50 hover:bg-[#f1f5f9]">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-          </button>
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] uppercase font-bold text-[#94a3b8]">Jump to</span>
+            <input 
+              type="number" 
+              v-model="jumpPage" 
+              @keyup.enter="doJump"
+              class="w-14 rounded-lg border border-[#e2e8f0] py-1 px-2 text-center text-xs font-bold text-[#1e293b] focus:border-[#e63946] focus:outline-none"
+              :min="1"
+              :max="pagination.lastPage"
+            />
+          </div>
+          <div class="flex items-center gap-1">
+            <button @click="listPage--" :disabled="listPage <= 1" class="rounded-lg border border-[#e2e8f0] bg-white p-1.5 text-[#64748b] disabled:opacity-50 hover:bg-[#f1f5f9]">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+            </button>
+            <span class="px-3 text-sm font-bold text-[#1a1a1a] min-w-[60px] text-center">{{ listPage }} <span class="text-[#94a3b8] font-normal mx-1">/</span> {{ pagination.lastPage }}</span>
+            <button @click="listPage++" :disabled="listPage >= pagination.lastPage" class="rounded-lg border border-[#e2e8f0] bg-white p-1.5 text-[#64748b] disabled:opacity-50 hover:bg-[#f1f5f9]">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -318,6 +351,7 @@
                 {{ selectAllMatching ? pagination.total : selectedIds.length }}
               </span> 
               selected pages.
+              <span v-if="applyingTemplate" class="ml-2 text-amber-600 block mt-1 text-xs font-bold animate-pulse">Processing in background, this may take a moment...</span>
             </p>
           </div>
           <div class="flex items-center gap-2">
@@ -553,7 +587,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed, reactive } from 'vue';
+import { ref, onMounted, onUnmounted, watch, computed, reactive } from 'vue';
 import axios from 'axios';
 import AdminPageHeader from '../../components/admin/AdminPageHeader.vue';
 import AdminEmptyState from '../../components/admin/AdminEmptyState.vue';
@@ -578,6 +612,9 @@ const showImportProcessing = ref(false);
 const itemToDelete = ref(null);
 const selectAllMatching = ref(false);
 const aiFocusTopic = ref('');
+const jumpPage = ref(1);
+const taskStatus = reactive({ import: null, action: null });
+let statusInterval = null;
 
 const filterType = ref('');
 const filterState = ref('');
@@ -735,13 +772,20 @@ async function applyTemplate() {
       } : null,
       action: 'template', 
       template_data: templateForm
-    });
+    }, { timeout: 120000 });
     showTemplateModal.value = false;
     selectedIds.value = [];
     selectAllMatching.value = false;
     alert('Template applied successfully!');
     load();
-  } catch (e) { alert('Failed to apply template'); }
+  } catch (e) { 
+    if (e.code === 'ECONNABORTED' || e.response?.status === 504 || e.response?.status === 502) {
+      showImportProcessing.value = true;
+      showTemplateModal.value = false;
+    } else {
+      alert(e.response?.data?.message || 'Failed to apply template'); 
+    }
+  }
   finally { applyingTemplate.value = false; }
 }
 
@@ -796,11 +840,17 @@ async function bulkAction(action, value = null) {
       } : null,
       action, 
       value 
-    });
+    }, { timeout: 120000 });
     selectedIds.value = [];
     selectAllMatching.value = false;
     load();
-  } catch (e) { alert('Action failed'); }
+  } catch (e) { 
+    if (e.code === 'ECONNABORTED' || e.response?.status === 504 || e.response?.status === 502) {
+      showImportProcessing.value = true;
+    } else {
+      alert(e.response?.data?.message || 'Action failed'); 
+    }
+  }
 }
 
 function confirmDelete(item) {
@@ -826,15 +876,51 @@ async function generateSitemap() {
   finally { generatingSitemap.value = false; }
 }
 
+function doJump() {
+  let p = parseInt(jumpPage.value);
+  if (isNaN(p) || p < 1) p = 1;
+  if (p > pagination.last_page) p = pagination.last_page;
+  listPage.value = p;
+  load();
+}
+
 watch([filterType, listPage, filterState, filterCity, perPage], () => {
+  jumpPage.value = listPage.value;
   if (filterState.value === '' && filterCity.value !== '') {
     filterCity.value = '';
   }
   load();
 });
 
+async function checkStatus() {
+  try {
+    const r = await axios.get('/api/admin/seo-pages/task-status');
+    taskStatus.import = r.data.import;
+    taskStatus.action = r.data.action;
+    
+    const isProcessing = (taskStatus.import && taskStatus.import.status === 'processing') || 
+                         (taskStatus.action && taskStatus.action.status === 'processing');
+    
+    if (isProcessing) {
+      showImportProcessing.value = true;
+    } else if (showImportProcessing.value) {
+      if (taskStatus.import?.status === 'completed' || taskStatus.action?.status === 'completed') {
+        setTimeout(() => {
+          showImportProcessing.value = false;
+          load();
+        }, 2000);
+      }
+    }
+  } catch (e) {}
+}
+
 onMounted(() => {
   loadLocations().then(load);
+  statusInterval = setInterval(checkStatus, 5000);
+});
+
+onUnmounted(() => {
+  if (statusInterval) clearInterval(statusInterval);
 });
 </script>
 

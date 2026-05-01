@@ -16,6 +16,7 @@ use App\Models\AIUsage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class LocationCmsController extends Controller
 {
@@ -257,7 +258,20 @@ class LocationCmsController extends Controller
                 ]);
                 $count++;
             }
-        });
+            Cache::put($taskId, [
+                'status' => 'processing',
+                'current' => $count,
+                'total' => $total,
+                'message' => "Imported $count of $total items..."
+            ], 300);
+        }
+
+        Cache::put($taskId, [
+            'status' => 'completed',
+            'current' => $total,
+            'total' => $total,
+            'message' => "Successfully imported $total items."
+        ], 300);
 
         return response()->json([
             'message' => "Successfully imported $count $type pages.",
@@ -265,11 +279,12 @@ class LocationCmsController extends Controller
         ]);
     }
 
-    /**
-     * Bulk update status or other fields.
      */
     public function bulkAction(Request $request)
     {
+        set_time_limit(0);
+        ini_set('memory_limit', '512M');
+
         $request->validate([
             'ids' => 'nullable|array',
             'all_matching' => 'nullable|boolean',
@@ -281,9 +296,12 @@ class LocationCmsController extends Controller
 
         $query = SeoPage::query();
 
-        if ($request->all_matching && $request->filters) {
-            $query = $this->applyFilters($query, new Request($request->filters));
+        if ($request->all_matching) {
+            $query = $this->applyFilters($query, $request, true);
         } else {
+            if (empty($request->ids)) {
+                return response()->json(['message' => 'No items selected'], 422);
+            }
             $query->whereIn('id', $request->ids);
         }
 
@@ -296,59 +314,78 @@ class LocationCmsController extends Controller
                 break;
             case 'template':
                 $data = $request->template_data;
-                $pages = $query->with('entity')->get();
-                
-                foreach ($pages as $page) {
-                    $entity = $page->entity;
-                    if (!$entity) continue;
+                $taskId = 'seo_action_' . Auth::id();
+                $total = $query->count();
+                $processed = 0;
 
-                    $replacements = [
-                        '{name}' => $entity->name,
-                        '{city}' => $entity->city ?? '',
-                        '{type}' => ucfirst($page->type),
-                    ];
+                $query->with('entity')->chunk(50, function($pages) use ($data, &$processed, $total, $taskId) {
+                    foreach ($pages as $page) {
+                        $entity = $page->entity;
+                        if (!$entity) continue;
 
-                    // Helper function to replace in strings or arrays
-                    $replace = function ($target) use ($replacements) {
-                        if (is_string($target)) {
-                            return str_replace(array_keys($replacements), array_values($replacements), $target);
+                        $replacements = [
+                            '{name}' => $entity->name,
+                            '{city}' => $entity->city ?? '',
+                            '{type}' => ucfirst($page->type),
+                        ];
+
+                        // Helper function to replace in strings or arrays
+                        $replace = function ($target) use ($replacements) {
+                            if (is_string($target)) {
+                                return str_replace(array_keys($replacements), array_values($replacements), $target);
+                            }
+                            return $target;
+                        };
+
+                        $update = [];
+                        if (isset($data['intro_text'])) {
+                            $update['intro_text'] = $replace($data['intro_text']);
                         }
-                        return $target;
-                    };
-
-                    $update = [];
-                    if (isset($data['intro_text'])) {
-                        $update['intro_text'] = $replace($data['intro_text']);
-                    }
-                    if (isset($data['guide_content'])) {
-                        $guide = $data['guide_content'];
-                        foreach ($guide as &$section) {
-                            $section['title'] = $replace($section['title']);
-                            $section['content'] = $replace($section['content']);
+                        if (isset($data['guide_content'])) {
+                            $guide = $data['guide_content'];
+                            foreach ($guide as &$section) {
+                                $section['title'] = $replace($section['title']);
+                                $section['content'] = $replace($section['content']);
+                            }
+                            $update['guide_content'] = $guide;
                         }
-                        $update['guide_content'] = $guide;
-                    }
-                    if (isset($data['faqs'])) {
-                        $faqs = $data['faqs'];
-                        foreach ($faqs as &$faq) {
-                            $faq['q'] = $replace($faq['q']);
-                            $faq['a'] = $replace($faq['a']);
+                        if (isset($data['faqs'])) {
+                            $faqs = $data['faqs'];
+                            foreach ($faqs as &$faq) {
+                                $faq['q'] = $replace($faq['q']);
+                                $faq['a'] = $replace($faq['a']);
+                            }
+                            $update['faqs'] = $faqs;
                         }
-                        $update['faqs'] = $faqs;
+
+                        if (isset($data['meta_title'])) {
+                            $update['meta_title'] = $replace($data['meta_title']);
+                        }
+                        if (isset($data['meta_description'])) {
+                            $update['meta_description'] = $replace($data['meta_description']);
+                        }
+                        if (isset($data['meta_keywords'])) {
+                            $update['meta_keywords'] = $replace($data['meta_keywords']);
+                        }
+
+                        $page->update($update);
+                        $processed++;
                     }
 
-                    if (isset($data['meta_title'])) {
-                        $update['meta_title'] = $replace($data['meta_title']);
-                    }
-                    if (isset($data['meta_description'])) {
-                        $update['meta_description'] = $replace($data['meta_description']);
-                    }
-                    if (isset($data['meta_keywords'])) {
-                        $update['meta_keywords'] = $replace($data['meta_keywords']);
-                    }
+                    Cache::put($taskId, [
+                        'status' => 'processing',
+                        'current' => $processed,
+                        'total' => $total,
+                        'message' => "Applied template to $processed of $total pages..."
+                    ], 300);
+                });
 
-                    $page->update($update);
-                }
+                Cache::put($taskId, [
+                    'status' => 'completed',
+                    'current' => $total,
+                    'total' => $total,
+                    'message' => "Template applied to $total pages successfully."
+                ], 300);
                 break;
         }
 
@@ -366,35 +403,56 @@ class LocationCmsController extends Controller
         };
     }
 
-    private function applyFilters($query, Request $request)
+    public function taskStatus()
     {
-        if ($request->type) {
-            $query->where('type', $request->type);
+        $userId = Auth::id();
+        $importStatus = Cache::get('seo_import_' . $userId);
+        $actionStatus = Cache::get('seo_action_' . $userId);
+
+        return response()->json([
+            'import' => $importStatus,
+            'action' => $actionStatus
+        ]);
+    }
+
+    private function applyFilters($query, Request $request, bool $fromBulk = false)
+    {
+        $filters = $fromBulk ? ($request->filters ?: []) : $request->all();
+        
+        $type = $filters['type'] ?? null;
+        $status = $filters['status'] ?? null;
+        $search = $filters['search'] ?? null;
+        $slug = $filters['slug'] ?? null;
+        $state_id = $filters['state_id'] ?? null;
+        $city_id = $filters['city_id'] ?? null;
+
+        if ($type) {
+            $query->where('type', $type);
         }
 
-        if ($request->status) {
-            $query->where('status', $request->status);
+        if ($status) {
+            $query->where('status', $status);
         }
 
-        if ($request->search) {
-            $query->where(function ($q) use ($request) {
-                $q->where('title', 'like', "%{$request->search}%")
-                  ->orWhere('slug', 'like', "%{$request->search}%");
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('slug', 'like', "%{$search}%");
             });
         }
 
-        if ($request->slug) {
-            $query->where('slug', 'like', "%{$request->slug}%");
+        if ($slug) {
+            $query->where('slug', 'like', "%{$slug}%");
         }
 
-        if ($request->state_id || $request->city_id) {
+        if ($state_id || $city_id) {
             $models = [Area::class, Hospital::class, Market::class, Metro::class, School::class];
-            $query->whereHasMorph('entity', $models, function ($q) use ($request) {
-                if ($request->state_id) {
-                    $q->where('state_id', (int) $request->state_id);
+            $query->whereHasMorph('entity', $models, function ($q) use ($state_id, $city_id) {
+                if ($state_id) {
+                    $q->where('state_id', (int) $state_id);
                 }
-                if ($request->city_id) {
-                    $q->where('city_id', (int) $request->city_id);
+                if ($city_id) {
+                    $q->where('city_id', (int) $city_id);
                 }
             });
         }

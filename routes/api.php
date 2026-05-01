@@ -287,6 +287,7 @@ Route::middleware('web')->group(function () {
             Route::post('seo-pages/generate-ai', [LocationCmsController::class, 'generateAiContent']);
             Route::post('seo-pages/bulk-import', [LocationCmsController::class, 'bulkImport']);
             Route::post('seo-pages/bulk-action', [LocationCmsController::class, 'bulkAction']);
+            Route::get('seo-pages/task-status', [LocationCmsController::class, 'taskStatus']);
         });
     });
 });
