@@ -226,8 +226,11 @@ class LocationCmsController extends Controller
         // Avoid duplication
         $query->whereDoesntHave('seoPage');
 
+        $total = $query->count();
         $count = 0;
-        $query->chunk(100, function ($entities) use ($type, $slugPattern, $titlePattern, &$count) {
+        $taskId = 'seo_import_' . Auth::id();
+
+        $query->chunk(100, function ($entities) use ($type, $slugPattern, $titlePattern, &$count, $total, $taskId) {
             foreach ($entities as $entity) {
                 $city = $entity->city ?? 'Unknown City';
                 $name = $entity->name;
@@ -264,7 +267,7 @@ class LocationCmsController extends Controller
                 'total' => $total,
                 'message' => "Imported $count of $total items..."
             ], 300);
-        }
+        });
 
         Cache::put($taskId, [
             'status' => 'completed',
@@ -279,6 +282,8 @@ class LocationCmsController extends Controller
         ]);
     }
 
+    /**
+     * Bulk update status or other fields.
      */
     public function bulkAction(Request $request)
     {
