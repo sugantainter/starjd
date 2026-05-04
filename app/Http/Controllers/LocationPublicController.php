@@ -7,6 +7,7 @@ use App\Models\Page;
 use App\Models\CreatorProfile;
 use App\Models\Studio;
 use App\Models\BrandProfile;
+use App\Support\StoragePublicUrl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -85,12 +86,64 @@ class LocationPublicController extends Controller
             ]);
         }
 
-        // Fallback to static pages
-        $page = Page::where('slug', $slug)->published()->first();
+        // Fallback to static pages or state-based pages
+        $page = Page::with(['state', 'city'])->where('slug', $slug)->published()->first();
+
+        // If not found, check if it's a state-based page (e.g. influencers-in-delhi)
+        if (!$page && str_contains($slug, '-in-')) {
+            $parts = explode('-in-', $slug);
+            $locationSlug = array_pop($parts);
+            $pageSlug = implode('-in-', $parts);
+
+            $state = \App\Models\State::where('slug', $locationSlug)->first();
+            if ($state) {
+                $page = Page::with(['state', 'city'])
+                    ->where('slug', $pageSlug)
+                    ->where('state_id', $state->id)
+                    ->whereNull('city_id')
+                    ->published()
+                    ->first();
+            }
+        }
+
+        // Final fallback: Check if the slug itself is a state name (e.g. /delhi -> influencers in delhi)
+        if (!$page) {
+            $state = \App\Models\State::where('slug', $slug)->first();
+            if ($state) {
+                $page = Page::with(['state', 'city'])
+                    ->where('slug', 'influencers')
+                    ->where('state_id', $state->id)
+                    ->whereNull('city_id')
+                    ->published()
+                    ->first();
+            }
+        }
+
         if ($page) {
+            $contentRaw = $page->content ? html_entity_decode($page->content) : '';
+            $locationName = $page->state?->name ?? $page->city?->name;
+            $title = $page->title;
+
+            if ($locationName) {
+                $placeholders = ['{location}', '[location]', '{city}', '[city]', '{state}', '[state]'];
+                if (Str::contains($title, $placeholders)) {
+                    $title = str_replace($placeholders, $locationName, $title);
+                } elseif ($title && !Str::contains($title, $locationName)) {
+                    $title .= ' in ' . $locationName;
+                }
+            }
+
             return response()->json([
                 'type' => 'static_page',
-                'page' => $page
+                'page' => [
+                    'id' => $page->id,
+                    'title' => $title,
+                    'slug' => $page->slug,
+                    'content' => StoragePublicUrl::rewriteStorageUrlsInHtml($contentRaw),
+                    'meta_title' => ($page->meta_title ?: $title) . ($locationName && !Str::contains($page->meta_title, $locationName) ? ' in ' . $locationName : ''),
+                    'meta_description' => $page->meta_description,
+                    'meta_keywords' => $page->meta_keywords,
+                ]
             ]);
         }
 

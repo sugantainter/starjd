@@ -57,11 +57,8 @@ class Page extends Model
         }
 
         if ($this->state_id && $this->state?->slug) {
-            // New state structure: /state (for influencers) or /state/slug
-            if ($this->slug === 'influencers') {
-                return '/'.Str::slug($this->state->slug);
-            }
-            return '/'.Str::slug($this->state->slug).'/'.$this->slug;
+            // SEO friendly state structure: /slug-in-state
+            return '/'.$this->slug.'-in-'.Str::slug($this->state->slug);
         }
 
         if ($this->city_id || $this->state_id) {
