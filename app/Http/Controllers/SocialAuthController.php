@@ -143,8 +143,10 @@ class SocialAuthController extends Controller
         ]);
 
         try {
+            \Illuminate\Support\Facades\Log::info("Social Login Attempt", ['provider' => $provider, 'token_length' => strlen($request->token)]);
             $oauthUser = Socialite::driver($provider)->stateless()->userFromToken($request->token);
         } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Social Login Failed", ['provider' => $provider, 'error' => $e->getMessage()]);
             return response()->json(['success' => false, 'message' => 'Invalid token. ' . $e->getMessage()], 401);
         }
 
