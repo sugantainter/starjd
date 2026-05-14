@@ -79,5 +79,11 @@ return [
         'redirect' => env('PINTEREST_REDIRECT_URI') ?: rtrim(env('APP_URL', 'http://localhost'), '/').'/creator/social-accounts/pinterest/callback',
     ],
 
+    'apple' => [
+        'client_id' => env('APPLE_CLIENT_ID'),
+        'client_secret' => env('APPLE_CLIENT_SECRET'),
+        'redirect' => env('APPLE_REDIRECT_URI'),
+    ],
+
     'ai_daily_limit' => 15, // Max AI requests per professional per day
 ];

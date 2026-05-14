@@ -143,7 +143,7 @@ class SocialAuthController extends Controller
         ]);
 
         try {
-            $oauthUser = Socialite::driver($provider)->userFromToken($request->token);
+            $oauthUser = Socialite::driver($provider)->stateless()->userFromToken($request->token);
         } catch (\Throwable $e) {
             return response()->json(['success' => false, 'message' => 'Invalid token. ' . $e->getMessage()], 401);
         }

@@ -7,7 +7,10 @@ use App\Observers\CampaignObserver;
 use App\Observers\ReviewObserver;
 use App\Services\PayUService;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use SocialiteProviders\Manager\SocialiteWasCalled;
+use SocialiteProviders\Apple\AppleExtendSocialite;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -34,6 +37,9 @@ class AppServiceProvider extends ServiceProvider
             $email = $notifiable->getEmailForPasswordReset();
             return url('/reset-password?token='.$token.'&email='.urlencode($email));
         });
+
+        // Apple Socialite extension
+        Event::listen(SocialiteWasCalled::class, [AppleExtendSocialite::class, 'handle']);
 
         // Pinterest Socialite extension
         $socialite = $this->app->make(\Laravel\Socialite\Contracts\Factory::class);

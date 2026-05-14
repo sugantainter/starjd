@@ -13,6 +13,7 @@
         "laravel/sanctum": "*",
         "laravel/socialite": "*",
         "laravel/tinker": "^2.10.1",
+        "socialiteproviders/apple": "^5.10",
         "socialiteproviders/pinterest": "^4.3",
         "spatie/laravel-google-cloud-storage": "^2.3"
     },
