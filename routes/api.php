@@ -126,9 +126,10 @@ Route::middleware('web')->group(function () {
         Route::post('set-role', [AuthController::class, 'setRole']);
         Route::post('update-fcm-token', [AuthController::class, 'updateFcmToken']);
         
-        // Chat
+        // Chat (literal routes must be registered before messages/{userId})
         Route::get('conversations', [MessageController::class, 'index']);
-        Route::get('messages/{userId}', [MessageController::class, 'show']);
+        Route::get('messages/unread-count', [MessageController::class, 'unreadCount']);
+        Route::get('messages/{userId}', [MessageController::class, 'show'])->whereNumber('userId');
         Route::post('messages', [MessageController::class, 'store']);
         
         // Support Tickets
