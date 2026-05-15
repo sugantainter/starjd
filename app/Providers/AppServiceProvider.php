@@ -47,11 +47,5 @@ class AppServiceProvider extends ServiceProvider
             $config = $app['config']['services.pinterest'];
             return $socialite->buildProvider(\App\Socialite\PinterestProvider::class, $config);
         });
-
-        // Manual Apple extension fallback
-        $socialite->extend('apple', function ($app) use ($socialite) {
-            $config = $app['config']['services.apple'];
-            return $socialite->buildProvider(\SocialiteProviders\Apple\Provider::class, $config);
-        });
     }
 }
