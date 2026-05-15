@@ -167,7 +167,7 @@ Route::prefix('api')->group(function () {
         Route::post('notifications/{id}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
         Route::post('notifications/read-all', [\App\Http\Controllers\Api\NotificationController::class, 'markAllAsRead']);
         Route::delete('notifications/{id}', [\App\Http\Controllers\Api\NotificationController::class, 'destroy']);
-        Route::get('messages/{otherUserId}', [\App\Http\Controllers\Api\MessageController::class, 'show']);
+        Route::get('messages/{otherUserId}', [\App\Http\Controllers\Api\MessageController::class, 'show'])->whereNumber('otherUserId');
         Route::post('messages', [\App\Http\Controllers\Api\MessageController::class, 'store']);
         Route::post('collaborations/{collaboration}/accept', [CollaborationController::class, 'accept']);
         Route::post('collaborations/{collaboration}/reject', [CollaborationController::class, 'reject']);
