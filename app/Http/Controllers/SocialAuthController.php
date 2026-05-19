@@ -9,8 +9,12 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Socialite\Contracts\Factory as SocialiteFactory;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 use Laravel\Socialite\Facades\Socialite;
+use SocialiteProviders\Apple\AppleExtendSocialite;
+use SocialiteProviders\Apple\Provider as AppleSocialiteProvider;
+use SocialiteProviders\Manager\SocialiteWasCalled;
 
 class SocialAuthController extends Controller
 {
@@ -137,37 +141,81 @@ class SocialAuthController extends Controller
      */
     public function apiCallback(Request $request, string $provider): \Illuminate\Http\JsonResponse
     {
+        $provider = strtolower($provider);
+
         $request->validate([
             'token' => 'required|string',
-            'role'  => 'nullable|string|in:creator,brand,customer,studio_owner',
+            'role'  => 'nullable|string|in:creator,brand,customer,studio_owner,agency',
+            // Apple only sends name on first authorization; native clients pass it here.
+            'name'  => 'nullable|string|max:255',
         ]);
 
+        if (! in_array($provider, ['google', 'facebook', 'apple'], true)) {
+            return response()->json(['success' => false, 'message' => 'Unsupported provider.'], 422);
+        }
+
+        // Ensure Apple is registered (Octane/long-lived workers, or any boot order where extend was skipped).
+        if ($provider === 'apple') {
+            app(SocialiteFactory::class);
+            app(AppleExtendSocialite::class)->handle(app(SocialiteWasCalled::class));
+        }
+
         try {
-            $oauthUser = Socialite::driver($provider)->stateless()->userFromToken($request->token);
+            if ($provider === 'apple') {
+                /** @var AppleSocialiteProvider $driver */
+                $driver = Socialite::driver('apple')->stateless();
+                $oauthUser = $driver->userByIdentityToken($request->token);
+            } else {
+                $oauthUser = Socialite::driver($provider)->stateless()->userFromToken($request->token);
+            }
         } catch (\Throwable $e) {
             return response()->json(['success' => false, 'message' => 'Invalid token. ' . $e->getMessage()], 401);
         }
 
-        $email = $oauthUser->getEmail();
-        if (! $email) {
-            return response()->json(['success' => false, 'message' => 'No email provided by ' . $provider], 400);
+        $email = $oauthUser->getEmail() ?: null;
+        $appleSub = $provider === 'apple' ? (string) $oauthUser->getId() : null;
+
+        $user = null;
+        if ($provider === 'apple' && $appleSub !== '') {
+            $user = User::where('apple_sub', $appleSub)->first();
+        }
+        if (! $user && $email) {
+            $user = User::where('email', $email)->first();
+        }
+        if (! $user && $provider === 'apple' && ! $email && $appleSub !== '') {
+            // First-time account without an email claim: one stable row per Apple `sub`.
+            $email = 'apple_' . $appleSub . '@apple-signin.local';
+            $user = User::where('email', $email)->first();
+        }
+
+        if (! $user && ! $email) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No email in ' . $provider . ' token and no existing account linked to this sign-in.',
+            ], 400);
         }
 
         $isNewUser = false;
-        $user = User::where('email', $email)->first();
 
         if (! $user) {
             $isNewUser = true;
-            $name = $oauthUser->getName() ?: explode('@', $email)[0];
+            $name = $oauthUser->getName()
+                ?: $request->input('name')
+                ?: explode('@', $email)[0];
             $user = User::create([
-                'name'     => $name,
-                'email'    => $email,
-                'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(32)),
+                'name'      => $name,
+                'email'     => $email,
+                'apple_sub' => $appleSub ?: null,
+                'password'  => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(32)),
             ]);
             $user->markEmailAsVerified();
 
             // New social users get NO role yet — Flutter will ask via /api/set-role
             // (role from request is ignored for new users to force role selection on mobile)
+        } else {
+            if ($provider === 'apple' && $appleSub !== '' && $user->apple_sub !== $appleSub) {
+                $user->forceFill(['apple_sub' => $appleSub])->save();
+            }
         }
 
         Auth::login($user, true);

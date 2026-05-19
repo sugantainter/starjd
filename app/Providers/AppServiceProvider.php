@@ -7,10 +7,10 @@ use App\Observers\CampaignObserver;
 use App\Observers\ReviewObserver;
 use App\Services\PayUService;
 use Illuminate\Auth\Notifications\ResetPassword;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
-use SocialiteProviders\Manager\SocialiteWasCalled;
+use Laravel\Socialite\Contracts\Factory as SocialiteFactory;
 use SocialiteProviders\Apple\AppleExtendSocialite;
+use SocialiteProviders\Manager\SocialiteWasCalled;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -38,11 +38,10 @@ class AppServiceProvider extends ServiceProvider
             return url('/reset-password?token='.$token.'&email='.urlencode($email));
         });
 
-        // Apple Socialite extension
-        Event::listen(SocialiteWasCalled::class, [AppleExtendSocialite::class, 'handle']);
+        // Socialite: load factory first (binds SocialiteProviders config), then register Apple, then Pinterest.
+        $socialite = $this->app->make(SocialiteFactory::class);
+        app(AppleExtendSocialite::class)->handle(app(SocialiteWasCalled::class));
 
-        // Pinterest Socialite extension
-        $socialite = $this->app->make(\Laravel\Socialite\Contracts\Factory::class);
         $socialite->extend('pinterest', function ($app) use ($socialite) {
             $config = $app['config']['services.pinterest'];
             return $socialite->buildProvider(\App\Socialite\PinterestProvider::class, $config);

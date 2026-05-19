@@ -79,10 +79,16 @@ return [
         'redirect' => env('PINTEREST_REDIRECT_URI') ?: rtrim(env('APP_URL', 'http://localhost'), '/').'/creator/social-accounts/pinterest/callback',
     ],
 
+    // Sign in with Apple: there is no fixed "secret" from Apple. Either set APPLE_CLIENT_SECRET
+    // to a JWT you generate (expires ≤ 6 months), or leave it empty and set team_id, key_id,
+    // and private_key so Socialite can mint a short-lived client secret from your .p8 key.
     'apple' => [
         'client_id' => env('APPLE_CLIENT_ID'),
         'client_secret' => env('APPLE_CLIENT_SECRET'),
         'redirect' => env('APPLE_REDIRECT_URI'),
+        'team_id' => env('APPLE_TEAM_ID'),
+        'key_id' => env('APPLE_KEY_ID'),
+        'private_key' => env('APPLE_PRIVATE_KEY'),
     ],
 
     'ai_daily_limit' => 15, // Max AI requests per professional per day
